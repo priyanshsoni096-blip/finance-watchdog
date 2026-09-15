@@ -28,7 +28,8 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Interpretability (feature-group ablation) | Done: `results/feature_ablation.md` |
 | Structural comparison with Coscia and Sarao | Done: `results/real_case_comparison.md` (speed and layering cannot match in this environment) |
 | Synthetic agent-based market (sim-to-sim robustness) | Done: `results/synthetic_eval.md`, `results/synthetic_spoof_impact*.md` |
-| Coscia-style layering attacker (needs several resting orders per side), Watchdog on real SPY flow (LOBSTER has no participant identities, so the participant features cannot be built) | Not started |
+| Pre-registered layering test (scripted LAYER-ATK in the synthetic market) | Done: `results/layering_test.md` |
+| RL Spoofers that can layer (replay environment allows one large order per side); Watchdog on real SPY flow (LOBSTER has no participant identities, so the participant features cannot be built) | Not started |
 
 ---
 
@@ -189,6 +190,8 @@ synthetic/calibrate.py            grid search against real MSFT/INTC market stat
 synthetic/spoof_impact.py         emergent price impact of a spoof vs an identical control market
 synthetic/synthetic_env.py        the frozen agents' interface on the synthetic market (same observation and actions)
 synthetic/evaluate_synthetic.py   frozen agents and the Watchdog in the synthetic market; reactive vs blind followers
+synthetic/layering.py             LAYER-ATK: evaluation-only layering attacker (4 resting orders on one side)
+synthetic/layering_test.py        pre-registered layering test (Watchdog vs rule), run once
 
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
@@ -199,8 +202,8 @@ tests/                            113 unit and real-data tests (data, normalizat
                                   Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
-                                  feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval
-                                  (.md and .json each); real_case_comparison.md
+                                  feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval,
+                                  layering_test (.md and .json each); real_case_comparison.md
 ```
 
 ### Agent roster
@@ -600,10 +603,22 @@ The replay environment allows one large order per side, so layering (Open issue 
   - Not supported otherwise.
 - **Context only.** LAYER-ATK PnL with reactive vs blind followers, and recall by layer.
 
+**Result (run once after the pre-registration commit; `results/layering_test.md`): hypothesis not supported.**
+
+| Bucket (order level) | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR |
+|---|---|---|
+| LAYER-ATK + FLICKER | **0.83** / 0.30 / 0.44 / **0.08** | 0.58 / **1.00** / **0.73** / 0.92 |
+| FLICKER only | FPR **0.08** | FPR 0.93 |
+
+- **Rule.** It catches every layered order, because each 2.5× layer passes its 2× size threshold.
+- **Watchdog.** It catches 30%, the same sparse-spoofing weakness as before, while flagging 8% of legitimate large orders against the rule's 93%.
+- **Recall by layer is not informative.** Recall is 0.30 at every layer only because all layers rest over the same interval and share the same flag window by construction. It cannot show whether depth in the book matters.
+- **Layering does not pay in this market.** −$15,001 ± 4,362 per episode; manipulation gain −$967 ± 3,694.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
-2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. A second pre-registered test, layering in the synthetic market, also went against the Watchdog: recall 0.30 and F1 0.44, against the rule's 1.00 and 0.73. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. Only the rule has been run on real, unlabeled order flow (AAPL, MSFT, GOOG, INTC, AMZN). The Watchdog cannot be, because LOBSTER messages carry no participant identities, so its participant features cannot be built from real data.
 
 Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Student-t CI over 3 training seeds scored on the same data (`results/multiseed.md`):
@@ -629,7 +644,7 @@ Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Stude
 3. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population, and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 4. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
 5. **Seeds.** The Watchdog headline metrics use 3 training seeds with Student-t 95% CIs (`results/multiseed.md`). Each Spoofer is still a single training seed, and PnL CIs use a normal approximation over episodes.
-6. **The environment allows one large order per side at the best price**, so layering (Coscia's progressively priced orders, Sarao's orders held several levels back) cannot be simulated or detected.
+6. **Layering.** The replay environment allows one large order per side at the best price, so no Spoofer can learn layering. It was tested only with a scripted attacker in the synthetic market (Watchdog recall 0.30 vs rule 1.00; `results/layering_test.md`). Sarao-style orders held several levels back were not tested.
 
 ## Known limitations
 
