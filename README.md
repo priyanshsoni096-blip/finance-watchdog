@@ -362,14 +362,19 @@ The scripted attacker has been inspected during analysis, so it no longer gives 
 2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation.** It wrongly flags 1–7% of legitimate large orders, against the rule's 77–97%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
 
-Headline comparison, Watchdog vs rule:
+Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Student-t CI over 3 training seeds scored on the same data (`results/multiseed.md`):
 
-| Measure | Watchdog | Rule |
+| Measure | Watchdog (3 seeds) | Rule |
 |---|---|---|
-| In-distribution F1 | **0.77** | 0.35 |
-| False-positive rate on legitimate orders | **0.04** | 0.82 |
-| Recall on the pre-registered unseen attacker | 0.24 | **0.89** |
-| Precision on the pre-registered unseen attacker | **0.66** | 0.31 |
+| In-distribution order F1 | **0.753 ± 0.058** | 0.352 |
+| False-positive rate on legitimate orders | **0.031 ± 0.067** | 0.823 |
+| False-positive rate on held-out AMZN legitimate orders | **0.004 ± 0.018** | 0.972 |
+| Recall on the pre-registered unseen attacker | 0.217 ± 0.156 | **0.885** |
+| Precision on the pre-registered unseen attacker | **0.774 ± 0.486** | 0.312 |
+
+- All three comparisons hold for every seed: in-distribution F1 about 2× the rule, false positives about 20× lower, and unseen-attacker recall about 4× lower.
+- Seeds differ mainly in the precision/recall balance. One seed (main_s3) is conservative: order precision 0.95, recall 0.59, and step recall 0.50 versus 0.87 for the other two. Recall intervals are therefore wide (order ±0.27, step ±0.52).
+- The pre-registered LATEBURST verdict was fixed in advance on the `main` model (recall ratio 1.50). The extra seeds only measure variability.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
@@ -390,7 +395,7 @@ Headline comparison, Watchdog vs rule:
 1. ~~Alternating-side spoofing very profitable on 1-tick stocks~~ — addressed by change 11. Check the retrained Spoofers in `results/basic_eval.md` against the scripted attacker to judge whether their profit is now realistic.
 2. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population and the held-out AMZN test.
 3. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
-4. The basic eval uses one seed per agent and a normal-approximation CI.
+4. **Seeds.** The Watchdog headline metrics use 3 training seeds with Student-t 95% CIs (`results/multiseed.md`). Each Spoofer is still a single training seed, and the basic eval's PnL CIs use a normal approximation over episodes.
 
 ## Known limitations
 
