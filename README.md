@@ -304,10 +304,21 @@ Each was driven by a measurement.
   | heldout: SCRIPTED-ATK on MSFT / INTC | 0.90 / 0.91 | 0.99 / 0.99 |
   | heldout: SCRIPTED-ATK on AAPL / GOOG / AMZN | 0.17 / 0.17 / 0.22 | 0.97–0.98 |
 
-  - Sparse GOOG spoofing is learnable from these features (recall 0.67 supervised), so the Watchdog's miss there (flag rate 0.018 vs 0.21 positive) is under-learning.
+  - At a 0.5 threshold, sparse GOOG spoofing reaches recall 0.67 supervised. Pooled with legitimate test activity, however, even the supervised model ranks it poorly (AUC 0.851, average precision 0.061 at a 2.1% positive rate; see below). So the Watchdog's miss there (flag rate 0.018 vs 0.21 positive) is not purely under-learning: sparse spoofing is only weakly separable from legitimate trading with these features.
   - The scripted attacker behaves identically on every stock, yet it is caught on MSFT and INTC and mostly missed elsewhere. The Watchdog's flag rates lean the same way (0.070–0.075 on MSFT/INTC vs 0.011–0.022 elsewhere).
   - Nearly all training positives come from the two 1-tick stocks, so book features likely act as a stock-identity shortcut.
   - **Method note:** this was found using the heldout split. Any Watchdog change it motivates will be chosen on test-split evidence only (`--no-heldout`), and its heldout numbers will be labelled post-hoc rather than a clean generalisation test.
+- **Removing book features does not help (test split only, `--no-heldout`, threshold-free).** Each Spoofer's steps are pooled with all legitimate test steps:
+
+  | Test bucket | All 46 features: AUC / AP | Participant 6 only: AUC / AP |
+  |---|---|---|
+  | SPOOFER-02 MSFT + legitimate | **0.955 / 0.378** | 0.876 / 0.147 |
+  | SPOOFER-03 GOOG + legitimate | 0.851 / 0.061 | 0.858 / 0.068 |
+  | SPOOFER-04 INTC + legitimate | **0.939 / 0.549** | 0.869 / 0.340 |
+  | all test sources | **0.938 / 0.623** | 0.879 / 0.410 |
+
+  - Participant-only raised GOOG recall at a 0.5 threshold (0.67 → 0.96) only by flagging more: legitimate FPR rose 0.19 → 0.34, and ranking was no better on GOOG and worse elsewhere.
+  - **Decision: the Watchdog keeps all 46 features; no change is adopted.** The stock-identity shortcut remains an unverified hypothesis supported only by the heldout split. Testing it cleanly needs a fresh attacker variant that has not been inspected.
 
 ## Where the three claims stand
 
