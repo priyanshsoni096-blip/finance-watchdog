@@ -284,6 +284,30 @@ Each was driven by a measurement.
 
   - Step level on the test split: precision 0.95, recall 0.86, FPR 0.006.
   - Legitimate episodes with any flag: FLICKER 22–40%, HONEST 0–4%.
+- **What the Watchdog misses is sparse spoofing, whichever source produces it.** Medians over manipulative orders, from the recorded datasets:
+
+  | Source | Opposite trades per order | Trades per resting step | Watchdog |
+  |---|---|---|---|
+  | SPOOFER-04 INTC (train / test) | 12 / 11 | 0.92 | caught (flag rate 0.93 vs 0.93 positive) |
+  | SPOOFER-02 MSFT | 4 / 5 | 0.67 | caught (0.45 vs 0.45) |
+  | SPOOFER-03 GOOG | 1 / 2 | 0.33 / 0.40 | missed (0.018 vs 0.21) |
+  | SCRIPTED-ATK, all stocks (heldout) | 3 | 0.25–0.27 | missed (0.011–0.075 vs 0.51–0.57) |
+
+  Sparse spoofing (a wait, then a few trades) is already present in training through SPOOFER-03. The held-out miss is therefore not purely an unseen structure: the Watchdog under-learned a style it was shown.
+- **Per-source feature diagnostic (`python scripts/feature_signal_check.py`, all 46 features).**
+
+  | Scored on | Step recall | Step precision |
+  |---|---|---|
+  | test: SPOOFER-02 MSFT | 1.00 | 0.96 |
+  | test: SPOOFER-03 GOOG | 0.67 | 0.64 |
+  | test: SPOOFER-04 INTC | 1.00 | 1.00 |
+  | heldout: SCRIPTED-ATK on MSFT / INTC | 0.90 / 0.91 | 0.99 / 0.99 |
+  | heldout: SCRIPTED-ATK on AAPL / GOOG / AMZN | 0.17 / 0.17 / 0.22 | 0.97–0.98 |
+
+  - Sparse GOOG spoofing is learnable from these features (recall 0.67 supervised), so the Watchdog's miss there (flag rate 0.018 vs 0.21 positive) is under-learning.
+  - The scripted attacker behaves identically on every stock, yet it is caught on MSFT and INTC and mostly missed elsewhere. The Watchdog's flag rates lean the same way (0.070–0.075 on MSFT/INTC vs 0.011–0.022 elsewhere).
+  - Nearly all training positives come from the two 1-tick stocks, so book features likely act as a stock-identity shortcut.
+  - **Method note:** this was found using the heldout split. Any Watchdog change it motivates will be chosen on test-split evidence only (`--no-heldout`), and its heldout numbers will be labelled post-hoc rather than a clean generalisation test.
 
 ## Where the three claims stand
 
