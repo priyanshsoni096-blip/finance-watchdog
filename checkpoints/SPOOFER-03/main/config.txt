@@ -1,0 +1,6 @@
+agent=SPOOFER-03
+seed=303
+env={'ticker': 'GOOG', 'levels': 10, 'lot': None, 'spoof_k': 10.0, 'max_inventory_lots': 40, 'inv_penalty': 0.001, 'episode_len': 200, 'events_per_step': 10, 'warmup': 30000, 'impact_form': 'linear', 'impact_lambda': None, 'bid_only': True, 'impact_ramp': True, 'spoof_capacity': True, 'extra': {}}
+lambda=0.062439657241450355
+ent_coef=0.01
+gamma=0.99

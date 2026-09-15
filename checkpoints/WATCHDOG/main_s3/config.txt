@@ -1,0 +1,2 @@
+{'timesteps': 400000, 'tag': 'main_s3', 'data': 'C:\\Users\\Rahul Soni\\Desktop\\finance-watchdog\\data\\watchdog', 'fp_cost': 2.0, 'fn_cost': 1.0, 'n_envs': 4, 'seed': 23, 'threads': 3, 'ent_coef': 0.01, 'norm_obs': True}
+sources=['FLICKER_AAPL', 'FLICKER_GOOG', 'FLICKER_INTC', 'FLICKER_MSFT', 'HONEST_AAPL', 'HONEST_GOOG', 'HONEST_INTC', 'HONEST_MSFT', 'SPOOFER-01_AAPL', 'SPOOFER-02_MSFT', 'SPOOFER-03_GOOG', 'SPOOFER-04_INTC']

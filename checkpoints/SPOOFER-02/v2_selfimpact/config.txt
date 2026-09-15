@@ -1,0 +1,4 @@
+agent=SPOOFER-02
+seed=202
+env={'ticker': 'MSFT', 'levels': 10, 'lot': None, 'spoof_k': 10.0, 'max_inventory_lots': 40, 'inv_penalty': 0.0001, 'episode_len': 2000, 'events_per_step': 1, 'warmup': 30000, 'impact_form': 'linear', 'impact_lambda': None, 'bid_only': False, 'extra': {}}
+lambda=0.2550031899120812
