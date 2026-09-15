@@ -26,7 +26,8 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Multi-seed Watchdog CIs (3 seeds) | Done: `results/multiseed.md` (each Spoofer is still one seed) |
 | PnL suppression with surveillance acting inside episodes | Done: `results/pnl_suppression.md` |
 | Interpretability (feature-group ablation) | Done: `results/feature_ablation.md` |
-| Coscia-style layering attacker (needs several resting orders per side), synthetic agent-based market, Watchdog on real SPY flow, real-case comparison | Not started |
+| Structural comparison with Coscia and Sarao | Done: `results/real_case_comparison.md` (speed and layering cannot match in this environment) |
+| Coscia-style layering attacker (needs several resting orders per side), synthetic agent-based market, Watchdog on real SPY flow | Not started |
 
 ---
 
@@ -140,12 +141,13 @@ watchdog/feature_ablation.py      which observation features the Watchdog relies
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
+scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 
 tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
-                                  feature_ablation (.md and .json each)
+                                  feature_ablation, real_case_stats (.md and .json each); real_case_comparison.md
 ```
 
 ### Agent roster
@@ -404,9 +406,30 @@ Interventions on legitimate activity, per episode:
 - **Caveat on the price-only row.** Its FPR of 0.555 is likely an artefact: mean prices combined with real sizes form books that never occur. The all-40 ablation, which keeps the book internally consistent, shows no such effect.
 - **Scope.** Test split, one seed, single-group mean imputation; interactions between groups are not measured.
 
+## Structural comparison with documented cases (Coscia, Sarao)
+
+`results/real_case_comparison.md` compares order structure with the CFTC order against Panther Energy / Coscia (2013), *United States v. Coscia* (7th Cir. 2017) and the CFTC's 2015 Sarao press release. Every real-case figure was checked against those documents. Two figures from a search summary that were not in them were dropped. Simulated figures come from `python scripts/real_case_stats.py`.
+
+| | Coscia | SPOOFER-04 INTC | SPOOFER-02 MSFT |
+|---|---|---|---|
+| Large orders filled | 0.08% (CME), 0.5% (ICE) | 0.4% | 1.4% |
+| Large orders resting > 1 s | 0.57% | 52.2% | 43.8% |
+| Reversal / side flips | algorithm operated in reverse | 73.8% of consecutive large orders | 21.3% |
+
+- **Similar, and emergent:**
+  - large orders on one side while trading on the other
+  - large orders almost never filled
+  - SPOOFER-04 alternating sides much like Coscia's reversing algorithm
+- **Different:**
+  - **Speed:** simulated large orders rest far longer, because the calibrated impact ramp rewards waiting about 50 events.
+  - **Layering:** Coscia's progressively priced orders and Sarao's four to six orders held 3–4 levels back cannot emerge, because the environment allows one large order per side at the best price.
+- **Not comparable:** size ratio (fixed by design), small-order fill rate, profit scale.
+
+This is a comparison of structure, not validation of detection on real manipulation.
+
 ## Where the three claims stand
 
-1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from.
+1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`).
 2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation.** It wrongly flags 1–7% of legitimate large orders, against the rule's 77–97%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
 
