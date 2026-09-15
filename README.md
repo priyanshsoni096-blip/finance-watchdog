@@ -21,7 +21,7 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Spoofer population SPOOFER-01..05 (PPO) | Trained on the current env; see `results/basic_eval.md` |
 | Rule-based baseline detector | Done |
 | Basic evaluation (`evaluation/basic_eval.py`) | Done |
-| Watchdog: dataset recorder, env, RecurrentPPO training, evaluation vs baseline | Code done and tested (smoke-run end to end); full training run pending |
+| Watchdog: dataset recorder, env, RecurrentPPO training, evaluation vs baseline | Dataset built; trained with normalised observations and entropy 0.01; final evaluation in `results/watchdog_eval.md` |
 | Coscia-style layering attacker, synthetic market, SPY false-positive test, real-case comparison, multi-seed CIs | Not started |
 
 ---
@@ -47,7 +47,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-64 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
+81 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
