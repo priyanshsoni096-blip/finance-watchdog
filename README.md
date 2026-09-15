@@ -21,7 +21,8 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Spoofer population SPOOFER-01..05 (PPO) | Trained on the current env; see `results/basic_eval.md` |
 | Rule-based baseline detector | Done |
 | Basic evaluation (`evaluation/basic_eval.py`) | Done |
-| Watchdog (RecurrentPPO), Coscia-style layering attacker, synthetic market, SPY false-positive test, real-case comparison, multi-seed CIs | Not started |
+| Watchdog: dataset recorder, env, RecurrentPPO training, evaluation vs baseline | Code done and tested (smoke-run end to end); full training run pending |
+| Coscia-style layering attacker, synthetic market, SPY false-positive test, real-case comparison, multi-seed CIs | Not started |
 
 ---
 
@@ -66,6 +67,25 @@ Runs the basic evaluation (about 10–15 minutes) and writes:
 - `results/basic_eval.json` — every number, including the full detector tuning grid
 
 Use `--episodes 5` for a quick look. Spoofers without a checkpoint are skipped with a message.
+
+### Watchdog pipeline
+
+Run these after the Spoofers are trained, in order.
+
+```bash
+python watchdog/dataset.py --episodes 30
+```
+Rolls out every frozen agent once and saves what surveillance can see into `data/watchdog/{train,test,heldout}/`: 40 book features plus 6 features of the watched trader's own orders, with hindsight labels per step. SPOOFER-05, SCRIPTED-ATK and every AMZN source go only into `heldout`.
+
+```bash
+python watchdog/train_watchdog.py --timesteps 400000
+```
+Trains the Watchdog (RecurrentPPO, LSTM) on the `train` split. At each step it chooses to flag or clear: +1 for a correct flag, −1 for a miss, −2 for a false flag, 0 for correctly clearing. It is never told the spoofing rule. Output goes to `checkpoints/WATCHDOG/main/` (`model.zip`, `progress.csv` with precision, recall and false-positive rate per rollout).
+
+```bash
+python watchdog/evaluate_watchdog.py
+```
+Scores the Watchdog and the rule-based baseline on the same recorded orders; writes `results/watchdog_eval.md` and `.json`. Order-level precision, recall, F1 and false-positive rate per bucket, plus how many steps each takes to flag. The rule can only fire on the cancel; the Watchdog can flag while the order still rests.
 
 ### Reading `results/basic_eval.md`
 
