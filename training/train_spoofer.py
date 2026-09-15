@@ -126,7 +126,11 @@ def main() -> int:
     p.add_argument("--n-envs", type=int, default=4)
     p.add_argument("--tag", default="main")
     p.add_argument("--seed", type=int, default=None, help="override roster seed (multi-seed runs)")
+    # measured on 12k steps: 1 thread 39.3 s, 2 threads 34.7 s, 4 threads 35.3 s. 2 lets two
+    # Spoofers train in parallel on this 4-core laptop without slowing each other.
+    p.add_argument("--threads", type=int, default=2)
     args = p.parse_args()
+    torch.set_num_threads(args.threads)
 
     spec = AGENTS[args.agent]
     seed = spec["seed"] if args.seed is None else args.seed
