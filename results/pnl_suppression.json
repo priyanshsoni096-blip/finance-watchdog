@@ -1,0 +1,352 @@
+{
+  "watchdog": "checkpoints\\WATCHDOG\\main\\model.zip",
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "episodes": 50,
+  "freeze_events": 200,
+  "rows": [
+    {
+      "source": "SPOOFER-02",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 3186.184927673156,
+        "pnl_ci95": 516.8601541099421,
+        "manip_trades_per_ep": 60.2,
+        "trades_per_ep": 107.6,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -4560.468163379859,
+        "pnl_ci95": 1275.1279445237908,
+        "manip_trades_per_ep": 6.42,
+        "trades_per_ep": 63.68,
+        "triggers_per_ep": 7.96,
+        "cancelled_per_ep": 7.84,
+        "blocked_per_ep": 29.8,
+        "suppression_pct": 243.13256345451143
+      },
+      "rule": {
+        "pnl_mean": 139.9922653043078,
+        "pnl_ci95": 830.4861331745369,
+        "manip_trades_per_ep": 45.08,
+        "trades_per_ep": 97.92,
+        "triggers_per_ep": 5.5,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 16.1,
+        "suppression_pct": 95.60627306693893
+      }
+    },
+    {
+      "source": "SPOOFER-04",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 12624.920932536255,
+        "pnl_ci95": 1162.4095251267368,
+        "manip_trades_per_ep": 173.08,
+        "trades_per_ep": 173.7,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": 2165.4377584282893,
+        "pnl_ci95": 485.0204882607537,
+        "manip_trades_per_ep": 36.36,
+        "trades_per_ep": 44.0,
+        "triggers_per_ep": 7.88,
+        "cancelled_per_ep": 7.88,
+        "blocked_per_ep": 140.0,
+        "suppression_pct": 82.84791033544106
+      },
+      "rule": {
+        "pnl_mean": 5655.358603272216,
+        "pnl_ci95": 656.6723084062407,
+        "manip_trades_per_ep": 75.92,
+        "trades_per_ep": 76.16,
+        "triggers_per_ep": 5.86,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 110.06,
+        "suppression_pct": 55.204799828111916
+      }
+    },
+    {
+      "source": "SCRIPTED-ATK",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 417.6047074746882,
+        "pnl_ci95": 956.0082880536861,
+        "manip_trades_per_ep": 29.36,
+        "trades_per_ep": 65.48,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -547.6600612490606,
+        "pnl_ci95": 594.379414972501,
+        "manip_trades_per_ep": 18.1,
+        "trades_per_ep": 64.0,
+        "triggers_per_ep": 2.62,
+        "cancelled_per_ep": 2.62,
+        "blocked_per_ep": 2.3,
+        "suppression_pct": 231.1431723461248
+      },
+      "rule": {
+        "pnl_mean": -944.7667112074291,
+        "pnl_ci95": 371.4716575035661,
+        "manip_trades_per_ep": 15.2,
+        "trades_per_ep": 64.58,
+        "triggers_per_ep": 4.78,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 5.38,
+        "suppression_pct": 326.2346890006486
+      }
+    },
+    {
+      "source": "LATEBURST-ATK",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 531.1127182921784,
+        "pnl_ci95": 674.1507818492653,
+        "manip_trades_per_ep": 26.46,
+        "trades_per_ep": 62.62,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -693.4161273429933,
+        "pnl_ci95": 723.3243360319391,
+        "manip_trades_per_ep": 19.9,
+        "trades_per_ep": 61.98,
+        "triggers_per_ep": 1.24,
+        "cancelled_per_ep": 1.24,
+        "blocked_per_ep": 0.24,
+        "suppression_pct": 230.5591268031973
+      },
+      "rule": {
+        "pnl_mean": -973.745374622646,
+        "pnl_ci95": 756.5689376600371,
+        "manip_trades_per_ep": 16.04,
+        "trades_per_ep": 60.1,
+        "triggers_per_ep": 2.58,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 2.1,
+        "suppression_pct": 283.3406245201163
+      }
+    },
+    {
+      "source": "HONEST",
+      "ticker": "MSFT",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "FLICKER",
+      "ticker": "MSFT",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -2480.6705619762574,
+        "pnl_ci95": 1025.6746107639017,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -3088.545997820407,
+        "pnl_ci95": 1246.8124177611544,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.32,
+        "cancelled_per_ep": 0.32,
+        "blocked_per_ep": 1.12,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -2045.0153834436926,
+        "pnl_ci95": 990.2303734124921,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 4.72,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 17.64,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "SCRIPTED-ATK",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 748.1878856049863,
+        "pnl_ci95": 633.6309741195932,
+        "manip_trades_per_ep": 30.04,
+        "trades_per_ep": 64.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -20.442807436626172,
+        "pnl_ci95": 525.208070960806,
+        "manip_trades_per_ep": 20.98,
+        "trades_per_ep": 63.04,
+        "triggers_per_ep": 2.42,
+        "cancelled_per_ep": 2.36,
+        "blocked_per_ep": 1.94,
+        "suppression_pct": 102.73230933431861
+      },
+      "rule": {
+        "pnl_mean": -1280.6692511892068,
+        "pnl_ci95": 613.3815733307765,
+        "manip_trades_per_ep": 15.22,
+        "trades_per_ep": 63.66,
+        "triggers_per_ep": 4.7,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 5.16,
+        "suppression_pct": 271.16947171012464
+      }
+    },
+    {
+      "source": "LATEBURST-ATK",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": -86.61329302041966,
+        "pnl_ci95": 1007.4038239955329,
+        "manip_trades_per_ep": 24.8,
+        "trades_per_ep": 60.82,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": 261.96763506553833,
+        "pnl_ci95": 621.6200951849809,
+        "manip_trades_per_ep": 21.26,
+        "trades_per_ep": 58.8,
+        "triggers_per_ep": 1.32,
+        "cancelled_per_ep": 1.3,
+        "blocked_per_ep": 0.28,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -85.7945768378413,
+        "pnl_ci95": 526.8044529779264,
+        "manip_trades_per_ep": 17.28,
+        "trades_per_ep": 59.14,
+        "triggers_per_ep": 2.74,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 2.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "HONEST",
+      "ticker": "INTC",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "FLICKER",
+      "ticker": "INTC",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -2093.516303566074,
+        "pnl_ci95": 1114.0149189590993,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -1882.590808318248,
+        "pnl_ci95": 1103.0448441990425,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.42,
+        "cancelled_per_ep": 0.42,
+        "blocked_per_ep": 1.6,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -1267.4530401005131,
+        "pnl_ci95": 676.6846913517928,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 4.74,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 18.8,
+        "suppression_pct": NaN
+      }
+    }
+  ],
+  "runtime_s": 107.9
+}
