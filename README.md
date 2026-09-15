@@ -134,7 +134,8 @@ python watchdog/multiseed_summary.py --tags main main_s2 main_s3
 `multiseed_summary.py` needs the LATEBURST-ATK data that `lateburst_test.py` saves. That test is seeded, so rerunning it regenerates the same data; it does not revisit the pre-registered verdict, which was fixed on its first run.
 
 What has been checked to reproduce exactly:
-- **`basic_eval.py`**: rerun from the committed checkpoints, all 479 numbers matched `results/basic_eval.json`.
+- **`basic_eval.py`, from a fresh clone of this repository** (committed code and checkpoints; raw LOBSTER data copied in rather than re-downloaded): all 479 numbers matched `results/basic_eval.json`. The same check in the working copy also matched.
+- **`scripts/calibrate.py`, in that fresh clone**: regenerated `configs/calibration.json` with no difference from the committed file.
 - **`evaluate_watchdog.py`**: rerun twice on the recorded dataset, all 282 numbers matched `results/watchdog_eval.json` each time.
 - **`dataset.py`**: two sources were regenerated and matched bit for bit.
 - **Everything else** uses fixed seeds but has not been re-run and compared.
