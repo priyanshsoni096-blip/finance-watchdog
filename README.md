@@ -87,6 +87,16 @@ python watchdog/evaluate_watchdog.py
 ```
 Scores the Watchdog and the rule-based baseline on the same recorded orders; writes `results/watchdog_eval.md` and `.json`. Order-level precision, recall, F1 and false-positive rate per bucket, plus how many steps each takes to flag. The rule can only fire on the cancel; the Watchdog can flag while the order still rests.
 
+```bash
+python watchdog/lateburst_test.py
+```
+The pre-registered clean held-out test: a new attacker defined before any of its data existed. **Run it once**; its procedure and hypothesis are fixed. Output: `results/lateburst_test.md` and `.json`.
+
+```bash
+python watchdog/multiseed_summary.py --tags main main_s2 main_s3
+```
+Scores every trained Watchdog seed on the same test, heldout and saved LATEBURST-ATK data. Reports each headline metric per seed, with its mean and a 95% Student-t CI, plus the seed-independent rule. Output: `results/multiseed.md` and `.json`. Train extra seeds with `python watchdog/train_watchdog.py --timesteps 400000 --norm-obs --ent-coef 0.01 --tag main_s2 --seed 11`.
+
 ### Reading `results/basic_eval.md`
 
 - **C1 table** — one row per agent run. Compare a trained Spoofer's PnL with HONEST and SCRIPTED-ATK on the same stock. "Trades against own spoof/ep" is the spoofing signature (spoof one side, trade the other). "PnL (spread·lots)" makes stocks comparable. Look at the CI: if it crosses zero, the profit isn't established.
@@ -118,6 +128,8 @@ watchdog/dataset.py               record frozen agents into train / test / heldo
 watchdog/watchdog_env.py          WatchdogEnv (flag/clear rewards), flag_episode, observation normalisation
 watchdog/train_watchdog.py        RecurrentPPO Watchdog training on the train split
 watchdog/evaluate_watchdog.py     Watchdog vs rule-based baseline on identical orders
+watchdog/lateburst_test.py        pre-registered clean held-out test (LATEBURST-ATK), run once
+watchdog/multiseed_summary.py     headline metrics across Watchdog training seeds with 95% CIs
 
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
@@ -126,7 +138,7 @@ scripts/feature_signal_check.py   diagnostic: can a simple supervised model sepa
 tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
-results/                          basic_eval.{md,json}, watchdog_eval.{md,json}
+results/                          basic_eval, watchdog_eval, lateburst_test, multiseed (.md and .json each)
 ```
 
 ### Agent roster
