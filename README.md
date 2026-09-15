@@ -177,6 +177,11 @@ Each was driven by a measurement.
     | AAPL | loses | loses (every setting) | loses |
 
   - So the Spoofers' failure is an exploration and credit-assignment problem, not a missing opportunity. Random trading early in training cost about $13.6k per episode on INTC, and the default entropy bonus is 0, so the policy settled on not trading before it found the delayed payoff.
+- **Basic eval on the v3 Spoofers (20 episodes per run):**
+  - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
+  - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).
+  - All three replayed exploit policies lose on average (−$6.9k to −$24.3k), so the fixes hold.
+- **The scripted attacker now waits 30–80 market events before trading.** Over 6 episodes at 1 event per step: INTC **+$2,827** (100% of episodes profitable), MSFT **+$2,145** (83%), AAPL −$584 (0%).
 - **Profit is not guaranteed to come from manipulation.** Checking where PnL comes from (spoof gain vs spread cost vs self-impact) turned out to be essential; headline PnL alone hid an env bug twice.
 
 ## Open issues (to decide before the Watchdog)
