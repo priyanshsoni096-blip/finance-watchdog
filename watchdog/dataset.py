@@ -121,7 +121,9 @@ def load_split(split: str, data_dir: Path = DATA_DIR) -> dict[str, dict]:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--episodes", type=int, default=30, help="train episodes per source; test/heldout use a third (min 10)")
+    # Episodes are 200 agent steps (2,000 events at 10 events/step), so 150 train episodes give each source
+    # ~30,000 Watchdog steps. Test/heldout use a third (min 10).
+    p.add_argument("--episodes", type=int, default=150, help="train episodes per source; test/heldout use a third (min 10)")
     p.add_argument("--eval-episodes", type=int, default=None, help="override test/heldout episodes per source")
     p.add_argument("--tag", default="main")
     p.add_argument("--splits", nargs="*", default=["train", "test", "heldout"])

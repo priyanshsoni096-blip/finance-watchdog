@@ -1,7 +1,7 @@
 """Train the WATCHDOG (RecurrentPPO, LSTM policy) on recorded trajectories of the frozen agent pool.
 
 Usage:
-    python watchdog/dataset.py --episodes 30              # build data first
+    python watchdog/dataset.py --episodes 150             # build data first
     python watchdog/train_watchdog.py --timesteps 400000
 
 Uses only the `train` split (never SPOOFER-05, SCRIPTED-ATK or any AMZN source).

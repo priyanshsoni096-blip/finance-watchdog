@@ -73,7 +73,7 @@ Use `--episodes 5` for a quick look. Spoofers without a checkpoint are skipped w
 Run these after the Spoofers are trained, in order.
 
 ```bash
-python watchdog/dataset.py --episodes 30
+python watchdog/dataset.py --episodes 150
 ```
 Rolls out every frozen agent once and saves what surveillance can see into `data/watchdog/{train,test,heldout}/`: 40 book features plus 6 features of the watched trader's own orders, with hindsight labels per step. SPOOFER-05, SCRIPTED-ATK and every AMZN source go only into `heldout`.
 
