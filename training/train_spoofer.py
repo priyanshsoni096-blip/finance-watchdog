@@ -129,12 +129,21 @@ def main() -> int:
     # measured on 12k steps: 1 thread 39.3 s, 2 threads 34.7 s, 4 threads 35.3 s. 2 lets two
     # Spoofers train in parallel on this 4-core laptop without slowing each other.
     p.add_argument("--threads", type=int, default=2)
+    # Exploration / credit-assignment knobs. On the v3 env every Spoofer converged to never trading,
+    # although a scripted "spoof, wait ~50 events, trade, cancel" policy earns ~$4k/episode on
+    # MSFT/INTC; defaults reproduce the original settings.
+    p.add_argument("--ent-coef", type=float, default=0.0)
+    p.add_argument("--gamma", type=float, default=0.99)
+    p.add_argument("--events-per-step", type=int, default=1)
+    p.add_argument("--episode-len", type=int, default=None, help="agent steps; default keeps 2000 events")
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
     spec = AGENTS[args.agent]
     seed = spec["seed"] if args.seed is None else args.seed
-    cfg = EnvConfig(ticker=spec["ticker"], **spec["cfg"])
+    episode_len = args.episode_len if args.episode_len is not None else 2000 // args.events_per_step
+    cfg = EnvConfig(ticker=spec["ticker"], events_per_step=args.events_per_step, episode_len=episode_len,
+                    **spec["cfg"])
     day = load_day(cfg.ticker)
     stats = reference_stats(day)
 
@@ -149,10 +158,12 @@ def main() -> int:
     out = ROOT / "checkpoints" / args.agent / args.tag
     out.mkdir(parents=True, exist_ok=True)
     (out / "config.txt").write_text(f"agent={args.agent}\nseed={seed}\nenv={asdict(cfg)}\n"
-                                    f"lambda={vec.envs[0].impact.lam}\n")
+                                    f"lambda={vec.envs[0].impact.lam}\nent_coef={args.ent_coef}\n"
+                                    f"gamma={args.gamma}\n")
 
     n_steps = 4000 // args.n_envs  # train_batch_size = 4000 (handoff §5.3)
-    model = PPO("MlpPolicy", vec, learning_rate=1e-4, n_steps=n_steps, batch_size=128, gamma=0.99,
+    model = PPO("MlpPolicy", vec, learning_rate=1e-4, n_steps=n_steps, batch_size=128, gamma=args.gamma,
+                ent_coef=args.ent_coef,
                 policy_kwargs=dict(net_arch=[256, 256], activation_fn=torch.nn.ReLU),
                 seed=seed, verbose=0, device="cpu")
     model.learn(total_timesteps=args.timesteps, callback=BehaviourLog(out / "progress.csv"))

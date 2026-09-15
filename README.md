@@ -167,6 +167,16 @@ Each was driven by a measurement.
 ## Findings so far
 
 - **First training round (before fixes 7 and 10):** SPOOFER-01 (AAPL) converged to never trading — PnL and reward exactly 0, spoofs placed and cancelled after a median of 3 steps. On AAPL the calibrated spoof shift ($0.068) is smaller than half the spread ($0.075), so spoofing can't pay. SPOOFER-04 (INTC) found the free-accumulation exploit described in change 10.
+- **Third training round (after change 11, 600k steps): every Spoofer converged to never trading.** Market buys and sells were ≤0.2% of actions, and final PnL ranged from −$0.38 to −$302 per episode.
+  - **Profitable spoofing still exists in this env.** A scripted probe (spoof, wait W events, trade k lots on the other side, cancel, unwind; 6 episodes per setting) found:
+
+    | Stock | Wait 0 | Wait 50 | Wait 200 |
+    |---|---|---|---|
+    | INTC | loses on every run | **+$3,980** (5 lots, 83% profitable) | break-even |
+    | MSFT | loses on every run | **+$4,043** (3 lots, 100% profitable) | break-even |
+    | AAPL | loses | loses (every setting) | loses |
+
+  - So the Spoofers' failure is an exploration and credit-assignment problem, not a missing opportunity. Random trading early in training cost about $13.6k per episode on INTC, and the default entropy bonus is 0, so the policy settled on not trading before it found the delayed payoff.
 - **Profit is not guaranteed to come from manipulation.** Checking where PnL comes from (spoof gain vs spread cost vs self-impact) turned out to be essential; headline PnL alone hid an env bug twice.
 
 ## Open issues (to decide before the Watchdog)
