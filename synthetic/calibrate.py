@@ -34,11 +34,19 @@ from synthetic.simulator import MarketParams, SyntheticMarket  # noqa: E402
 
 TARGET_TICKERS = ("MSFT", "INTC")
 KEYS = ("spread_ticks", "mid_change_share", "range_2000_ticks", "touch_depth", "cancel_share", "exec_share")
+# A first grid (cancel_hazard 0.002-0.005, market-size log-sd fixed at 1.2, depth geom p 0.25-0.5, p_follower
+# 0.05/0.15; 36 settings) gave a near-frozen mid: mid-change share was 0 in 32 settings and at most 6.7e-5 in the
+# other 4 (real MSFT/INTC: 4.8e-3), and the median 2,000-event mid range was 0 ticks in all 36, even where touch
+# depth was near the real ~13,500 shares. With a 1-tick spread, thin-tailed market orders almost never clear
+# the touch.
+# Real markets clear it with occasional large sweeps, so this grid adds heavier market-order size tails, higher
+# cancel hazards and thinner touch queues. p_follower made no measurable difference and is fixed.
 GRID = {
-    "cancel_hazard": (0.002, 0.0035, 0.005),
-    "noise_p_market": (0.04, 0.07),
-    "noise_depth_geom_p": (0.25, 0.35, 0.5),
-    "p_follower": (0.05, 0.15),
+    "cancel_hazard": (0.0035, 0.006, 0.01),
+    "noise_p_market": (0.05, 0.08),
+    "noise_depth_geom_p": (0.15, 0.25, 0.35),
+    "market_size_log_sd": (1.2, 1.8, 2.4),
+    "p_follower": (0.1,),
 }
 SEEDS = (1, 2)
 OUT = ROOT / "configs" / "synthetic_calibration.json"
