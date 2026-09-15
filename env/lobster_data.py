@@ -13,6 +13,7 @@ Parsed arrays are cached as .npy under data/cache/ because the CSVs take tens of
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 import numpy as np
@@ -49,11 +50,13 @@ class LobsterDay:
     def __len__(self) -> int:
         return len(self.time)
 
-    @property
+    # cached: the env reads these once per step, and recomputing a full-day array each time
+    # made a step cost ~6 ms (measured with cProfile on GOOG)
+    @cached_property
     def mid(self) -> np.ndarray:
         return (self.ask_price[:, 0] + self.bid_price[:, 0]) / 2.0
 
-    @property
+    @cached_property
     def spread(self) -> np.ndarray:
         return self.ask_price[:, 0] - self.bid_price[:, 0]
 

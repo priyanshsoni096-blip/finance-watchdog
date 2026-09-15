@@ -1,0 +1,158 @@
+from functools import lru_cache
+
+import numpy as np
+import pytest
+from gymnasium.utils.env_checker import check_env
+
+from env.lob_env import (BUY, CANCEL, NOOP, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig,
+                         LimitOrderBookEnv)
+from env.normalization import reference_stats
+
+TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
+
+
+@lru_cache(maxsize=None)
+def _stats(ticker):
+    from tests.conftest import _day
+    return reference_stats(_day(ticker))
+
+
+@pytest.fixture
+def make(day):
+    def build(ticker="INTC", **kw):
+        d = day(ticker)
+        return LimitOrderBookEnv(EnvConfig(ticker=ticker, **kw), day=d, stats=_stats(ticker))
+    return build
+
+
+def _quiet_start(env, horizon=60):
+    """A start index where no resting spoof at the touch would be run over within `horizon` events."""
+    d = env.day
+    for t in range(env.cfg.warmup, env._last_start, 997):
+        w = slice(t + 1, t + horizon + 1)
+        if (np.nanmin(d.ask_price[w, 0]) > d.bid_price[t, 0]
+                and np.nanmax(d.bid_price[w, 0]) < d.ask_price[t, 0]
+                and np.isfinite(d.mid[t:t + horizon + 1]).all()):
+            return t
+    raise AssertionError("no quiet window found")
+
+
+def _run(env, start, actions):
+    env.reset(options={"start": start})
+    total, infos = 0.0, []
+    for a in actions:
+        _, r, term, trunc, info = env.step(a)
+        total += r
+        infos.append(info)
+        assert not term
+    return total, infos
+
+
+def test_check_env(make):
+    check_env(make("GOOG", episode_len=50), skip_render_check=True)
+
+
+def test_spaces(make):
+    env = make("AAPL")
+    assert env.observation_space.shape == (43,)
+    assert env.action_space.n == 6
+
+
+def test_spoof_visible_in_observation(make):
+    env = make("INTC")
+    start = _quiet_start(env)
+    obs0, _ = env.reset(options={"start": start})
+    obs1, *_ = env.step(SPOOF_BUY)
+    env2 = make("INTC")
+    env2.reset(options={"start": start})
+    obs_noop, *_ = env2.step(NOOP)
+    # best bid size feature (index 3) must be larger with the spoof resting
+    assert obs1[3] > obs_noop[3]
+    assert obs1[42] > 0 and obs_noop[42] == 0
+
+
+@pytest.mark.parametrize("ticker", ["AAPL", "INTC"])
+def test_holding_through_spoof_earns_nothing_extra(make, ticker):
+    """Reward-hack guard: long + spoof buy + hold + cancel, no trade at the distorted price,
+    must produce exactly the same reward stream with impact on as with impact off."""
+    on, off = make(ticker), make(ticker, impact_lambda=0.0)
+    start = _quiet_start(on)
+    actions = [BUY, SPOOF_BUY] + [NOOP] * 30 + [CANCEL, NOOP]
+    r_on, i_on = _run(on, start, actions)
+    r_off, i_off = _run(off, start, actions)
+    assert max(abs(i["impact_shift"]) for i in i_on) > 0, "impact never engaged"
+    assert all(not i["run_over"] for i in i_on)
+    assert r_on == pytest.approx(r_off, abs=1e-9)
+
+
+@pytest.mark.parametrize("ticker", ["AAPL", "INTC"])
+def test_spoof_then_trade_is_profitable_only_with_impact(make, ticker):
+    on, off = make(ticker), make(ticker, impact_lambda=0.0)
+    start = _quiet_start(on)
+    actions = [SPOOF_BUY, NOOP, SELL, CANCEL, NOOP, BUY, NOOP]
+    _, i_on = _run(on, start, actions)
+    _, i_off = _run(off, start, actions)
+    gain = i_on[-1]["pnl"] - i_off[-1]["pnl"]
+    shift_at_sell = i_on[1]["impact_shift"]  # shift in force at the step where SELL executes
+    print(f"{ticker}: extra PnL from spoof-then-sell = ${gain:.2f}; shift at sell = {shift_at_sell:.4f}")
+    assert shift_at_sell > 0
+    assert gain == pytest.approx(on.cfg.lot * shift_at_sell)
+    assert gain > 0
+
+
+def test_run_over_fills_resting_spoof(make):
+    env = make("INTC")
+    d = env.day
+    # find a real moment where the best ask later falls to the current best bid
+    for t in range(env.cfg.warmup, env._last_start, 53):
+        w = d.ask_price[t + 1:t + 400, 0]
+        hit = np.flatnonzero(w <= d.bid_price[t, 0])
+        if hit.size and np.isfinite(d.mid[t:t + hit[0] + 2]).all():
+            break
+    else:
+        pytest.fail("no ask-through-bid move found")
+    env.reset(options={"start": t})
+    env.step(SPOOF_BUY)
+    size = env.spoofs[0].size
+    filled = None
+    for _ in range(hit[0] + 1):
+        *_, info = env.step(NOOP)
+        if info["run_over"]:
+            filled = info
+            break
+    assert filled is not None
+    assert env.inventory == size
+    assert env.spoofs == []
+
+
+def test_bid_only_constraint(make):
+    env = make("GOOG", bid_only=True)
+    env.reset(options={"start": _quiet_start(env)})
+    env.step(SPOOF_SELL)
+    assert env.spoofs == []
+    env.step(SPOOF_BUY)
+    assert len(env.spoofs) == 1
+
+
+def test_inventory_limit_on_market_orders(make):
+    env = make("MSFT", max_inventory_lots=2)
+    env.reset(options={"start": _quiet_start(env)})
+    for _ in range(5):
+        env.step(BUY)
+    assert env.inventory == 2 * env.cfg.lot
+
+
+@pytest.mark.parametrize("ticker", TICKERS)
+def test_random_rollout_finite(make, ticker):
+    env = make(ticker)
+    obs, _ = env.reset(seed=0)
+    rewards = []
+    for _ in range(10_000):
+        obs, r, term, trunc, _ = env.step(env.action_space.sample())
+        assert np.isfinite(obs).all() and np.isfinite(r)
+        assert env.observation_space.contains(obs)
+        rewards.append(r)
+        if term or trunc:
+            obs, _ = env.reset()
+    print(f"{ticker}: random-policy reward mean={np.mean(rewards):.4f} p1={np.percentile(rewards, 1):.3f} "
+          f"p99={np.percentile(rewards, 99):.3f}")
