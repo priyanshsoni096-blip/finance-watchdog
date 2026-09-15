@@ -242,7 +242,16 @@ Each was driven by a measurement.
   | Flag rate | 0.005–0.028 | 0.001 | 0.000 (recall 0.000 at the end) |
 
   - Suspected cause: input scale. Book price features sit near ±20, while the participant features that carry the signal are 0–5. The logistic-regression diagnostic standardised its inputs; the Watchdog did not.
-  - Next test: observation normalisation (`--norm-obs`), with false-positive cost −2 and −1.
+- **Observation normalisation fixes it; the asymmetric false-positive cost was not the cause.** Three runs, 150k steps each, entropy 0.01. Metrics are over the last five training rollouts that contained positives:
+
+  | Run | Inputs | FP cost | Precision | Recall | FPR |
+  |---|---|---|---|---|---|
+  | norm_fp2 | normalised | −2 | 0.92–1.00 | 0.27–0.73 | ≤0.003 |
+  | norm_fp1 | normalised | −1 | 0.70–1.00 | 0.20–0.72 | ≤0.010 |
+  | raw_fp1 | raw | −1 | collapsed | 0.000 | ~0 |
+
+  - The raw-input run still collapsed at the milder −1 cost, so the input scale is what blocked learning.
+  - The Watchdog is trained with normalised observations, FP cost −2 (the design) and entropy 0.01. The setting was chosen on training-rollout metrics only; the test and heldout splits stay unseen.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
