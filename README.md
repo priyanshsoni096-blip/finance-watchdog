@@ -268,6 +268,30 @@ Each was driven by a measurement.
 
   - The raw-input run still collapsed at the milder −1 cost, so the input scale is what blocked learning.
   - The Watchdog is trained with normalised observations, FP cost −2 (the design) and entropy 0.01. The setting was chosen on training-rollout metrics only; the test and heldout splits stay unseen.
+- **Final Watchdog (400k steps) vs rule-based baseline, scored on identical orders (`results/watchdog_eval.md`).**
+  - The rule is tuned on the train split: size ≥ 2× depth, cancelled within 1,000 events.
+  - Training ended with precision 0.94–0.99 (one rollout at 0.66), recall 0.68–1.00 and FPR ≤ 0.022 over the last 8 rollouts.
+
+  Order level:
+
+  | Bucket | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR | Median delay (steps), Watchdog / rule |
+  |---|---|---|---|
+  | In-distribution (test split) | **0.75 / 0.80 / 0.77 / 0.07** | 0.22 / 0.94 / 0.35 / 0.92 | **0** / 8 |
+  | Held-out SPOOFER-05 + AMZN (all legitimate) | FPR **0.01** | FPR 0.97 | — |
+  | Legitimate only (HONEST + FLICKER) | FPR **0.04** | FPR 0.82 | — |
+  | Held-out scripted attacker, train stocks | 0.83 / **0.25** / 0.38 / 0.04 | 0.51 / **0.94** / 0.66 / 0.77 | 6 / 11 |
+  | Held-out scripted attacker, AMZN | 0.73 / **0.15** / 0.26 / 0.05 | 0.50 / **0.95** / 0.65 / 0.81 | 8 / 11 |
+
+  - Step level on the test split: precision 0.95, recall 0.86, FPR 0.006.
+  - Legitimate episodes with any flag: FLICKER 22–40%, HONEST 0–4%.
+
+## Where the three claims stand
+
+1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from.
+2. **The Watchdog generalises to attacks it hasn't seen — not shown.** It catches 15–25% of the held-out scripted attacker's manipulative orders, against the rule's 94–95%. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+3. **The Watchdog doesn't flag legitimate activity — shown, in simulation.** It wrongly flags 1–7% of legitimate large orders, against the rule's 77–97%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
+
+Headline comparison: in-distribution F1 **0.77 vs 0.35**; false-positive rate on legitimate orders **0.04 vs 0.82**; recall on unseen structure **0.15–0.25 vs 0.94–0.95**.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
