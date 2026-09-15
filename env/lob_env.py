@@ -9,7 +9,10 @@ Observation (Box(43), float32): 40 normalized book features (spread units / log 
 resting spoofs added to the displayed size at their price level) + 3 agent features.
 
 Economics:
-  * Market orders fill at the IMPACTED touch: historical ask/bid + impact shift from resting spoofs.
+  * Market orders fill at the IMPACTED touch: historical ask/bid + impact shift from resting spoofs
+    + self-impact of the agent's own cumulative signed market-order volume (same calibrated lambda,
+    no decay within an episode; each order pays the average impact of walking through its own size).
+    Without self-impact a trained agent bought ~20x touch depth at a spoof-depressed price for free.
   * Inventory is marked to the UNIMPACTED historical mid. Holding a position while a spoof rests
     therefore earns nothing; profit requires actually trading at the distorted price.
   * A resting spoof buy is run over (filled at its price) when the historical best ask falls to
@@ -115,6 +118,12 @@ class LimitOrderBookEnv(gym.Env):
         t = self.t if t is None else t
         return self.impact.shift(self._net_resting(), self.stats.touch_depth[t], self.stats.ref_spread[t])
 
+    def self_shift(self, volume: float | None = None, t: int | None = None) -> float:
+        """Price shift from the agent's own signed market-order volume (buys positive)."""
+        t = self.t if t is None else t
+        v = self.volume if volume is None else volume
+        return self.impact.shift(v, self.stats.touch_depth[t], self.stats.ref_spread[t])
+
     def mark_mid(self, t: int | None = None) -> float:
         """Unimpacted historical mid used to value inventory."""
         t = self.t if t is None else t
@@ -149,6 +158,8 @@ class LimitOrderBookEnv(gym.Env):
             "cash": self.cash,
             "spoofing_active": self.spoofing_active,
             "impact_shift": self.impact_shift(),
+            "self_shift": self.self_shift(),
+            "trade_price": self._last_trade,
             "run_over": list(fills),
         }
 
@@ -167,6 +178,8 @@ class LimitOrderBookEnv(gym.Env):
         self.inventory = 0
         self.cash = 0.0
         self.spoofs: list[Spoof] = []
+        self.volume = 0.0          # signed shares traded by the agent's market orders this episode
+        self._last_trade = None
         self._prev_pnl = 0.0
         return self._obs(), self._info()
 
@@ -176,12 +189,19 @@ class LimitOrderBookEnv(gym.Env):
         shift = self.impact_shift(t)
 
         lot = self.lot
+        self._last_trade = None
         if action == BUY and self.inventory + lot <= self.max_inventory:
+            price = d.ask_price[t, 0] + shift + self.self_shift(self.volume + lot / 2, t)
             self.inventory += lot
-            self.cash -= lot * (d.ask_price[t, 0] + shift)
+            self.volume += lot
+            self.cash -= lot * price
+            self._last_trade = float(price)
         elif action == SELL and self.inventory - lot >= -self.max_inventory:
+            price = d.bid_price[t, 0] + shift + self.self_shift(self.volume - lot / 2, t)
             self.inventory -= lot
-            self.cash += lot * (d.bid_price[t, 0] + shift)
+            self.volume -= lot
+            self.cash += lot * price
+            self._last_trade = float(price)
         elif action in (SPOOF_BUY, SPOOF_SELL):
             side = 1 if action == SPOOF_BUY else -1
             allowed = not (cfg.bid_only and side < 0)
@@ -224,9 +244,12 @@ class LimitOrderBookEnv(gym.Env):
         if self.inventory == 0:
             return {}
         t, d = self.t, self.day
-        price = d.bid_price[t, 0] if self.inventory > 0 else d.ask_price[t, 0]
         qty = self.inventory
+        touch = d.bid_price[t, 0] if qty > 0 else d.ask_price[t, 0]
+        # unwinding is a market order too: it pays the average self-impact of trading -qty shares
+        price = touch + self.self_shift(self.volume - qty / 2, t)
         self.cash += qty * price
+        self.volume -= qty
         self.inventory = 0
         return {"qty": qty, "price": float(price)}
 

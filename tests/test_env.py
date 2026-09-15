@@ -74,15 +74,16 @@ def test_spoof_visible_in_observation(make):
 @pytest.mark.parametrize("ticker", ["AAPL", "INTC"])
 def test_holding_through_spoof_earns_nothing_extra(make, ticker):
     """Reward-hack guard: long + spoof buy + hold + cancel, no trade at the distorted price,
-    must produce exactly the same reward stream with impact on as with impact off."""
-    on, off = make(ticker), make(ticker, impact_lambda=0.0)
-    start = _quiet_start(on)
-    actions = [BUY, SPOOF_BUY] + [NOOP] * 30 + [CANCEL, NOOP]
-    r_on, i_on = _run(on, start, actions)
-    r_off, i_off = _run(off, start, actions)
-    assert max(abs(i["impact_shift"]) for i in i_on) > 0, "impact never engaged"
-    assert all(not i["run_over"] for i in i_on)
-    assert r_on == pytest.approx(r_off, abs=1e-9)
+    must produce exactly the same reward stream as the same sequence without the spoof."""
+    a, b = make(ticker), make(ticker)
+    start = _quiet_start(a)
+    with_spoof = [BUY, SPOOF_BUY] + [NOOP] * 30 + [CANCEL, NOOP]
+    without = [BUY, NOOP] + [NOOP] * 30 + [NOOP, NOOP]
+    r_a, i_a = _run(a, start, with_spoof)
+    r_b, _ = _run(b, start, without)
+    assert max(abs(i["impact_shift"]) for i in i_a) > 0, "impact never engaged"
+    assert all(not i["run_over"] for i in i_a)
+    assert r_a == pytest.approx(r_b, abs=1e-9)
 
 
 @pytest.mark.parametrize("ticker", ["AAPL", "INTC"])
@@ -96,8 +97,39 @@ def test_spoof_then_trade_is_profitable_only_with_impact(make, ticker):
     shift_at_sell = i_on[1]["impact_shift"]  # shift in force at the step where SELL executes
     print(f"{ticker}: extra PnL from spoof-then-sell = ${gain:.2f}; shift at sell = {shift_at_sell:.4f}")
     assert shift_at_sell > 0
-    assert gain == pytest.approx(on.lot * shift_at_sell)
+    # self-impact of the sell and the later buy-back cancel up to intraday depth/spread drift
+    assert gain == pytest.approx(on.lot * shift_at_sell, rel=0.05)
     assert gain > 0
+
+
+def test_self_impact_closes_unlimited_buying_under_spoof(make):
+    """Regression for the exploit SPOOFER-04 found: spoof sell, then buy repeatedly at the depressed
+    price. Once bought volume reaches the spoof size, self-impact cancels the spoof shift, so every
+    further buy fills at or above the historical ask."""
+    env = make("INTC")
+    env.reset(options={"start": _quiet_start(env)})
+    env.step(SPOOF_SELL)
+    spoof = env.spoofs[0].size
+    checked = 0
+    for _ in range(env.cfg.max_inventory_lots):
+        t = env.t
+        *_, info = env.step(BUY)
+        if info["trade_price"] is None or not env.spoofs:
+            break
+        if env.volume > spoof:  # this buy started at or beyond the spoof size
+            assert info["trade_price"] >= env.day.ask_price[t, 0] - 1e-9
+            checked += 1
+    assert checked > 0
+
+
+def test_one_sided_trading_without_spoof_loses(make):
+    env = make("MSFT")
+    env.reset(options={"start": _quiet_start(env)})
+    for _ in range(20):
+        env.step(BUY)
+    for _ in range(20):
+        env.step(SELL)
+    assert env.pnl() < 0
 
 
 def test_run_over_fills_resting_spoof(make):
