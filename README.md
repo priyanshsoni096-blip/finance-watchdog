@@ -136,8 +136,8 @@ python watchdog/multiseed_summary.py --tags main main_s2 main_s3
 What has been checked to reproduce exactly:
 - **`basic_eval.py`, from a fresh clone of this repository** (committed code and checkpoints; raw LOBSTER data copied in rather than re-downloaded): all 479 numbers matched `results/basic_eval.json`. The same check in the working copy also matched.
 - **`scripts/calibrate.py`, in that fresh clone**: regenerated `configs/calibration.json` with no difference from the committed file.
-- **`evaluate_watchdog.py`**: rerun twice on the recorded dataset, all 282 numbers matched `results/watchdog_eval.json` each time.
-- **`dataset.py`**: two sources were regenerated and matched bit for bit.
+- **`dataset.py`, in that fresh clone**: the full Watchdog dataset was regenerated (131 s). All 32 source files (12 train, 12 test, 8 heldout) matched the original dataset bit for bit.
+- **`evaluate_watchdog.py`, in that fresh clone** (on the regenerated dataset and the committed Watchdog): all 282 numbers matched `results/watchdog_eval.json`. It had also matched twice in the working copy.
 - **Everything else** uses fixed seeds but has not been re-run and compared.
 
 ```bash
