@@ -37,6 +37,19 @@ from watchdog.watchdog_env import flag_episode, load_obs_norm  # noqa: E402
 
 TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
 
+# (bucket name, predicate over (split, source name)); shared with watchdog/multiseed_summary.py
+BUCKETS = [
+    ("In-distribution (test split)", lambda sp, n: sp == "test"),
+    ("Held-out RL: SPOOFER-05 + AMZN controls",
+     lambda sp, n: sp == "heldout" and n.endswith("_AMZN") and not n.startswith("SCRIPTED")),
+    ("Scripted attacker, train stocks + FLICKER",
+     lambda sp, n: (sp == "heldout" and n.startswith("SCRIPTED") and not n.endswith("_AMZN"))
+     or (sp == "test" and n.startswith("FLICKER"))),
+    ("Scripted attacker, AMZN + AMZN controls",
+     lambda sp, n: sp == "heldout" and n.endswith("_AMZN") and not n.startswith("SPOOFER")),
+    ("Legitimate only (HONEST + FLICKER)", lambda sp, n: n.startswith(("HONEST", "FLICKER"))),
+]
+
 
 def order_flags(orders: list[tuple[int, OrderRecord]], flags_by_ep: list[np.ndarray]) -> tuple[list[bool], list[float]]:
     """Watchdog order-level decisions and detection delays (NaN when never flagged)."""
@@ -124,17 +137,7 @@ def main() -> int:
             scored[(split, name)] = score_source(model, src, det, obs_norm)
             print(f"[{time.time() - t0:5.0f}s] scored {split}/{name}", flush=True)
 
-    def pick(pred):
-        return [v for k, v in scored.items() if pred(*k)]
-
-    buckets = {
-        "In-distribution (test split)": pick(lambda sp, n: sp == "test"),
-        "Held-out RL: SPOOFER-05 + AMZN controls": pick(lambda sp, n: sp == "heldout" and n.endswith("_AMZN") and not n.startswith("SCRIPTED")),
-        "Scripted attacker, train stocks + FLICKER": pick(lambda sp, n: (sp == "heldout" and n.startswith("SCRIPTED") and not n.endswith("_AMZN"))
-                                                         or (sp == "test" and n.startswith("FLICKER"))),
-        "Scripted attacker, AMZN + AMZN controls": pick(lambda sp, n: sp == "heldout" and n.endswith("_AMZN") and not n.startswith("SPOOFER")),
-        "Legitimate only (HONEST + FLICKER)": pick(lambda sp, n: n.startswith(("HONEST", "FLICKER"))),
-    }
+    buckets = {name: [v for k, v in scored.items() if pred(*k)] for name, pred in BUCKETS}
     bucket_rows = {name: combine(v) for name, v in buckets.items() if v}
     sources = {f"{sp}/{n}": {"steps": int(len(s["step_labels"])), "positive_rate": float(np.mean(s["step_labels"])),
                              "watchdog_flag_rate": float(np.mean(s["step_flags"])),
