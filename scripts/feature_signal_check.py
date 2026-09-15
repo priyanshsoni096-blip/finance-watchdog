@@ -52,6 +52,27 @@ def stack(split: str, pred=lambda name: True, cols=slice(None)):
     return np.vstack([windowed(data[n], cols) for n in names]), np.concatenate([data[n]["y"] for n in names])
 
 
+def ranking_scores(score: np.ndarray, y: np.ndarray) -> tuple[float, float]:
+    """Threshold-free (ROC AUC, average precision); NaN when only one class is present."""
+    y = y.astype(bool)
+    n_pos, n_neg = int(y.sum()), int((~y).sum())
+    if n_pos == 0 or n_neg == 0:
+        return float("nan"), float("nan")
+    order = np.argsort(score, kind="mergesort")
+    ranks = np.empty(len(score), dtype=np.float64)
+    sorted_scores = score[order]
+    # average ranks over ties so equal scores count half
+    _, first, counts = np.unique(sorted_scores, return_index=True, return_counts=True)
+    avg = first + (counts - 1) / 2.0 + 1.0
+    ranks[order] = np.repeat(avg, counts)
+    auc = (ranks[y].sum() - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+    desc = np.argsort(-score, kind="mergesort")
+    hits = y[desc]
+    precision_at_k = np.cumsum(hits) / np.arange(1, len(hits) + 1)
+    ap = float(precision_at_k[hits].sum() / n_pos)
+    return float(auc), ap
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--features", choices=["all", "participant"], default="all")
@@ -91,6 +112,10 @@ def main() -> int:
     ]
     # per source, so sparse spoofing (SPOOFER-03 GOOG, scripted attacker) is not hidden inside a pooled bucket
     buckets += [(f"test: {s}", "test", lambda n, s=s: n.startswith(s)) for s in ("SPOOFER-02", "SPOOFER-03", "SPOOFER-04")]
+    # each Spoofer's steps pooled with every legitimate test step, so AUC / AP see both classes
+    legit = ("HONEST", "FLICKER", "SPOOFER-01")
+    buckets += [(f"test: {s} + legitimate", "test", lambda n, s=s: n.startswith((s,) + legit))
+                for s in ("SPOOFER-02", "SPOOFER-03", "SPOOFER-04")]
     buckets += [(f"heldout: SCRIPTED-ATK_{t}", "heldout", lambda n, t=t: n == f"SCRIPTED-ATK_{t}")
                 for t in ("AAPL", "MSFT", "GOOG", "INTC", "AMZN")]
     for label, split, pred in buckets:
@@ -99,13 +124,15 @@ def main() -> int:
         Xs, ys = stack(split, pred, cols)
         if Xs is None:
             continue
-        p = (torch.sigmoid(torch.tensor((Xs - mu) / sd) @ w + b) > 0.5).detach().numpy()
+        score = torch.sigmoid(torch.tensor((Xs - mu) / sd) @ w + b).detach().numpy()
+        p = score > 0.5
         tp, fp = np.sum(p & ys), np.sum(p & ~ys)
         fn, tn = np.sum(~p & ys), np.sum(~p & ~ys)
         precision = tp / (tp + fp) if tp + fp else float("nan")
         recall = tp / (tp + fn) if tp + fn else float("nan")
+        auc, ap = ranking_scores(score, ys)
         print(f"{label:44s} steps={len(ys):7d} positive={ys.mean():.3f} precision={precision:.2f} "
-              f"recall={recall:.2f} fpr={fp / max(fp + tn, 1):.3f}")
+              f"recall={recall:.2f} fpr={fp / max(fp + tn, 1):.3f} auc={auc:.3f} ap={ap:.3f}")
     return 0
 
 
