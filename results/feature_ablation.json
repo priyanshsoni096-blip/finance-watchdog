@@ -1,0 +1,116 @@
+{
+  "watchdog": "checkpoints\\WATCHDOG\\main\\model.zip",
+  "fill": "training mean (0 after normalisation)",
+  "groups": {
+    "book price offsets (all levels)": 20,
+    "book sizes (all levels)": 20,
+    "best level only (4)": 4,
+    "all book features (40)": 40,
+    "participant: resting size": 1,
+    "participant: oldest order age": 1,
+    "participant: placed this step": 1,
+    "participant: cancelled this step": 1,
+    "participant: trade direction": 1,
+    "participant: resting side imbalance": 1,
+    "all participant features (6)": 6
+  },
+  "results": {
+    "none": {
+      "order F1": 0.7718857860056481,
+      "order recall": 0.7971484121840571,
+      "order precision": 0.7481751824817519,
+      "step recall": 0.8645063483039606,
+      "step precision": 0.9530640668523677,
+      "legitimate order FPR": 0.04349838037945396
+    },
+    "book price offsets (all levels)": {
+      "order F1": 0.5412810070344317,
+      "order recall": 0.9475048606610499,
+      "order precision": 0.3788546255506608,
+      "step recall": 0.9237571852694081,
+      "step precision": 0.5799722387467777,
+      "legitimate order FPR": 0.5548357242017584
+    },
+    "book sizes (all levels)": {
+      "order F1": 0.8207448659937348,
+      "order recall": 0.7640959170447181,
+      "order precision": 0.8864661654135338,
+      "step recall": 0.8045606720990461,
+      "step precision": 0.9892815533980582,
+      "legitimate order FPR": 0.006015733456732994
+    },
+    "best level only (4)": {
+      "order F1": 0.7812713602187287,
+      "order recall": 0.7407647440051847,
+      "order precision": 0.8264642082429501,
+      "step recall": 0.7552902533004864,
+      "step precision": 0.9744112134300383,
+      "legitimate order FPR": 0.025451180009254976
+    },
+    "all book features (40)": {
+      "order F1": 0.815859499733901,
+      "order recall": 0.9935191186001296,
+      "order precision": 0.692099322799097,
+      "step recall": 0.9147874423599267,
+      "step precision": 0.9550880432632065,
+      "legitimate order FPR": 0.01850994909763998
+    },
+    "participant: resting size": {
+      "order F1": 0.7921727395411607,
+      "order recall": 0.7608554763447829,
+      "order precision": 0.8261787473610134,
+      "step recall": 0.8203524729960204,
+      "step precision": 0.9717898832684825,
+      "legitimate order FPR": 0.017584451642757983
+    },
+    "participant: oldest order age": {
+      "order F1": 0.7703889585947302,
+      "order recall": 0.7958522359040829,
+      "order precision": 0.7465045592705167,
+      "step recall": 0.8616638241425052,
+      "step precision": 0.9508573818485989,
+      "legitimate order FPR": 0.047200370198981954
+    },
+    "participant: placed this step": {
+      "order F1": 0.8144433299899699,
+      "order recall": 0.7893713545042126,
+      "order precision": 0.8411602209944752,
+      "step recall": 0.8213631482534268,
+      "step precision": 0.9647573824009497,
+      "legitimate order FPR": 0.031004164738546967
+    },
+    "participant: cancelled this step": {
+      "order F1": 0.7729133858267717,
+      "order recall": 0.7952041477640959,
+      "order precision": 0.7518382352941176,
+      "step recall": 0.8612216537173899,
+      "step precision": 0.9532265958190589,
+      "legitimate order FPR": 0.03979639055992596
+    },
+    "participant: trade direction": {
+      "order F1": 0.11349036402569593,
+      "order recall": 0.06869734283862605,
+      "order precision": 0.3261538461538461,
+      "step recall": 0.018192154633314382,
+      "step precision": 0.3829787234042553,
+      "legitimate order FPR": 0.04349838037945396
+    },
+    "participant: resting side imbalance": {
+      "order F1": 0.7662170841361593,
+      "order recall": 0.7731691510045366,
+      "order precision": 0.7593889242520687,
+      "step recall": 0.837218116353989,
+      "step precision": 0.9588367214063517,
+      "legitimate order FPR": 0.03887089310504396
+    },
+    "all participant features (6)": {
+      "order F1": 0.0012634238787113078,
+      "order recall": 0.0006480881399870382,
+      "order precision": 0.025,
+      "step recall": 6.316720358789716e-05,
+      "step precision": 0.006756756756756757,
+      "legitimate order FPR": 0.008329477093937991
+    }
+  },
+  "runtime_s": 2758.4
+}
