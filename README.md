@@ -21,8 +21,12 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Spoofer population SPOOFER-01..05 (PPO) | Trained on the current env; see `results/basic_eval.md` |
 | Rule-based baseline detector | Done |
 | Basic evaluation (`evaluation/basic_eval.py`) | Done |
-| Watchdog: dataset recorder, env, RecurrentPPO training, evaluation vs baseline | Dataset built; trained with normalised observations and entropy 0.01; final evaluation in `results/watchdog_eval.md` |
-| Coscia-style layering attacker, synthetic market, SPY false-positive test, real-case comparison, multi-seed CIs | Not started |
+| Watchdog: dataset recorder, env, RecurrentPPO training, evaluation vs baseline | Done: normalised observations, entropy 0.01; `results/watchdog_eval.md` |
+| Pre-registered clean held-out test (LATEBURST-ATK) | Done: `results/lateburst_test.md` |
+| Multi-seed Watchdog CIs (3 seeds) | Done: `results/multiseed.md` (each Spoofer is still one seed) |
+| PnL suppression with surveillance acting inside episodes | Done: `results/pnl_suppression.md` |
+| Interpretability (feature-group ablation) | Done: `results/feature_ablation.md` |
+| Coscia-style layering attacker (needs several resting orders per side), synthetic agent-based market, Watchdog on real SPY flow, real-case comparison | Not started |
 
 ---
 
@@ -47,7 +51,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-81 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
+88 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
@@ -131,6 +135,7 @@ watchdog/evaluate_watchdog.py     Watchdog vs rule-based baseline on identical o
 watchdog/lateburst_test.py        pre-registered clean held-out test (LATEBURST-ATK), run once
 watchdog/multiseed_summary.py     headline metrics across Watchdog training seeds with 95% CIs
 watchdog/pnl_suppression.py       Watchdog and rule acting inside episodes: PnL suppression, wrongful interventions
+watchdog/feature_ablation.py      which observation features the Watchdog relies on (group ablation, test split)
 
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
@@ -139,7 +144,8 @@ scripts/feature_signal_check.py   diagnostic: can a simple supervised model sepa
 tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
-results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression (.md and .json each)
+results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
+                                  feature_ablation (.md and .json each)
 ```
 
 ### Agent roster
@@ -377,6 +383,26 @@ Interventions on legitimate activity, per episode:
 - **The scripted and LATEBURST attackers were not reliably profitable without surveillance**: +$418 ± 956 and +$748 ± 634 (scripted, MSFT / INTC), +$531 ± 674 and −$87 ± 1,007 (LATEBURST). Their suppression percentages are therefore not meaningful. On them the rule drives PnL lower than the Watchdog does, consistent with its higher recall on unseen structure.
 - **Suppression above 100%** means the intervention turned profit into a loss.
 - **The attackers are frozen and do not adapt to surveillance.** These numbers measure suppression of non-adaptive manipulation only.
+
+## Interpretability: what the Watchdog relies on
+
+`python watchdog/feature_ablation.py` → `results/feature_ablation.md`. On the test split, one feature group at a time is set to its training mean (0 after normalisation) and the unchanged main Watchdog is rescored. The unablated run reproduces the committed F1 of 0.772.
+
+| Ablated group | Order F1 | Step recall | Legitimate order FPR |
+|---|---|---|---|
+| none | 0.772 | 0.865 | 0.043 |
+| **participant: trade direction** | **0.113** | **0.018** | 0.043 |
+| **all 6 participant features** | **0.001** | **0.000** | 0.008 |
+| all 40 book features | 0.816 | 0.915 | 0.019 |
+| book price offsets only (20) | 0.541 | 0.924 | 0.555 |
+| participant: resting size / placed (each) | 0.792 / 0.814 | 0.820 / 0.821 | 0.018 / 0.031 |
+| participant: order age / cancelled / side imbalance (each) | 0.766–0.773 | 0.837–0.862 | 0.039–0.047 |
+
+- **Detection rests on the participant's own trades.** Removing trade direction alone collapses step recall to 0.018, and removing all participant features leaves nothing. Order age, cancellations and side imbalance barely matter.
+- **This matches the failure on sparse spoofing.** A detector keyed on trading against a resting order struggles when that trading is sparse (SPOOFER-03 GOOG, SCRIPTED-ATK, LATEBURST-ATK).
+- **Book features are not needed on the test split.** Removing all 40 slightly raises F1 and lowers false positives.
+- **Caveat on the price-only row.** Its FPR of 0.555 is likely an artefact: mean prices combined with real sizes form books that never occur. The all-40 ablation, which keeps the book internally consistent, shows no such effect.
+- **Scope.** Test split, one seed, single-group mean imputation; interactions between groups are not measured.
 
 ## Where the three claims stand
 
