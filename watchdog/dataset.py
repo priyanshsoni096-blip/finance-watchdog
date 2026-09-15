@@ -120,6 +120,7 @@ def load_split(split: str, data_dir: Path = DATA_DIR) -> dict[str, dict]:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--episodes", type=int, default=30, help="train episodes per source; test/heldout use a third (min 10)")
+    p.add_argument("--eval-episodes", type=int, default=None, help="override test/heldout episodes per source")
     p.add_argument("--tag", default="main")
     p.add_argument("--splits", nargs="*", default=["train", "test", "heldout"])
     p.add_argument("--out", default=str(DATA_DIR))
@@ -128,7 +129,10 @@ def main() -> int:
     t0, cache = time.time(), {}
     by_split = sources(args.tag)
     for split in args.splits:
-        n = args.episodes if split == "train" else max(10, args.episodes // 3)
+        if split == "train":
+            n = args.episodes
+        else:
+            n = args.eval_episodes if args.eval_episodes is not None else max(10, args.episodes // 3)
         out_dir = Path(args.out) / split
         out_dir.mkdir(parents=True, exist_ok=True)
         for src in by_split[split]:
