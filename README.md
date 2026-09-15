@@ -581,6 +581,25 @@ F1 per manipulator (each pooled with the legitimate sources):
 - **The false-positive advantage transfers.** Legitimate-order FPR rises from 0.04 on replay data to 0.11 here, still about 8× below the rule.
 - **Recall drops to 0.48**, and the rule's overall F1 is higher (0.74 vs 0.62), because manipulative orders make up most of this pool and the rule flags almost everything.
 
+## Pre-registered layering test (synthetic market)
+
+The replay environment allows one large order per side, so layering (Open issue 6) could not be tested there. The synthetic market has a real order book. This test was defined and committed **before** any of its data was generated or any result was seen.
+
+- **Attacker** (`LayerSpoof` in `synthetic/layering.py`, evaluation only).
+  1. Place 4 large orders on one side: at the best price and the next three levels behind it, each 2.5× trailing touch depth (10× in total, like a single spoof).
+  2. Wait 30–80 market events.
+  3. Trade 1–5 lots on the other side.
+  4. Cancel every layer, then unwind.
+- **Evaluation** (`python synthetic/layering_test.py`, run once).
+  - The calibrated synthetic market with reacting followers.
+  - 30 episodes of LAYER-ATK and 30 of FLICKER negatives.
+  - The main Watchdog (trained on replay data only) and the rule tuned on the replay train split, scored on the same orders.
+  - No model, threshold or feature is changed after results are seen.
+- **Hypothesis.** The Watchdog's order-level F1 on LAYER-ATK + FLICKER is at least the rule's.
+  - Supported if Watchdog F1 ≥ rule F1.
+  - Not supported otherwise.
+- **Context only.** LAYER-ATK PnL with reactive vs blind followers, and recall by layer.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.

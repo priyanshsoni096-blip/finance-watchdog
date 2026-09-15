@@ -188,6 +188,25 @@ class SyntheticSpoofEnv(gym.Env):
                 run_over.append({"side": spoof.side, "size": spoof.initial_size, "price": spoof.price, "t": t})
         return run_over
 
+    def place_large_order(self, side: int, price_ticks: int, size: int) -> bool:
+        """Rest an additional large order for the agent (used by evaluation-only layering agents).
+
+        Only non-marketable prices are accepted: a buy must be below the best ask and a sell above the best bid.
+        The order is tracked like a spoof placed through the action space, so StepTracker, run-over booking and
+        CANCEL all apply to it."""
+        book = self.market.book
+        if size <= 0:
+            return False
+        if side > 0 and book.best_ask() is not None and price_ticks >= book.best_ask():
+            return False
+        if side < 0 and book.best_bid() is not None and price_ticks <= book.best_bid():
+            return False
+        oid, _ = book.limit(MBUY if side > 0 else MSELL, int(price_ticks), int(size), AGENT)
+        if oid is None:
+            return False
+        self.spoofs.append(LiveSpoof(oid, side, float(size), price_ticks * self.tick, self.t, float(size)))
+        return True
+
     def _market_order(self, side: int, qty: int) -> tuple[int, float | None]:
         fills = self.market.book.market(MBUY if side > 0 else MSELL, qty, AGENT, self_trade_prevention=True)
         filled = sum(f.size for f in fills)
