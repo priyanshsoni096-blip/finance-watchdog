@@ -332,13 +332,32 @@ The scripted attacker has been inspected during analysis, so it no longer gives 
   - Undetermined if recall is 0 on both groups.
 - **Also reported, not used for any decision.** Overall Watchdog recall, precision and FPR versus the rule.
 
+**Result (run once after the pre-registration commit; `results/lateburst_test.md`): hypothesis not supported.**
+
+| Group | Watchdog P / R / FPR | Rule P / R / FPR | Median delay (steps) W / R |
+|---|---|---|---|
+| All stocks | **0.66 / 0.24 / 0.05** | 0.31 / **0.89** / 0.76 | 12 / 22 |
+| MSFT + INTC | 0.75 / 0.30 / 0.04 | 0.33 / 0.90 / 0.81 | 0 / 22 |
+| AAPL + GOOG + AMZN | 0.58 / 0.20 / 0.05 | 0.30 / 0.88 / 0.73 | 16 / 22 |
+
+- **Shortcut hypothesis.** The recall ratio is 0.296 / 0.198 = **1.50**, below the committed threshold of 2. Recall is somewhat higher on the 1-tick stocks, but the stock-identity shortcut is not supported at the pre-registered bar.
+- **Generalisation.** On a clean, unseen attacker the Watchdog catches 24% of manipulative orders versus the rule's 89%. It flags 5% of legitimate large orders versus the rule's 76%.
+- **Attacker PnL per episode (context only).** MSFT +$442, INTC +$726; AAPL −$471, GOOG −$735, AMZN −$330.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from.
-2. **The Watchdog generalises to attacks it hasn't seen — not shown.** It catches 15–25% of the held-out scripted attacker's manipulative orders, against the rule's 94–95%. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation.** It wrongly flags 1–7% of legitimate large orders, against the rule's 77–97%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
 
-Headline comparison: in-distribution F1 **0.77 vs 0.35**; false-positive rate on legitimate orders **0.04 vs 0.82**; recall on unseen structure **0.15–0.25 vs 0.94–0.95**.
+Headline comparison, Watchdog vs rule:
+
+| Measure | Watchdog | Rule |
+|---|---|---|
+| In-distribution F1 | **0.77** | 0.35 |
+| False-positive rate on legitimate orders | **0.04** | 0.82 |
+| Recall on the pre-registered unseen attacker | 0.24 | **0.89** |
+| Precision on the pre-registered unseen attacker | **0.66** | 0.31 |
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
