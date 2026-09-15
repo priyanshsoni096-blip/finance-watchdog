@@ -466,7 +466,18 @@ Two earlier versions failed and are recorded in the code:
 
 - **The spoof does move the synthetic price, and the effect builds up over time**, the same shape as the replay model's ramp, with no formula involved.
 - **It is about 4.5× smaller at 200 events** and about 35× smaller at 10.
-- **Caveat:** the size depends on the share of imbalance followers, which none of the calibration statistics constrain (fixed at 0.1). Sensitivity to that parameter is the next check.
+- **Sensitivity to the imbalance-follower share.** Each row is 300 paired trials; the results are `results/synthetic_spoof_impact_pf*.md`.
+
+  | Follower share | Mid changes on (real 0.48%) | 2,000-event range (real 2.0 ticks) | Impact after 200 events |
+  |---|---|---|---|
+  | 0.05 | 0.41% | 2.0 ticks | +0.29 ± 0.11 spreads |
+  | 0.10 (calibrated) | 0.66% | 2.5 ticks | +0.55 ± 0.15 |
+  | 0.30 | 1.18% | 4.0 ticks | +1.57 ± 0.26 |
+
+  - Impact scales roughly with the follower share, and so do the market's own price dynamics.
+  - A share of 0.05–0.10 brackets the real mid-change rate. That range gives 0.29–0.55 spreads at 200 events, **4.5–9× less than the replay model's ~2.5**. Even 0.30, which makes the mid move 2.5× too often, reaches only 1.57.
+  - Correction: an earlier version of this section called the follower share unconstrained by calibration. That was measured in the frozen first grid; in the working market it clearly changes price dynamics.
+- **Interpretation.** Results that depend on spoofing being profitable rest on an impact size this minimal market does not reproduce. That does not show the replay model is wrong. Here the only reactive channel is imbalance following, whereas real markets also have market makers repricing quotes and faster traders reacting.
 - **Still to do:** running the frozen Spoofers and the Watchdog inside this market.
 
 ## Where the three claims stand

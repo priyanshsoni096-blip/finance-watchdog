@@ -40,7 +40,10 @@ KEYS = ("spread_ticks", "mid_change_share", "range_2000_ticks", "touch_depth", "
 # depth was near the real ~13,500 shares. With a 1-tick spread, thin-tailed market orders almost never clear
 # the touch.
 # Real markets clear it with occasional large sweeps, so this grid adds heavier market-order size tails, higher
-# cancel hazards and thinner touch queues. p_follower made no measurable difference and is fixed.
+# cancel hazards and thinner touch queues. p_follower is fixed at 0.1: in the first (frozen) grid it made no
+# measurable difference. In the working market it does matter. With the chosen parameters, mid-change share is
+# 0.41% / 0.66% / 1.18% at p_follower 0.05 / 0.1 / 0.3 (real 0.48%), so 0.05-0.1 brackets the real value
+# (see synthetic/spoof_impact.py --p-follower).
 GRID = {
     "cancel_hazard": (0.0035, 0.006, 0.01),
     "noise_p_market": (0.05, 0.08),
