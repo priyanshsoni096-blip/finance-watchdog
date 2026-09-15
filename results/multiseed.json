@@ -1,0 +1,102 @@
+{
+  "tags": [
+    "main",
+    "main_s2",
+    "main_s3"
+  ],
+  "per_seed": {
+    "main": {
+      "in-distribution order F1": 0.7718857860056481,
+      "in-distribution order precision": 0.7481751824817519,
+      "in-distribution order recall": 0.7971484121840571,
+      "in-distribution step precision": 0.9530640668523677,
+      "in-distribution step recall": 0.8645063483039606,
+      "legitimate-only order FPR": 0.044642857142857144,
+      "held-out AMZN legitimate order FPR": 0.012671232876712329,
+      "LATEBURST-ATK order recall": 0.2393992932862191,
+      "LATEBURST-ATK order precision": 0.6593673965936739,
+      "LATEBURST-ATK order FPR": 0.04807692307692308
+    },
+    "main_s2": {
+      "in-distribution order F1": 0.7613155323998697,
+      "in-distribution order precision": 0.7650523560209425,
+      "in-distribution order recall": 0.7576150356448477,
+      "in-distribution step precision": 0.9515635858234885,
+      "in-distribution step recall": 0.8649485187290759,
+      "legitimate-only order FPR": 0.049107142857142856,
+      "held-out AMZN legitimate order FPR": 0.00034246575342465754,
+      "LATEBURST-ATK order recall": 0.2659010600706714,
+      "LATEBURST-ATK order precision": 0.6629955947136564,
+      "LATEBURST-ATK order FPR": 0.05254120879120879
+    },
+    "main_s3": {
+      "in-distribution order F1": 0.7269092363054778,
+      "in-distribution order precision": 0.9488517745302714,
+      "in-distribution order recall": 0.5891121192482177,
+      "in-distribution step precision": 0.9941065830721003,
+      "in-distribution step recall": 0.5007895900448487,
+      "legitimate-only order FPR": 0.0,
+      "held-out AMZN legitimate order FPR": 0.0,
+      "LATEBURST-ATK order recall": 0.14664310954063603,
+      "LATEBURST-ATK order precision": 1.0,
+      "LATEBURST-ATK order FPR": 0.0
+    }
+  },
+  "summary": {
+    "in-distribution order F1": {
+      "mean": 0.7533701849036651,
+      "ci95": 0.058425218327626836
+    },
+    "in-distribution order precision": {
+      "mean": 0.820693104344322,
+      "ci95": 0.2765291996610027
+    },
+    "in-distribution order recall": {
+      "mean": 0.7146251890257075,
+      "ci95": 0.2744701302556583
+    },
+    "in-distribution step precision": {
+      "mean": 0.9662447452493188,
+      "ci95": 0.05997371327095839
+    },
+    "in-distribution step recall": {
+      "mean": 0.7434148190259617,
+      "ci95": 0.5220084691099871
+    },
+    "legitimate-only order FPR": {
+      "mean": 0.03125,
+      "ci95": 0.06746267574185318
+    },
+    "held-out AMZN legitimate order FPR": {
+      "mean": 0.0043378995433789955,
+      "ci95": 0.017934212635151582
+    },
+    "LATEBURST-ATK order recall": {
+      "mean": 0.21731448763250882,
+      "ci95": 0.15557231880462527
+    },
+    "LATEBURST-ATK order precision": {
+      "mean": 0.7741209971024435,
+      "ci95": 0.4859995718758471
+    },
+    "LATEBURST-ATK order FPR": {
+      "mean": 0.03353937728937729,
+      "ci95": 0.0723727347926869
+    }
+  },
+  "rule": {
+    "in-distribution order F1": 0.35246995994659547,
+    "in-distribution order precision": 0.2168458781362007,
+    "in-distribution order recall": 0.9410239792611795,
+    "legitimate-only order FPR": 0.8229166666666666,
+    "held-out AMZN legitimate order FPR": 0.9715753424657534,
+    "LATEBURST-ATK order recall": 0.8851590106007067,
+    "LATEBURST-ATK order precision": 0.3124415341440599,
+    "LATEBURST-ATK order FPR": 0.7572115384615384
+  },
+  "rule_params": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "runtime_s": 501.0
+}
