@@ -1,0 +1,149 @@
+{
+  "target_tickers": [
+    "MSFT",
+    "INTC"
+  ],
+  "targets": {
+    "spread_ticks": 1.0000000000001563,
+    "mid_change_share": 0.004775990529854253,
+    "range_2000_ticks": 2.000000000000135,
+    "touch_depth": 13447.75,
+    "cancel_share": 0.4587914918655977,
+    "exec_share": 0.05063280061755464,
+    "new_share": 0.49057570751684765
+  },
+  "objective_keys": [
+    "spread_ticks",
+    "mid_change_share",
+    "range_2000_ticks",
+    "touch_depth",
+    "cancel_share",
+    "exec_share"
+  ],
+  "chosen_params": {
+    "start_price": 5000,
+    "tick_value": 0.01,
+    "init_levels": 10,
+    "init_size": 500,
+    "size_log_mean": 5.703782474656201,
+    "size_log_sd": 0.8,
+    "market_size_log_mean": 4.605170185988092,
+    "market_size_log_sd": 2.4,
+    "cancel_hazard": 0.0035,
+    "p_follower": 0.1,
+    "noise_p_market": 0.05,
+    "noise_inside_spread": 0.3,
+    "noise_depth_geom_p": 0.25,
+    "follower_levels": 3,
+    "follower_threshold": 0.35,
+    "follower_p_react": 0.6
+  },
+  "chosen_stats": {
+    "spread_ticks": 1.0,
+    "mid_change_share": 0.005816763612726879,
+    "range_2000_ticks": 2.25,
+    "touch_depth": 8304.5,
+    "cancel_share": 0.4144314197876713,
+    "exec_share": 0.09909359502685244,
+    "new_share": 0.48647498518547627
+  },
+  "chosen_score": 0.7462540615228606,
+  "top5": [
+    {
+      "score": 0.7462540615228606,
+      "params": {
+        "cancel_hazard": 0.0035,
+        "noise_p_market": 0.05,
+        "noise_depth_geom_p": 0.25,
+        "market_size_log_sd": 2.4,
+        "p_follower": 0.1
+      },
+      "stats": {
+        "spread_ticks": 1.0,
+        "mid_change_share": 0.005816763612726879,
+        "range_2000_ticks": 2.25,
+        "touch_depth": 8304.5,
+        "cancel_share": 0.4144314197876713,
+        "exec_share": 0.09909359502685244,
+        "new_share": 0.48647498518547627
+      }
+    },
+    {
+      "score": 0.9137591108681599,
+      "params": {
+        "cancel_hazard": 0.006,
+        "noise_p_market": 0.05,
+        "noise_depth_geom_p": 0.35,
+        "market_size_log_sd": 2.4,
+        "p_follower": 0.1
+      },
+      "stats": {
+        "spread_ticks": 1.0,
+        "mid_change_share": 0.004000066667777797,
+        "range_2000_ticks": 1.25,
+        "touch_depth": 8001.375,
+        "cancel_share": 0.4200041407283538,
+        "exec_share": 0.09409847549818257,
+        "new_share": 0.4858973837734637
+      }
+    },
+    {
+      "score": 1.3806858197278196,
+      "params": {
+        "cancel_hazard": 0.006,
+        "noise_p_market": 0.08,
+        "noise_depth_geom_p": 0.25,
+        "market_size_log_sd": 1.8,
+        "p_follower": 0.1
+      },
+      "stats": {
+        "spread_ticks": 1.0,
+        "mid_change_share": 0.0044500741679027985,
+        "range_2000_ticks": 1.5,
+        "touch_depth": 5175.0,
+        "cancel_share": 0.428527639969274,
+        "exec_share": 0.09350766392518337,
+        "new_share": 0.4779646961055426
+      }
+    },
+    {
+      "score": 1.6241236725600074,
+      "params": {
+        "cancel_hazard": 0.01,
+        "noise_p_market": 0.08,
+        "noise_depth_geom_p": 0.35,
+        "market_size_log_sd": 1.8,
+        "p_follower": 0.1
+      },
+      "stats": {
+        "spread_ticks": 1.0,
+        "mid_change_share": 0.004191736528942149,
+        "range_2000_ticks": 1.5,
+        "touch_depth": 4591.125,
+        "cancel_share": 0.42985815160275387,
+        "exec_share": 0.09265510911838795,
+        "new_share": 0.4774867392788582
+      }
+    },
+    {
+      "score": 1.7328657189984233,
+      "params": {
+        "cancel_hazard": 0.01,
+        "noise_p_market": 0.05,
+        "noise_depth_geom_p": 0.25,
+        "market_size_log_sd": 1.8,
+        "p_follower": 0.1
+      },
+      "stats": {
+        "spread_ticks": 1.0,
+        "mid_change_share": 0.0036750612510208502,
+        "range_2000_ticks": 1.75,
+        "touch_depth": 3754.125,
+        "cancel_share": 0.45635887385370655,
+        "exec_share": 0.05797032487803737,
+        "new_share": 0.48567080126825607
+      }
+    }
+  ],
+  "runtime_s": 68.8
+}
