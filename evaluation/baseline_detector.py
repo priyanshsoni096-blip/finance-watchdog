@@ -35,10 +35,17 @@ class OrderRecord:
     removed_step: int | None = None
     removed_by: str | None = None   # "cancel" | "run_over" | "episode_end"
     opposite_trades: int = 0
+    events_per_step: int = 1        # market events per agent step when the order was recorded
 
     @property
     def lifetime(self) -> int | None:
+        """Lifetime in agent steps."""
         return None if self.removed_step is None else self.removed_step - self.placed_step
+
+    @property
+    def lifetime_events(self) -> int | None:
+        """Lifetime in market events — the unit the rule's M uses, on simulated and real data alike."""
+        return None if self.lifetime is None else self.lifetime * self.events_per_step
 
     @property
     def manipulative(self) -> bool:
@@ -53,8 +60,8 @@ class RuleDetector:
     def flags(self, order: OrderRecord) -> bool:
         return (order.depth_mult >= self.n_mult
                 and order.removed_by == "cancel"
-                and order.lifetime is not None
-                and order.lifetime <= self.m_events)
+                and order.lifetime_events is not None
+                and order.lifetime_events <= self.m_events)
 
 
 def classification_metrics(orders: list[OrderRecord], det: RuleDetector) -> dict:

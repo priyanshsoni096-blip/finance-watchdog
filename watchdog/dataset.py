@@ -42,7 +42,8 @@ HELD_OUT = "AMZN"
 SEED_BASE = {"train": 100_000, "test": 200_000, "heldout": 300_000}
 REMOVED = {"cancel": 0, "run_over": 1, "episode_end": 2}
 REMOVED_INV = {v: k for k, v in REMOVED.items()}
-ORDER_COLS = ["episode", "order_id", "side", "size", "depth_mult", "placed", "removed", "removed_by", "opposite_trades"]
+ORDER_COLS = ["episode", "order_id", "side", "size", "depth_mult", "placed", "removed", "removed_by",
+              "opposite_trades", "events_per_step"]
 
 
 @dataclass
@@ -73,7 +74,7 @@ def sources(tag: str = "main") -> dict[str, list[Source]]:
 
 def _orders_to_array(orders_by_ep: list[list[OrderRecord]]) -> np.ndarray:
     rows = [[ep, o.order_id, o.side, o.size, o.depth_mult, o.placed_step, o.removed_step,
-             REMOVED[o.removed_by], o.opposite_trades]
+             REMOVED[o.removed_by], o.opposite_trades, o.events_per_step]
             for ep, orders in enumerate(orders_by_ep) for o in orders]
     return np.asarray(rows, dtype=np.float64).reshape(-1, len(ORDER_COLS))
 
@@ -83,7 +84,7 @@ def orders_from_array(arr: np.ndarray) -> list[tuple[int, OrderRecord]]:
     out = []
     for r in arr:
         rec = OrderRecord(int(r[1]), int(r[2]), float(r[3]), float(r[4]), int(r[5]), int(r[6]),
-                          REMOVED_INV[int(r[7])], int(r[8]))
+                          REMOVED_INV[int(r[7])], int(r[8]), int(r[9]) if len(r) > 9 else 1)
         out.append((int(r[0]), rec))
     return out
 

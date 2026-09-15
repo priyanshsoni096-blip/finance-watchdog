@@ -67,7 +67,8 @@ def record_episode(env: LimitOrderBookEnv, policy, rng, seed: int, features: boo
         placed = 0.0
         for k, s in post.items():
             if k not in live:
-                live[k] = (s, OrderRecord(next_id, s.side, s.size, s.size / env.stats.touch_depth[t], step))
+                live[k] = (s, OrderRecord(next_id, s.side, s.size, s.size / env.stats.touch_depth[t], step,
+                                          events_per_step=env.cfg.events_per_step))
                 next_id += 1
                 placed += s.size
         cancelled = 0.0

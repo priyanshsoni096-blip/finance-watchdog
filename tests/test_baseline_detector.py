@@ -20,6 +20,16 @@ def test_rule_requires_size_cancel_and_speed():
     assert not det.flags(_order(10, 20, "episode_end"))
 
 
+def test_rule_measures_lifetime_in_market_events():
+    """An order resting 10 agent steps at 10 events/step lived 100 events, beyond M=50."""
+    det = RuleDetector(5, 50)
+    fast = OrderRecord(0, 1, 1000, 10, 0, 10, "cancel", 0, events_per_step=1)
+    coarse = OrderRecord(0, 1, 1000, 10, 0, 10, "cancel", 0, events_per_step=10)
+    assert fast.lifetime == coarse.lifetime == 10
+    assert coarse.lifetime_events == 100
+    assert det.flags(fast) and not det.flags(coarse)
+
+
 def test_metrics_and_tuning():
     orders = [_order(10, 20, trades=2), _order(10, 20, trades=0), _order(10, 400, trades=1), _order(1, 5)]
     m = classification_metrics(orders, RuleDetector(5, 50))

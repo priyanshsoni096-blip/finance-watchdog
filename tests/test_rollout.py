@@ -41,6 +41,16 @@ def test_resting_order_visible_in_participant_features(day):
     assert resting.any() and not resting.all()
 
 
+def test_orders_record_events_per_step(day):
+    d = day("GOOG")
+    env = LimitOrderBookEnv(EnvConfig(ticker="GOOG", events_per_step=10, episode_len=100), day=d,
+                            stats=reference_stats(d))
+    ep = record_episode(env, Flicker(), np.random.default_rng(9), seed=51)
+    assert ep["orders"] and all(o.events_per_step == 10 for o in ep["orders"])
+    back = orders_from_array(_orders_to_array([ep["orders"]]))
+    assert all(o.events_per_step == 10 for _, o in back)
+
+
 def test_orders_roundtrip_through_array(day):
     env = _env(day)
     eps = [record_episode(env, ScriptedSpoof(), np.random.default_rng(i), seed=40 + i) for i in range(2)]
