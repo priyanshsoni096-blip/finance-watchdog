@@ -102,6 +102,43 @@ python -m pytest tests -q
 ```
 115 tests, about 30 seconds (29 s measured). Tests that need data skip themselves if it isn't downloaded.
 
+### Reproduce the reported results without retraining
+
+The final trained models are committed in `checkpoints/`:
+- the five Spoofers (`SPOOFER-0X/main`)
+- the three Watchdog seeds (`WATCHDOG/main`, `main_s2`, `main_s3`), with their observation normalisation
+- the three exploit policies replayed by the basic eval
+
+After `data/download.py` and `scripts/calibrate.py`, the evaluations run directly, with no training. Run them in this order:
+
+```bash
+python evaluation/basic_eval.py --episodes 20
+```
+
+```bash
+python watchdog/dataset.py --episodes 150
+```
+
+```bash
+python watchdog/evaluate_watchdog.py
+```
+
+```bash
+python watchdog/lateburst_test.py
+```
+
+```bash
+python watchdog/multiseed_summary.py --tags main main_s2 main_s3
+```
+
+`multiseed_summary.py` needs the LATEBURST-ATK data that `lateburst_test.py` saves. That test is seeded, so rerunning it regenerates the same data; it does not revisit the pre-registered verdict, which was fixed on its first run.
+
+What has been checked to reproduce exactly:
+- **`basic_eval.py`**: rerun from the committed checkpoints, all 479 numbers matched `results/basic_eval.json`.
+- **`evaluate_watchdog.py`**: rerun twice on the recorded dataset, all 282 numbers matched `results/watchdog_eval.json` each time.
+- **`dataset.py`**: two sources were regenerated and matched bit for bit.
+- **Everything else** uses fixed seeds but has not been re-run and compared.
+
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
 ```
