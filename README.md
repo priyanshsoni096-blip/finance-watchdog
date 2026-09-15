@@ -130,6 +130,7 @@ watchdog/train_watchdog.py        RecurrentPPO Watchdog training on the train sp
 watchdog/evaluate_watchdog.py     Watchdog vs rule-based baseline on identical orders
 watchdog/lateburst_test.py        pre-registered clean held-out test (LATEBURST-ATK), run once
 watchdog/multiseed_summary.py     headline metrics across Watchdog training seeds with 95% CIs
+watchdog/pnl_suppression.py       Watchdog and rule acting inside episodes: PnL suppression, wrongful interventions
 
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
@@ -138,7 +139,7 @@ scripts/feature_signal_check.py   diagnostic: can a simple supervised model sepa
 tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
-results/                          basic_eval, watchdog_eval, lateburst_test, multiseed (.md and .json each)
+results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression (.md and .json each)
 ```
 
 ### Agent roster
@@ -356,6 +357,27 @@ The scripted attacker has been inspected during analysis, so it no longer gives 
 - **Generalisation.** On a clean, unseen attacker the Watchdog catches 24% of manipulative orders versus the rule's 89%. It flags 5% of legitimate large orders versus the rule's 76%.
 - **Attacker PnL per episode (context only).** MSFT +$442, INTC +$726; AAPL −$471, GOOG −$735, AMZN −$330.
 
+## PnL suppression: surveillance acting inside the episode
+
+`python watchdog/pnl_suppression.py --episodes 50` → `results/pnl_suppression.md`. Every source runs the same seeds under three conditions: no surveillance, the Watchdog, and the rule. On a flag, the exchange cancels the participant's resting large orders and rejects new ones for 200 market events. The rule can only fire when an order is cancelled.
+
+| Source | PnL, no surveillance | PnL with Watchdog (suppression) | PnL with rule (suppression) | Trades against own spoof/ep: none / W / R |
+|---|---|---|---|---|
+| SPOOFER-04 INTC | +$12,625 ± 1,162 | **+$2,165 ± 485 (83%)** | +$5,655 ± 657 (55%) | 173 / **36** / 76 |
+| SPOOFER-02 MSFT | +$3,186 ± 517 | **−$4,561 ± 1,275 (243%)** | +$140 ± 831 (96%) | 60 / **6** / 45 |
+
+Interventions on legitimate activity, per episode:
+
+| Source | Watchdog: interventions / blocked orders | Rule: interventions / blocked orders |
+|---|---|---|
+| FLICKER (MSFT, INTC) | **0.3–0.4 / 1.1–1.6** | 4.7 / 17.6–18.8 |
+| HONEST (MSFT, INTC) | 0 / 0 | 0 / 0 |
+
+- **Where profit without surveillance is clearly positive (the RL Spoofers), the Watchdog suppresses more than the rule**, and it intervenes on legitimate large orders about 12× less often.
+- **The scripted and LATEBURST attackers were not reliably profitable without surveillance**: +$418 ± 956 and +$748 ± 634 (scripted, MSFT / INTC), +$531 ± 674 and −$87 ± 1,007 (LATEBURST). Their suppression percentages are therefore not meaningful. On them the rule drives PnL lower than the Watchdog does, consistent with its higher recall on unseen structure.
+- **Suppression above 100%** means the intervention turned profit into a loss.
+- **The attackers are frozen and do not adapt to surveillance.** These numbers measure suppression of non-adaptive manipulation only.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from.
@@ -371,6 +393,8 @@ Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Stude
 | False-positive rate on held-out AMZN legitimate orders | **0.004 ± 0.018** | 0.972 |
 | Recall on the pre-registered unseen attacker | 0.217 ± 0.156 | **0.885** |
 | Precision on the pre-registered unseen attacker | **0.774 ± 0.486** | 0.312 |
+| PnL suppression of SPOOFER-04 INTC (main Watchdog, 50 episodes) | **83%** (+$12,625 → +$2,165) | 55% (→ +$5,655) |
+| Interventions per episode on legitimate FLICKER orders (main Watchdog) | **0.3–0.4** | 4.7 |
 
 - All three comparisons hold for every seed: in-distribution F1 about 2× the rule, false positives about 20× lower, and unseen-attacker recall about 4× lower.
 - Seeds differ mainly in the precision/recall balance. One seed (main_s3) is conservative: order precision 0.95, recall 0.59, and step recall 0.50 versus 0.87 for the other two. Recall intervals are therefore wide (order ±0.27, step ±0.52).
