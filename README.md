@@ -54,7 +54,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-113 tests, about 40 seconds (36 s measured). Tests that need data skip themselves if it isn't downloaded.
+115 tests, about 30 seconds (29 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
@@ -198,7 +198,7 @@ scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain v
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 
-tests/                            113 unit and real-data tests (data, normalization, impact, env, detector, rollout,
+tests/                            115 unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
