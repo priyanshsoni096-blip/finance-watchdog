@@ -12,6 +12,52 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 
 ---
 
+## Results at a glance
+
+Every number below comes from a committed file in `results/`, except the no-impact counterfactual row, which is printed by the committed script named there (`python scripts/pnl_decompose.py SPOOFER-04 main 10 --stochastic`). The sections further down give the detail and caveats.
+
+**Claim 1: RL learns meaningful manipulation. Partly shown.**
+
+| Evidence | Value | Source |
+|---|---|---|
+| SPOOFER-04 (INTC) PnL per episode, replay market | +$13,208 ± 1,654 | `basic_eval.md` |
+| SPOOFER-02 (MSFT) PnL per episode, replay market | +$2,437 ± 1,068 | `basic_eval.md` |
+| Same trading with price impact switched off (10 episodes) | −$8,414 (INTC), −$5,407 (MSFT) | `scripts/pnl_decompose.py` |
+| Same Spoofers in the synthetic agent-based market | −$3,270 ± 688 (INTC), −$2,930 ± 686 (MSFT) | `synthetic_eval.md` |
+| Large orders filled: Spoofers vs Coscia | 0.4–1.4% vs 0.08–0.5% | `real_case_comparison.md` |
+| Large orders resting over 1 s: Spoofers vs Coscia | 44–52% vs 0.57% | `real_case_comparison.md` |
+
+- The profit comes from the spoof, but only under the replay impact model; it does not survive a market where the price reacts through order matching.
+- Spoofing is unprofitable on the wide-spread stocks (AAPL, GOOG, AMZN).
+
+**Claim 2: the Watchdog generalises to unseen attacks. Not shown.** Two pre-registered tests, each run once, both went against the Watchdog.
+
+| Pre-registered test | Watchdog recall | Rule recall | Source |
+|---|---|---|---|
+| LATEBURST-ATK (replay market) | 0.24 | 0.89 | `lateburst_test.md` |
+| LAYER-ATK (synthetic market) | 0.30 | 1.00 | `layering_test.md` |
+
+- The Watchdog relies on trading against a resting order. Ablating trade direction drops its F1 from 0.772 to 0.113 (`feature_ablation.md`), so sparse spoofing is missed.
+
+**Claim 3: few false positives on legitimate activity. Shown in simulation.**
+
+| Setting | Watchdog false-positive rate | Rule false-positive rate | Source |
+|---|---|---|---|
+| Replay market, legitimate orders (3 seeds) | 0.031 ± 0.067 | 0.823 | `multiseed.md` |
+| Synthetic market, legitimate orders | 0.11 | 0.92 | `synthetic_eval.md` |
+| Layering test, FLICKER orders | 0.08 | 0.93 | `layering_test.md` |
+
+- Not testable on real data: LOBSTER has no participant identities.
+
+**Also measured.**
+
+| Measure | Watchdog | Rule | Source |
+|---|---|---|---|
+| In-distribution order F1 (3 seeds) | 0.753 ± 0.058 | 0.352 | `multiseed.md` |
+| Profit cut when acting inside episodes (SPOOFER-04, INTC) | 83% | 55% | `pnl_suppression.md` |
+
+---
+
 ## Status
 
 | Piece | State |
