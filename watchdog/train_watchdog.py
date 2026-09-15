@@ -83,6 +83,8 @@ def main() -> int:
     p.add_argument("--n-envs", type=int, default=4)
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--threads", type=int, default=2)
+    # Entropy bonus against early collapse to "never flag" (the same fix got the Spoofers past never trading).
+    p.add_argument("--ent-coef", type=float, default=0.0)
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
@@ -106,7 +108,7 @@ def main() -> int:
     (out / "config.txt").write_text(f"{vars(args)}\nsources={sorted(sources)}\n")
 
     model = RecurrentPPO("MlpLstmPolicy", vec, learning_rate=3e-4, n_steps=512, batch_size=512, n_epochs=5,
-                         gamma=0.9, policy_kwargs=dict(lstm_hidden_size=64, net_arch=[128]),
+                         gamma=0.9, ent_coef=args.ent_coef, policy_kwargs=dict(lstm_hidden_size=64, net_arch=[128]),
                          seed=args.seed, verbose=0, device="cpu")
     model.learn(total_timesteps=args.timesteps, callback=DetectionLog(out / "progress.csv"))
     model.save(out / "model")
