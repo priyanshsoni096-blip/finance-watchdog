@@ -133,6 +133,9 @@ class SyntheticMarket:
         rate 1, so each cancellation is its own event, as in the LOBSTER message stream."""
         if self.t % 500 == 0:
             self._prune()
+        # An agent acting between events (synthetic_env.py) can empty a side of the book. On its own the market
+        # ends every step two-sided, so this refill is a no-op there and calibration results are unchanged.
+        self._refill()
         r_cancel = self.p.cancel_hazard * len(self.noise_orders)
         if self.rng.random() < r_cancel / (r_cancel + 1.0):
             self.counts["cancel"] += 1

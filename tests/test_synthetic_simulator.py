@@ -48,6 +48,16 @@ def test_followers_idle_when_book_is_balanced():
     assert all(f.taker_owner != "follower" for f in fills)
 
 
+def test_step_survives_a_side_emptied_between_events():
+    m = SyntheticMarket(seed=12)
+    m.run(200)
+    m.book.market(BUY, 10**9, "agent")          # an agent sweeps the whole ask side between events
+    assert m.book.best_ask() is None
+    for _ in range(50):
+        m.step()
+        assert m.book.best_bid() is not None and m.book.best_ask() is not None
+
+
 def test_counts_track_event_types():
     m = SyntheticMarket(seed=8)
     m.run(5_000)
