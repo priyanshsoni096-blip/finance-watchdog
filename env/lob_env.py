@@ -40,13 +40,18 @@ CALIBRATION_PATH = Path(__file__).resolve().parent.parent / "configs" / "calibra
 class EnvConfig:
     ticker: str = "AAPL"
     levels: int = 10
-    lot: int = 100
-    spoof_k: float = 10.0              # spoof size as multiple of trailing touch depth
-    max_inventory_lots: int = 10
+    # None -> half the median touch depth, rounded to 100 shares (AAPL 100, MSFT ~6,700).
+    # A fixed 100-share lot made a run-over on MSFT/INTC ~1,300 lots, impossible to unwind.
+    lot: int | None = None
+    spoof_k: float = 10.0              # spoof size as multiple of trailing touch depth (~20 lots)
+    max_inventory_lots: int = 40       # limits market orders only; run-overs never end an episode
     inv_penalty: float = 0.001         # per lot held, per step, in reward units
     episode_len: int = 2_000           # agent steps
     events_per_step: int = 1
-    warmup: int = 5_000                # events skipped so reference stats are settled
+    # Events skipped before any episode may start. The opening book is thin: at event 15k INTC's
+    # trailing touch depth is 0.08x its day median. With 30k, no start on any ticker yields a
+    # spoof under 5 lots (measured; 3.9% of INTC starts did at 5k).
+    warmup: int = 30_000
     impact_form: str = "linear"
     impact_lambda: float | None = None  # None -> per-ticker calibrated value
     bid_only: bool = False             # SPOOFER-03 constraint: spoof-sell disabled
@@ -72,7 +77,12 @@ class LimitOrderBookEnv(gym.Env):
         self.stats = stats if stats is not None else reference_stats(self.day)
         lam = cfg.impact_lambda if cfg.impact_lambda is not None else self._calibrated_lambda()
         self.impact = PriceImpact(lam, cfg.impact_form)
-        self.max_inventory = cfg.max_inventory_lots * cfg.lot
+        if cfg.lot is None:
+            depth = float(np.median(self.stats.touch_depth[cfg.warmup:]))
+            self.lot = max(100, int(round(depth / 2 / 100)) * 100)
+        else:
+            self.lot = int(cfg.lot)
+        self.max_inventory = cfg.max_inventory_lots * self.lot
 
         n_book = 4 * cfg.levels
         low = np.concatenate([np.tile([-PRICE_CLIP, 0.0], 2 * cfg.levels), np.full(3, -AGENT_CLIP)])
@@ -127,7 +137,7 @@ class LimitOrderBookEnv(gym.Env):
                 sizes[hit[0]] += s.size
         book = encode_book(d, self.stats, t, ask_size=ask_s, bid_size=bid_s)
         agent = encode_agent(self.inventory, self.pnl(), sum(s.size for s in self.spoofs),
-                             mid=self.mark_mid(), lot=self.cfg.lot, max_inventory=self.max_inventory,
+                             mid=self.mark_mid(), lot=self.lot, max_inventory=self.max_inventory,
                              touch_depth=self.stats.touch_depth[t])
         return np.concatenate([book, agent]).astype(np.float32)
 
@@ -165,17 +175,18 @@ class LimitOrderBookEnv(gym.Env):
         cfg, d, t = self.cfg, self.day, self.t
         shift = self.impact_shift(t)
 
-        if action == BUY and self.inventory + cfg.lot <= self.max_inventory:
-            self.inventory += cfg.lot
-            self.cash -= cfg.lot * (d.ask_price[t, 0] + shift)
-        elif action == SELL and self.inventory - cfg.lot >= -self.max_inventory:
-            self.inventory -= cfg.lot
-            self.cash += cfg.lot * (d.bid_price[t, 0] + shift)
+        lot = self.lot
+        if action == BUY and self.inventory + lot <= self.max_inventory:
+            self.inventory += lot
+            self.cash -= lot * (d.ask_price[t, 0] + shift)
+        elif action == SELL and self.inventory - lot >= -self.max_inventory:
+            self.inventory -= lot
+            self.cash += lot * (d.bid_price[t, 0] + shift)
         elif action in (SPOOF_BUY, SPOOF_SELL):
             side = 1 if action == SPOOF_BUY else -1
             allowed = not (cfg.bid_only and side < 0)
             if allowed and not any(s.side == side for s in self.spoofs):
-                size = max(cfg.lot, round(cfg.spoof_k * self.stats.touch_depth[t] / cfg.lot) * cfg.lot)
+                size = max(lot, round(cfg.spoof_k * self.stats.touch_depth[t] / lot) * lot)
                 price = d.bid_price[t, 0] if side > 0 else d.ask_price[t, 0]
                 self.spoofs.append(Spoof(side, float(size), float(price)))
         elif action == CANCEL:
@@ -189,15 +200,35 @@ class LimitOrderBookEnv(gym.Env):
                 self.t += 1
             fills += self._run_over(self.t)
 
-        pnl = self.pnl()
-        scale = self.stats.ref_spread[self.t] * cfg.lot
-        reward = (pnl - self._prev_pnl) / scale - cfg.inv_penalty * abs(self.inventory) / cfg.lot
-        self._prev_pnl = pnl
         self.steps += 1
-
-        terminated = abs(self.inventory) > self.max_inventory
         truncated = self.steps >= cfg.episode_len or self.t >= len(d) - 2
-        return self._obs(), float(reward), terminated, truncated, self._info(fills)
+        liquidation = {}
+        if truncated:
+            liquidation = self._liquidate()
+
+        pnl = self.pnl()
+        scale = self.stats.ref_spread[self.t] * lot
+        reward = (pnl - self._prev_pnl) / scale - cfg.inv_penalty * abs(self.inventory) / lot
+        self._prev_pnl = pnl
+
+        # No termination: ending the episode on a run-over let the agent escape ongoing costs
+        # (measured: 31/31 early terminations happened on a run-over step).
+        info = self._info(fills)
+        info["liquidation"] = liquidation
+        return self._obs(), float(reward), False, truncated, info
+
+    def _liquidate(self) -> dict:
+        """Close remaining position at episode end by crossing the unimpacted touch, so holding
+        inventory to the end is not free (a mark-to-mid ending would ignore the spread)."""
+        self.spoofs.clear()
+        if self.inventory == 0:
+            return {}
+        t, d = self.t, self.day
+        price = d.bid_price[t, 0] if self.inventory > 0 else d.ask_price[t, 0]
+        qty = self.inventory
+        self.cash += qty * price
+        self.inventory = 0
+        return {"qty": qty, "price": float(price)}
 
     def _run_over(self, t: int) -> list[dict]:
         d, fills, keep = self.day, [], []

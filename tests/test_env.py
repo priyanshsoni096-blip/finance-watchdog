@@ -96,7 +96,7 @@ def test_spoof_then_trade_is_profitable_only_with_impact(make, ticker):
     shift_at_sell = i_on[1]["impact_shift"]  # shift in force at the step where SELL executes
     print(f"{ticker}: extra PnL from spoof-then-sell = ${gain:.2f}; shift at sell = {shift_at_sell:.4f}")
     assert shift_at_sell > 0
-    assert gain == pytest.approx(on.cfg.lot * shift_at_sell)
+    assert gain == pytest.approx(on.lot * shift_at_sell)
     assert gain > 0
 
 
@@ -139,7 +139,43 @@ def test_inventory_limit_on_market_orders(make):
     env.reset(options={"start": _quiet_start(env)})
     for _ in range(5):
         env.step(BUY)
-    assert env.inventory == 2 * env.cfg.lot
+    assert env.inventory == 2 * env.lot
+
+
+@pytest.mark.parametrize("ticker", TICKERS)
+def test_spoof_to_lot_ratio_comparable_across_tickers(make, ticker):
+    """A spoof must be a similar number of lots on every stock, and fit inside the inventory limit."""
+    env = make(ticker)
+    env.reset(options={"start": _quiet_start(env)})
+    env.step(SPOOF_BUY)
+    lots = env.spoofs[0].size / env.lot
+    print(f"{ticker}: lot={env.lot} spoof={env.spoofs[0].size:.0f} shares = {lots:.1f} lots")
+    assert 5 <= lots <= 40
+    assert env.spoofs[0].size <= env.max_inventory
+
+
+def test_run_over_does_not_terminate_and_liquidation_crosses_spread(make):
+    env = make("INTC", episode_len=400)
+    d = env.day
+    for t in range(env.cfg.warmup, env._last_start, 53):
+        hit = np.flatnonzero(d.ask_price[t + 1:t + 300, 0] <= d.bid_price[t, 0])
+        if hit.size and np.isfinite(d.mid[t:t + 402]).all():
+            break
+    env.reset(options={"start": t})
+    env.step(SPOOF_BUY)
+    saw_fill = False
+    for _ in range(399):  # 1 spoof step + 399 no-ops = episode_len
+        *_, term, trunc, info = env.step(NOOP)
+        assert not term
+        saw_fill |= bool(info["run_over"])
+        if trunc:
+            break
+    assert saw_fill
+    assert trunc
+    liq = info["liquidation"]
+    assert liq["qty"] > 0 and env.inventory == 0
+    # long position sold at the bid, i.e. below the mid it was marked at
+    assert liq["price"] < d.mid[env.t]
 
 
 @pytest.mark.parametrize("ticker", TICKERS)

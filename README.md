@@ -32,6 +32,8 @@ Data: LOBSTER sample release (2012-06-21) from Hugging Face `totalorganfailure/l
 ## Environment (`env/lob_env.py`)
 
 - **Actions** `Discrete(6)`: no-op, market buy 1 lot, market sell 1 lot, spoof buy at best bid, spoof sell at best ask, cancel spoofs.
+- **Lot** = half the stock's median touch depth, rounded to 100 shares (AAPL/GOOG/AMZN 100, MSFT 6,700, INTC 7,000). A spoof is 10 × trailing touch depth, a median of 14–20 lots on every ticker.
+- **Episodes** are 2,000 events and never terminate early. At the end, any remaining position is liquidated across the spread.
 - **Observation** `Box(43)`: 40 book features (10 levels × ask/bid price and size, normalized) + inventory, PnL, active spoof size (all scale-free). Resting spoofs are added to the displayed size at their price level.
 - **Fills** happen at the *impacted* touch; **inventory is marked** to the *unimpacted* historical mid.
 - **Execution risk**: a resting spoof is run over (filled) when the historical opposite touch crosses its price.
@@ -59,6 +61,9 @@ Each of these was driven by a measurement, not preference.
 4. **Impact λ fitted per ticker from order-flow imbalance** (Cont, Kukanov & Stoikov 2014), not from order-size percentiles. The percentile rule (95th-percentile order moves the mid by the median move) was implemented and **rejected**: on MSFT and INTC it implies a 10×-depth spoof moves the price 44–58 spreads, because typical orders there are ~0.09× touch depth. It is kept in `env/price_impact.py` and a test records the failure. λ varies ~7× across tickers even under OFI, so a single pooled λ is not used.
 5. **Inventory marked to the unimpacted mid.** With the handoff's `Cash + Inventory × Mid_Price` using the impacted mid, an agent could earn reward just by holding a position while a spoof rests, without ever trading at the distorted price. Now the only profitable pattern is spoof → trade at the distorted price → cancel. Tested: holding through a spoof produces an identical reward stream with impact on or off; spoof-then-sell gains exactly `lot × shift` ($12.76 AAPL, $4.98 INTC in the test windows).
 6. **Reward in scale-free units.** Dollar PnL and a per-share penalty are not comparable between a $583 and a $27 stock.
+7. **Lot size scaled to depth; no early termination.** A first version used 100-share lots, a 10-lot inventory limit and terminated when the limit was breached. Measured over 40,000 random steps per ticker, a spoof was 14–16 lots on AAPL/GOOG/AMZN and 1,333–1,396 lots on MSFT/INTC, so every run-over breached the limit. **All 31 of 31 early terminations happened on a run-over step.** That gives the agent a way to end a losing episode on purpose. After the fix: 0 terminations, and spoofs of 14–20 lots everywhere.
+8. **End-of-episode liquidation.** Marking to mid at the end would make holding inventory free; the position is instead closed at the bid (long) or ask (short).
+9. **30,000-event warmup** before an episode may start. The opening book is thin: INTC's trailing touch depth is 0.08× its day median at event 15,000. With a 5,000-event warmup, 3.9% of INTC starts produced spoofs under 5 lots; with 30,000, none on any ticker did.
 
 ## Known limitations
 
