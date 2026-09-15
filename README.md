@@ -27,7 +27,8 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | PnL suppression with surveillance acting inside episodes | Done: `results/pnl_suppression.md` |
 | Interpretability (feature-group ablation) | Done: `results/feature_ablation.md` |
 | Structural comparison with Coscia and Sarao | Done: `results/real_case_comparison.md` (speed and layering cannot match in this environment) |
-| Coscia-style layering attacker (needs several resting orders per side), synthetic agent-based market, Watchdog on real SPY flow | Not started |
+| Synthetic agent-based market (sim-to-sim robustness) | Done: `results/synthetic_eval.md`, `results/synthetic_spoof_impact*.md` |
+| Coscia-style layering attacker (needs several resting orders per side), Watchdog on real SPY flow (LOBSTER has no participant identities, so the participant features cannot be built) | Not started |
 
 ---
 
@@ -142,6 +143,8 @@ synthetic/market.py               price-time-priority limit order book (syntheti
 synthetic/simulator.py            background traders: noise traders and imbalance followers
 synthetic/calibrate.py            grid search against real MSFT/INTC market statistics -> configs/synthetic_calibration.json
 synthetic/spoof_impact.py         emergent price impact of a spoof vs an identical control market
+synthetic/synthetic_env.py        the frozen agents' interface on the synthetic market (same observation and actions)
+synthetic/evaluate_synthetic.py   frozen agents and the Watchdog in the synthetic market; reactive vs blind followers
 
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
@@ -152,8 +155,8 @@ tests/                            unit and real-data tests (data, normalization,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
-                                  feature_ablation, real_case_stats, synthetic_spoof_impact (.md and .json each);
-                                  real_case_comparison.md
+                                  feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval
+                                  (.md and .json each); real_case_comparison.md
 ```
 
 ### Agent roster
@@ -433,7 +436,7 @@ Interventions on legitimate activity, per episode:
 
 This is a comparison of structure, not validation of detection on real manipulation.
 
-## Synthetic agent-based market (sim-to-sim robustness, in progress)
+## Synthetic agent-based market (sim-to-sim robustness)
 
 An evaluation-only market in which prices come from order matching between simple background traders, not from historical replay plus an impact formula. Nothing is trained in it.
 
@@ -478,13 +481,46 @@ Two earlier versions failed and are recorded in the code:
   - A share of 0.05–0.10 brackets the real mid-change rate. That range gives 0.29–0.55 spreads at 200 events, **4.5–9× less than the replay model's ~2.5**. Even 0.30, which makes the mid move 2.5× too often, reaches only 1.57.
   - Correction: an earlier version of this section called the follower share unconstrained by calibration. That was measured in the frozen first grid; in the working market it clearly changes price dynamics.
 - **Interpretation.** Results that depend on spoofing being profitable rest on an impact size this minimal market does not reproduce. That does not show the replay model is wrong. Here the only reactive channel is imbalance following, whereas real markets also have market makers repricing quotes and faster traders reacting.
-- **Still to do:** running the frozen Spoofers and the Watchdog inside this market.
+**Frozen agents and the Watchdog in the synthetic market (`python synthetic/evaluate_synthetic.py --episodes 30`, `results/synthetic_eval.md`).**
+- `synthetic/synthetic_env.py` gives the trained agents their usual observation and actions. Their large orders genuinely rest in the book, and self-trade prevention stops their market orders hitting their own orders.
+- Each source runs identical seeds with imbalance followers **reacting** to the agent's orders and **blind** to them. The paired difference is the manipulation gain.
+
+| Source | PnL, reactive | PnL, blind followers | Manipulation gain | Trades against own spoof/ep |
+|---|---|---|---|---|
+| SPOOFER-02 | −$2,930 ± 686 | −$2,467 ± 661 | −$463 ± 696 | 48.6 |
+| SPOOFER-04 | −$3,270 ± 688 | −$4,236 ± 745 | +$967 ± 944 | 122.6 |
+| SCRIPTED-ATK | −$16,971 ± 3,390 | −$18,668 ± 3,715 | +$1,697 ± 3,828 | 8.4 |
+| LATEBURST-ATK | −$15,249 ± 3,374 | −$13,980 ± 2,804 | −$1,270 ± 3,231 | 11.0 |
+| HONEST | −$223 ± 41 | −$223 ± 41 | $0 | 0 |
+| FLICKER | +$117 ± 256 | −$430 ± 353 | +$548 ± 473 | 0 |
+
+- **Spoofing profit does not survive.** Every manipulator loses money. The only manipulation gain whose CI excludes zero is SPOOFER-04's +$967 ± 944, and only barely. The frozen Spoofers keep their structure (SPOOFER-04 still trades against its own spoof 123 times per episode) but not their profit. This is consistent with emergent impact being 4.5–9× smaller than the replay model's.
+- **Caveat on the gain measure.** FLICKER, a legitimate agent, also shows a positive gain (+$548 ± 473): follower reaction changes the fate of large orders even without intent. The gain is not a pure measure of manipulation.
+
+Detection, using the Watchdog trained only on replay data and the rule tuned on the replay train split:
+
+| Bucket (order level) | Watchdog P / R / FPR | Rule P / R / FPR |
+|---|---|---|
+| All manipulators + legitimate | **0.88** / 0.48 / **0.10** | 0.59 / **0.96** / 0.96 |
+| Legitimate only | FPR **0.11** | FPR 0.92 |
+
+F1 per manipulator (each pooled with the legitimate sources):
+
+| Manipulator | Watchdog F1 | Rule F1 |
+|---|---|---|
+| SPOOFER-02 | **0.72** | 0.57 |
+| SPOOFER-04 | 0.55 | **0.67** |
+| SCRIPTED-ATK | **0.56** | 0.37 |
+| LATEBURST-ATK | **0.35** | 0.29 |
+
+- **The false-positive advantage transfers.** Legitimate-order FPR rises from 0.04 on replay data to 0.11 here, still about 8× below the rule.
+- **Recall drops to 0.48**, and the rule's overall F1 is higher (0.74 vs 0.62), because manipulative orders make up most of this pool and the rule flags almost everything.
 
 ## Where the three claims stand
 
-1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`).
+1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
 2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
-3. **The Watchdog doesn't flag legitimate activity — shown, in simulation.** It wrongly flags 1–7% of legitimate large orders, against the rule's 77–97%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
+3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
 
 Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Student-t CI over 3 training seeds scored on the same data (`results/multiseed.md`):
 
