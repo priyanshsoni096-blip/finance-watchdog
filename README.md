@@ -234,7 +234,15 @@ Each was driven by a measurement.
   | Flag rate | 0.49 | 0.07 | 0.02 | **0.000** |
 
   - Early random flags land mostly on legitimate steps at −2 each. Never flagging costs only the missed positives (about −0.13 per step), so it wins before the features are learned.
-  - The run was stopped at 49k steps. Three entropy settings (0.01 / 0.03 / 0.1, 150k steps each) were then tested, judged on training-rollout metrics only.
+  - The run was stopped at 49k steps.
+- **An entropy bonus does not fix it.** Three runs at entropy 0.01, 0.03 and 0.1 (150k steps each, judged on training-rollout metrics only) all collapsed the same way:
+
+  | Steps | 20k | 40k | 60k and later |
+  |---|---|---|---|
+  | Flag rate | 0.005–0.028 | 0.001 | 0.000 (recall 0.000 at the end) |
+
+  - Suspected cause: input scale. Book price features sit near ±20, while the participant features that carry the signal are 0–5. The logistic-regression diagnostic standardised its inputs; the Watchdog did not.
+  - Next test: observation normalisation (`--norm-obs`), with false-positive cost −2 and −1.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.

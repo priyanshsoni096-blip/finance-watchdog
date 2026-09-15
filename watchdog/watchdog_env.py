@@ -69,9 +69,26 @@ class WatchdogEnv(gym.Env):
         return self._obs(), float(reward), False, truncated, info
 
 
-def flag_episode(model, X: np.ndarray) -> np.ndarray:
-    """Run a (recurrent) policy deterministically over one recorded episode; returns per-step flags."""
+def load_obs_norm(folder) -> dict | None:
+    """Observation-normalisation statistics saved by train_watchdog.py --norm-obs, or None."""
+    import pickle
+    from pathlib import Path
+    f = Path(folder) / "vecnormalize.pkl"
+    if not f.exists():
+        return None
+    with open(f, "rb") as fh:
+        vn = pickle.load(fh)
+    return {"mean": vn.obs_rms.mean.astype(np.float32), "var": vn.obs_rms.var.astype(np.float32),
+            "epsilon": float(vn.epsilon), "clip": float(vn.clip_obs)}
+
+
+def flag_episode(model, X: np.ndarray, obs_norm: dict | None = None) -> np.ndarray:
+    """Run a (recurrent) policy deterministically over one recorded episode; returns per-step flags.
+    `obs_norm` applies the same scaling VecNormalize used in training (env clip first, then standardise)."""
     X = np.clip(X, -OBS_BOUND, OBS_BOUND).astype(np.float32)
+    if obs_norm is not None:
+        X = np.clip((X - obs_norm["mean"]) / np.sqrt(obs_norm["var"] + obs_norm["epsilon"]),
+                    -obs_norm["clip"], obs_norm["clip"]).astype(np.float32)
     state, start = None, np.ones((1,), dtype=bool)
     flags = np.zeros(len(X), dtype=bool)
     for i in range(len(X)):

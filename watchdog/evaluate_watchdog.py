@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT))
 
 from evaluation.baseline_detector import OrderRecord, RuleDetector, tune  # noqa: E402
 from watchdog.dataset import DATA_DIR, load_split, orders_from_array  # noqa: E402
-from watchdog.watchdog_env import flag_episode  # noqa: E402
+from watchdog.watchdog_env import flag_episode, load_obs_norm  # noqa: E402
 
 TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
 
@@ -62,9 +62,9 @@ def counts(pred, truth) -> dict:
             "fpr": fp / (fp + tn) if fp + tn else nan}
 
 
-def score_source(model, src: dict, det: RuleDetector) -> dict:
+def score_source(model, src: dict, det: RuleDetector, obs_norm: dict | None = None) -> dict:
     off = src["ep_offsets"]
-    flags_by_ep = [flag_episode(model, src["X"][a:b]) for a, b in zip(off[:-1], off[1:])]
+    flags_by_ep = [flag_episode(model, src["X"][a:b], obs_norm) for a, b in zip(off[:-1], off[1:])]
     orders = orders_from_array(src["orders"])
     wd_dec, wd_delay = order_flags(orders, flags_by_ep)
     truth = [o.manipulative for _, o in orders]
@@ -109,6 +109,7 @@ def main() -> int:
         print(f"no Watchdog at {path}; run watchdog/train_watchdog.py first")
         return 1
     model = RecurrentPPO.load(path, device="cpu")
+    obs_norm = load_obs_norm(path.parent)
     data = Path(args.data)
     train, test, held = load_split("train", data), load_split("test", data), load_split("heldout", data)
     if not (train and test and held):
@@ -120,7 +121,7 @@ def main() -> int:
     scored = {}
     for split, group in (("test", test), ("heldout", held)):
         for name, src in group.items():
-            scored[(split, name)] = score_source(model, src, det)
+            scored[(split, name)] = score_source(model, src, det, obs_norm)
             print(f"[{time.time() - t0:5.0f}s] scored {split}/{name}", flush=True)
 
     def pick(pred):

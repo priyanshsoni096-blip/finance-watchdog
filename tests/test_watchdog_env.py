@@ -69,6 +69,25 @@ class _Dummy:
         return np.array([int(x[0, 2] > 0.5)]), ("h", "c")
 
 
+class _Recorder:
+    def __init__(self):
+        self.seen = []
+
+    def predict(self, x, state=None, episode_start=None, deterministic=True):
+        self.seen.append(x.copy())
+        return np.array([0]), None
+
+
+def test_flag_episode_applies_obs_normalisation():
+    m = _Recorder()
+    X = np.full((2, OBS_DIM), 5.0, dtype=np.float32)
+    X[1, 0] = 100.0                                   # env bound clips this to 25 before normalising
+    norm = {"mean": np.ones(OBS_DIM, np.float32), "var": np.full(OBS_DIM, 4.0, np.float32), "epsilon": 0.0, "clip": 10.0}
+    flag_episode(m, X, norm)
+    assert m.seen[0][0, 1] == pytest.approx((5 - 1) / 2)
+    assert m.seen[1][0, 0] == pytest.approx(10.0)     # (25 - 1) / 2 = 12, clipped to 10
+
+
 def test_flag_episode_uses_state_protocol():
     m = _Dummy()
     X = SOURCES["SPOOF_A"]["X"][:5]

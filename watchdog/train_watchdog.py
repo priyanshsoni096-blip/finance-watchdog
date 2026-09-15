@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 from sb3_contrib import RecurrentPPO  # noqa: E402
 from stable_baselines3.common.callbacks import BaseCallback  # noqa: E402
-from stable_baselines3.common.vec_env import DummyVecEnv  # noqa: E402
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize  # noqa: E402
 
 from watchdog.dataset import DATA_DIR, load_split  # noqa: E402
 from watchdog.watchdog_env import WatchdogEnv  # noqa: E402
@@ -85,6 +85,9 @@ def main() -> int:
     p.add_argument("--threads", type=int, default=2)
     # Entropy bonus against early collapse to "never flag" (the same fix got the Spoofers past never trading).
     p.add_argument("--ent-coef", type=float, default=0.0)
+    # Standardise observations. Raw book price features sit near +-20 while the participant features that carry
+    # the signal are 0-5; the logistic-regression diagnostic that separated positives standardised its inputs.
+    p.add_argument("--norm-obs", action="store_true")
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
@@ -103,6 +106,8 @@ def main() -> int:
         return _make
 
     vec = DummyVecEnv([factory(i) for i in range(args.n_envs)])
+    if args.norm_obs:
+        vec = VecNormalize(vec, norm_obs=True, norm_reward=False, clip_obs=10.0)
     out = ROOT / "checkpoints" / "WATCHDOG" / args.tag
     out.mkdir(parents=True, exist_ok=True)
     (out / "config.txt").write_text(f"{vars(args)}\nsources={sorted(sources)}\n")
@@ -112,6 +117,8 @@ def main() -> int:
                          seed=args.seed, verbose=0, device="cpu")
     model.learn(total_timesteps=args.timesteps, callback=DetectionLog(out / "progress.csv"))
     model.save(out / "model")
+    if args.norm_obs:
+        vec.save(str(out / "vecnormalize.pkl"))  # evaluation must apply the same observation scaling
     print(f"saved {out / 'model.zip'}")
     return 0
 
