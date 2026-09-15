@@ -98,19 +98,35 @@ Scores the Watchdog and the rule-based baseline on the same recorded orders; wri
 ## What is what
 
 ```
-data/download.py            fetch raw LOBSTER CSVs from Hugging Face
-env/lobster_data.py         parse message + orderbook CSVs into arrays (LobsterDay), cache
-env/normalization.py        scale-free features: prices in spread units, sizes as log ratio to trailing size
-env/price_impact.py         linear/sqrt impact; lambda fitted from order-flow imbalance
-env/lob_env.py              LimitOrderBookEnv (Gymnasium): actions, fills, run-over, reward
-scripts/calibrate.py        per-stock statistics -> configs/calibration.json
-training/train_spoofer.py   PPO training for the SPOOFER roster, behaviour logging
-training/summarize.py       training trend table from progress.csv
+data/download.py                  fetch raw LOBSTER CSVs from Hugging Face
+env/lobster_data.py               parse message + orderbook CSVs into arrays (LobsterDay), cache
+env/normalization.py              scale-free features: prices in spread units, sizes as log ratio to trailing size
+env/price_impact.py               linear/sqrt impact; lambda and impact ramp fitted from order-flow imbalance
+env/lob_env.py                    LimitOrderBookEnv (Gymnasium): actions, fills, spoof ramp + cap, self-impact,
+                                  run-over, liquidation, reward
+configs/calibration.json          per-stock lambda and impact ramp written by scripts/calibrate.py
+
+training/train_spoofer.py         PPO training for the SPOOFER roster (DECISION_ENV: 10 events per decision)
+training/summarize.py             training trend table from progress.csv
+
+evaluation/agents.py              policies: trained Spoofer (ModelPolicy), HONEST, FLICKER, SCRIPTED-ATK
+evaluation/rollout.py             one recorded episode: PnL, order lifecycles, 46-dim surveillance view, labels
 evaluation/baseline_detector.py   rule-based detector, metrics, tuning, real-data front-end
-evaluation/basic_eval.py    the basic evaluation described above
-tests/                      64 tests (data, normalization, impact, env, detector)
-checkpoints/                trained models + logs (git-ignored)
-results/                    evaluation outputs
+evaluation/basic_eval.py          Spoofers vs controls, rule-based baseline, real-flow flag rate
+
+watchdog/dataset.py               record frozen agents into train / test / heldout splits (data/watchdog/)
+watchdog/watchdog_env.py          WatchdogEnv (flag/clear rewards), flag_episode, observation normalisation
+watchdog/train_watchdog.py        RecurrentPPO Watchdog training on the train split
+watchdog/evaluate_watchdog.py     Watchdog vs rule-based baseline on identical orders
+
+scripts/calibrate.py              per-stock statistics -> configs/calibration.json
+scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
+scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
+
+tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
+                                  Watchdog env/eval, roster granularity)
+checkpoints/                      trained models + logs (git-ignored)
+results/                          basic_eval.{md,json}, watchdog_eval.{md,json}
 ```
 
 ### Agent roster
