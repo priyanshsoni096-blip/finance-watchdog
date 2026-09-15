@@ -51,7 +51,15 @@ class Flicker:
 
 
 class ScriptedSpoof:
-    """A single large order per cycle, not Coscia-style layering (the env allows one spoof per side)."""
+    """Spoof one side, wait 30-80 market events for the impact to build, trade 1-5 lots on the other
+    side, hold 0-20 events, cancel, then unwind. A single large order per cycle, not Coscia-style
+    layering (the env allows one spoof per side).
+
+    The wait matters: on the v3 env, trading immediately after placing the spoof lost on every stock,
+    while waiting ~50 events was profitable on MSFT/INTC in a scripted probe. Waits are given in
+    market events and converted to agent steps, so the attacker behaves the same at any
+    events_per_step.
+    """
 
     def reset(self, rng):
         self.plan = []
@@ -61,9 +69,12 @@ class ScriptedSpoof:
             return self.plan.pop(0)
         if env.inventory != 0:
             return SELL if env.inventory > 0 else BUY
-        if rng.random() < 0.02:
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.02 * per_step:
             side = 1 if rng.random() < 0.5 else -1
             trade = SELL if side > 0 else BUY
-            self.plan = [trade] * int(rng.integers(1, 6)) + [NOOP] * int(rng.integers(0, 50)) + [CANCEL]
+            wait = -(-int(rng.integers(30, 81)) // per_step)
+            hold = -(-int(rng.integers(0, 21)) // per_step)
+            self.plan = [NOOP] * wait + [trade] * int(rng.integers(1, 6)) + [NOOP] * hold + [CANCEL]
             return SPOOF_BUY if side > 0 else SPOOF_SELL
         return NOOP
