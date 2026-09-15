@@ -185,10 +185,14 @@ def main() -> int:
         runs.append(("HONEST", f"honest_{held}", tk, Honest(), {}, args.episodes))
         runs.append(("FLICKER", f"flicker_{held}", tk, Flicker(), {}, args.episodes))
         runs.append(("SCRIPTED-ATK", f"scripted_{held}", tk, ScriptedSpoof(), {}, args.episodes))
-    old = ROOT / "checkpoints" / "SPOOFER-04" / "v1_no_selfimpact" / "model.zip"
-    if old.exists():
-        runs.append(("SPOOFER-04 (pre-fix policy)", "exploit_replay", "INTC", ModelPolicy(old),
-                     AGENTS["SPOOFER-04"]["cfg"], min(args.episodes, 5)))
+    # Policies trained on earlier env versions, replayed on the current env: shows each exploit is closed.
+    for agent, tag, label in [("SPOOFER-04", "v1_no_selfimpact", "v1 policy, free accumulation"),
+                              ("SPOOFER-02", "v2_selfimpact", "v2 policy, alternating swing"),
+                              ("SPOOFER-04", "v2_selfimpact", "v2 policy, alternating swing")]:
+        old = ROOT / "checkpoints" / agent / tag / "model.zip"
+        if old.exists():
+            runs.append((f"{agent} ({label})", "exploit_replay", AGENTS[agent]["ticker"], ModelPolicy(old),
+                         AGENTS[agent]["cfg"], min(args.episodes, 5)))
 
     results = []
     for i, (name, group, tk, policy, cfg, n_ep) in enumerate(runs):

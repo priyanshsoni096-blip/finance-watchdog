@@ -46,7 +46,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-62 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
+64 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
@@ -88,7 +88,7 @@ training/train_spoofer.py   PPO training for the SPOOFER roster, behaviour loggi
 training/summarize.py       training trend table from progress.csv
 evaluation/baseline_detector.py   rule-based detector, metrics, tuning, real-data front-end
 evaluation/basic_eval.py    the basic evaluation described above
-tests/                      62 tests (data, normalization, impact, env, detector)
+tests/                      64 tests (data, normalization, impact, env, detector)
 checkpoints/                trained models + logs (git-ignored)
 results/                    evaluation outputs
 ```
@@ -106,7 +106,7 @@ results/                    evaluation outputs
 
 ### Environment in one paragraph
 
-Each step replays one real LOBSTER event. The agent can do nothing, market buy or sell one lot, place a large "spoof" order at the best bid or ask (10 × trailing touch depth), or cancel. A resting spoof shifts the price the agent trades at by `lambda × spread × size / depth`. Its own market orders push the price too (self-impact). The position is valued at the *real* historical mid and liquidated across the spread at the end. A spoof is filled ("run over") if the real market moves through its price. Reward is the PnL change in units of spread × lot, minus an inventory penalty. Lot = half the stock's median touch depth; episodes are 2,000 events and start after event 30,000.
+Each step replays one real LOBSTER event. The agent can do nothing, market buy or sell one lot, place a large "spoof" order at the best bid or ask (10 × trailing touch depth), or cancel. A resting spoof shifts the price the agent trades at by `lambda × spread × size / depth`. Its own market orders push the price too (self-impact). A spoof's effect builds up over its first ~200 events, and only as many shares as the spoof's size can trade at the favourable price. The position is valued at the *real* historical mid and liquidated across the spread at the end. A spoof is filled ("run over") if the real market moves through its price. Reward is the PnL change in units of spread × lot, minus an inventory penalty. Lot = half the stock's median touch depth; episodes are 2,000 events and start after event 30,000.
 
 ---
 
@@ -136,6 +136,11 @@ Each was driven by a measurement.
 8. **End-of-episode liquidation across the spread**, including unwinding impact.
 9. **30,000-event warmup.** INTC's trailing depth is 0.08× its day median at event 15,000; a 5,000 warmup gave spoofs under 5 lots on 3.9% of INTC starts, 30,000 gave none.
 10. **Self-impact for the agent's own market orders.** Without it, the first SPOOFER-04 bought 276,900 shares (about 20× touch depth) at a spoof-depressed price, filling below the real bid, and made about +$253k per episode. Test: once bought volume reaches the spoof size, further buys fill at or above the ask.
+11. **Spoof impact builds up with order age, and its benefit is capped at the spoof's size.** After change 10, SPOOFER-02/04 still made about $240k per episode by swinging between −40 and +40 lots under alternating spoofs. Linear self-impact is path-independent, so a round trip cost only $53, while the spoof's shift applied to unlimited volume.
+    - The build-up follows the measured price response to order flow at 10/50/200/1000 events. MSFT is at 0.57 of its 200-event response after 10 events, INTC 0.55, AMZN 0.49; AAPL and GOOG show no build-up. The age-0 value of 0 is an assumption, since the smallest measured window is 10 events.
+    - Each spoof's favourable shift applies to at most its own size in opposite-side shares; adverse shifts always apply.
+    - A per-trade cost was considered and dropped: lots fill within the best level, where the measured walking cost is zero.
+    - Replaying the v2 policies for 5 episodes: MSFT **+$232,119 → −$8,052**, INTC **+$255,487 → −$6,905** (fix off vs on).
 
 ---
 
@@ -146,7 +151,7 @@ Each was driven by a measurement.
 
 ## Open issues (to decide before the Watchdog)
 
-1. **Alternating-side spoofing is still very profitable on 1-tick stocks.** Self-impact is permanent and linear, so it only charges for the final position; swinging from −40 to +40 lots and back costs almost nothing. Replaying the pre-fix SPOOFER-04 policy on the fixed env for one episode: **+$224,301 from spoof shift, −$52.80 self-impact cost, $49,807 spread paid.** The spoof's shift also applies to unlimited volume. The size of this profit is probably unrealistic. Candidate fixes: impact that decays over time, capping volume that can trade at a spoof-shifted price, or concave impact.
+1. ~~Alternating-side spoofing very profitable on 1-tick stocks~~ — addressed by change 11. Check the retrained Spoofers in `results/basic_eval.md` against the scripted attacker to judge whether their profit is now realistic.
 2. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population and the held-out AMZN test.
 3. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
 4. The basic eval uses one seed per agent and a normal-approximation CI.
