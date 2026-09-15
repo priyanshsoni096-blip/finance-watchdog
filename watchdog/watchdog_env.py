@@ -82,13 +82,36 @@ def load_obs_norm(folder) -> dict | None:
             "epsilon": float(vn.epsilon), "clip": float(vn.clip_obs)}
 
 
-def flag_episode(model, X: np.ndarray, obs_norm: dict | None = None) -> np.ndarray:
-    """Run a (recurrent) policy deterministically over one recorded episode; returns per-step flags.
-    `obs_norm` applies the same scaling VecNormalize used in training (env clip first, then standardise)."""
+def prepare_obs(X: np.ndarray, obs_norm: dict | None = None) -> np.ndarray:
+    """The scaling the Watchdog saw in training: env clip first, then VecNormalize standardise and clip."""
     X = np.clip(X, -OBS_BOUND, OBS_BOUND).astype(np.float32)
     if obs_norm is not None:
         X = np.clip((X - obs_norm["mean"]) / np.sqrt(obs_norm["var"] + obs_norm["epsilon"]),
                     -obs_norm["clip"], obs_norm["clip"]).astype(np.float32)
+    return X
+
+
+class OnlineWatchdog:
+    """A trained Watchdog acting inside a live episode: one observation per step, recurrent state carried."""
+
+    def __init__(self, model, obs_norm: dict | None = None):
+        self.model, self.obs_norm = model, obs_norm
+        self.reset()
+
+    def reset(self) -> None:
+        self.state, self.start = None, np.ones((1,), dtype=bool)
+
+    def flag(self, x: np.ndarray) -> bool:
+        obs = prepare_obs(x[None], self.obs_norm)
+        action, self.state = self.model.predict(obs, state=self.state, episode_start=self.start, deterministic=True)
+        self.start = np.zeros((1,), dtype=bool)
+        return int(np.asarray(action).reshape(-1)[0]) == 1
+
+
+def flag_episode(model, X: np.ndarray, obs_norm: dict | None = None) -> np.ndarray:
+    """Run a (recurrent) policy deterministically over one recorded episode; returns per-step flags.
+    `obs_norm` applies the same scaling VecNormalize used in training (env clip first, then standardise)."""
+    X = prepare_obs(X, obs_norm)
     state, start = None, np.ones((1,), dtype=bool)
     flags = np.zeros(len(X), dtype=bool)
     for i in range(len(X)):

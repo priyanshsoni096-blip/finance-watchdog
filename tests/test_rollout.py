@@ -41,6 +41,31 @@ def test_resting_order_visible_in_participant_features(day):
     assert resting.any() and not resting.all()
 
 
+def test_force_cancel_marks_intervention_and_rule_ignores_it(day):
+    from env.lob_env import NOOP, SPOOF_BUY
+    from evaluation.baseline_detector import RuleDetector
+    from evaluation.rollout import StepTracker
+    env = _env(day, episode_len=50)
+    obs, _ = env.reset(seed=7)
+    tracker = StepTracker(env)
+    for step, action in enumerate([SPOOF_BUY, NOOP]):
+        tracker.before_step()
+        obs, _, _, trunc, info = env.step(action)
+        tracker.after_step(obs, action, info, step, trunc)
+    assert len(env.spoofs) == 1 and len(tracker.live) == 1
+    assert tracker.force_cancel(step=2) == 1
+    assert env.spoofs == [] and tracker.live == {}
+    rec = tracker.done[-1]
+    assert rec.removed_by == "intervention" and rec.removed_step == 2
+    # large and short-lived, but cancelled by surveillance rather than by its owner: the rule must not fire
+    assert not RuleDetector(0.0, 10_000).flags(rec)
+    # the next step must not report the surveillance cancel as the participant's own cancellation
+    tracker.before_step()
+    obs, _, _, trunc, info = env.step(NOOP)
+    x = tracker.after_step(obs, NOOP, info, 2, trunc)
+    assert x[BOOK_DIM + 3] == 0.0
+
+
 def test_orders_record_events_per_step(day):
     d = day("GOOG")
     env = LimitOrderBookEnv(EnvConfig(ticker="GOOG", events_per_step=10, episode_len=100), day=d,

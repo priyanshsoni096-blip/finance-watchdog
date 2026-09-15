@@ -88,6 +88,21 @@ def test_flag_episode_applies_obs_normalisation():
     assert m.seen[1][0, 0] == pytest.approx(10.0)     # (25 - 1) / 2 = 12, clipped to 10
 
 
+def test_online_watchdog_matches_flag_episode():
+    from watchdog.watchdog_env import OnlineWatchdog
+    X = SOURCES["SPOOF_A"]["X"][:5]
+    norm = {"mean": np.zeros(OBS_DIM, np.float32), "var": np.ones(OBS_DIM, np.float32), "epsilon": 0.0, "clip": 10.0}
+    offline_model, online_model = _Dummy(), _Dummy()
+    offline = flag_episode(offline_model, X, norm)
+    wd = OnlineWatchdog(online_model, norm)
+    online = [wd.flag(x) for x in X]
+    assert online == offline.tolist()
+    assert online_model.starts == offline_model.starts == [True, False, False, False, False]
+    wd.reset()
+    wd.flag(X[0])
+    assert online_model.starts[-1] is True
+
+
 def test_flag_episode_uses_state_protocol():
     m = _Dummy()
     X = SOURCES["SPOOF_A"]["X"][:5]
