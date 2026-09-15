@@ -177,6 +177,18 @@ Each was driven by a measurement.
     | AAPL | loses | loses (every setting) | loses |
 
   - So the Spoofers' failure is an exploration and credit-assignment problem, not a missing opportunity. Random trading early in training cost about $13.6k per episode on INTC, and the default entropy bonus is 0, so the policy settled on not trading before it found the delayed payoff.
+- **Exploration experiments (300k steps, one seed each)** — fix for the no-trade convergence:
+
+  | Setting | Stock | Deterministic PnL/episode | Spoof gain | No-impact counterfactual |
+  |---|---|---|---|---|
+  | entropy 0.01, 1 event/step | INTC | −$1,582, 0 trades | $0 | $0 |
+  | 10 events/step | INTC | **+$6,477**, 187 trades | +$16,920 | −$10,267 |
+  | 10 events/step + entropy 0.01 | INTC | **+$8,236**, 186 trades | +$17,365 | −$8,761 |
+  | 10 events/step + entropy 0.01 | MSFT | $0, 0 trades | $0 | $0 |
+
+  - Deciding once per 10 market events makes the ~50-event wait before trading a 5-decision delay instead of 50, and INTC learns genuine spoofing. The same trades with impact switched off lose money, so the profit comes from the spoof, not an exploit.
+  - MSFT still fails: +$881/episode in training with sampled actions, but the deterministic policy never trades.
+  - All agents now use 10 events per decision and entropy 0.01 (`DECISION_ENV` in `training/train_spoofer.py`).
 - **Basic eval on the v3 Spoofers (20 episodes per run):**
   - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
   - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).

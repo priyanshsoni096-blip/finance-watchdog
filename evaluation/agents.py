@@ -41,11 +41,13 @@ class Flicker:
         self.hold = 0
 
     def act(self, obs, env, rng):
+        # hold time is 1-300 market events whatever the decision granularity
+        per_step = env.cfg.events_per_step
         if env.spoofs:
             self.hold -= 1
             return CANCEL if self.hold <= 0 else NOOP
-        if rng.random() < 0.02:
-            self.hold = int(rng.integers(1, 300))
+        if rng.random() < 0.02 * per_step:
+            self.hold = -(-int(rng.integers(1, 300)) // per_step)
             return SPOOF_BUY if rng.random() < 0.5 else SPOOF_SELL
         return NOOP
 

@@ -33,13 +33,19 @@ from env.lob_env import (BUY, CANCEL, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig,  #
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
 
+# One agent decision per 10 market events; episodes stay 2,000 events. Shared by every agent the Watchdog
+# observes, so all its sources have the same step granularity. Measured on INTC at 300k steps: with 1 event
+# per step PPO converged to never trading; with 10 it earned +$6,477/episode (+$8,236 with ent_coef 0.01),
+# of which spoof gain was +$16,920 against a -$10,267 impact-free counterfactual.
+DECISION_ENV = dict(events_per_step=10, episode_len=200)
+
 # Locked roster (handoff §5.1). SPOOFER-05 is trained but never shown to the Watchdog.
 AGENTS = {
-    "SPOOFER-01": dict(ticker="AAPL", seed=101, cfg=dict(inv_penalty=0.01)),
-    "SPOOFER-02": dict(ticker="MSFT", seed=202, cfg=dict(inv_penalty=0.0001)),
-    "SPOOFER-03": dict(ticker="GOOG", seed=303, cfg=dict(bid_only=True)),
-    "SPOOFER-04": dict(ticker="INTC", seed=404, cfg=dict()),
-    "SPOOFER-05": dict(ticker="AMZN", seed=505, cfg=dict()),
+    "SPOOFER-01": dict(ticker="AAPL", seed=101, cfg=dict(inv_penalty=0.01, **DECISION_ENV)),
+    "SPOOFER-02": dict(ticker="MSFT", seed=202, cfg=dict(inv_penalty=0.0001, **DECISION_ENV)),
+    "SPOOFER-03": dict(ticker="GOOG", seed=303, cfg=dict(bid_only=True, **DECISION_ENV)),
+    "SPOOFER-04": dict(ticker="INTC", seed=404, cfg=dict(**DECISION_ENV)),
+    "SPOOFER-05": dict(ticker="AMZN", seed=505, cfg=dict(**DECISION_ENV)),
 }
 ACTION_NAMES = ["noop", "buy", "sell", "spoof_buy", "spoof_sell", "cancel"]
 
@@ -129,21 +135,24 @@ def main() -> int:
     # measured on 12k steps: 1 thread 39.3 s, 2 threads 34.7 s, 4 threads 35.3 s. 2 lets two
     # Spoofers train in parallel on this 4-core laptop without slowing each other.
     p.add_argument("--threads", type=int, default=2)
-    # Exploration / credit-assignment knobs. On the v3 env every Spoofer converged to never trading,
-    # although a scripted "spoof, wait ~50 events, trade, cancel" policy earns ~$4k/episode on
-    # MSFT/INTC; defaults reproduce the original settings.
-    p.add_argument("--ent-coef", type=float, default=0.0)
+    # Exploration / credit-assignment knobs. ent_coef 0.01 keeps the policy exploring past the early phase
+    # where random trading loses money (with 0, INTC converged to never trading at 1 event/step).
+    p.add_argument("--ent-coef", type=float, default=0.01)
     p.add_argument("--gamma", type=float, default=0.99)
-    p.add_argument("--events-per-step", type=int, default=1)
+    p.add_argument("--events-per-step", type=int, default=None, help="override the roster's DECISION_ENV")
     p.add_argument("--episode-len", type=int, default=None, help="agent steps; default keeps 2000 events")
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
     spec = AGENTS[args.agent]
     seed = spec["seed"] if args.seed is None else args.seed
-    episode_len = args.episode_len if args.episode_len is not None else 2000 // args.events_per_step
-    cfg = EnvConfig(ticker=spec["ticker"], events_per_step=args.events_per_step, episode_len=episode_len,
-                    **spec["cfg"])
+    env_kwargs = dict(spec["cfg"])
+    if args.events_per_step is not None:
+        env_kwargs["events_per_step"] = args.events_per_step
+        env_kwargs["episode_len"] = 2000 // args.events_per_step
+    if args.episode_len is not None:
+        env_kwargs["episode_len"] = args.episode_len
+    cfg = EnvConfig(ticker=spec["ticker"], **env_kwargs)
     day = load_day(cfg.ticker)
     stats = reference_stats(day)
 

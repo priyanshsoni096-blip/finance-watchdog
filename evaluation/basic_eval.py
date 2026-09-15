@@ -58,7 +58,7 @@ def main() -> int:
     p.add_argument("--out", default=str(ROOT / "results"))
     args = p.parse_args()
 
-    from train_spoofer import AGENTS
+    from train_spoofer import AGENTS, DECISION_ENV
 
     t0 = time.time()
     cache = {}
@@ -80,17 +80,19 @@ def main() -> int:
             print(f"[skip] {agent}: no checkpoint at {path.relative_to(ROOT)}")
     for tk in TICKERS:
         held = "heldout" if tk == HELD_OUT else "train"
-        runs.append(("HONEST", f"honest_{held}", tk, Honest(), {}, args.episodes))
-        runs.append(("FLICKER", f"flicker_{held}", tk, Flicker(), {}, args.episodes))
-        runs.append(("SCRIPTED-ATK", f"scripted_{held}", tk, ScriptedSpoof(), {}, args.episodes))
+        runs.append(("HONEST", f"honest_{held}", tk, Honest(), DECISION_ENV, args.episodes))
+        runs.append(("FLICKER", f"flicker_{held}", tk, Flicker(), DECISION_ENV, args.episodes))
+        runs.append(("SCRIPTED-ATK", f"scripted_{held}", tk, ScriptedSpoof(), DECISION_ENV, args.episodes))
     # Policies trained on earlier env versions, replayed on the current env: shows each exploit is closed.
     for agent, tag, label in [("SPOOFER-04", "v1_no_selfimpact", "v1 policy, free accumulation"),
                               ("SPOOFER-02", "v2_selfimpact", "v2 policy, alternating swing"),
                               ("SPOOFER-04", "v2_selfimpact", "v2 policy, alternating swing")]:
         old = ROOT / "checkpoints" / agent / tag / "model.zip"
         if old.exists():
+            # these policies were trained at 1 event per step, so replay them at that granularity
+            legacy_cfg = {k: v for k, v in AGENTS[agent]["cfg"].items() if k not in DECISION_ENV}
             runs.append((f"{agent} ({label})", "exploit_replay", AGENTS[agent]["ticker"], ModelPolicy(old),
-                         AGENTS[agent]["cfg"], min(args.episodes, 5)))
+                         legacy_cfg, min(args.episodes, 5)))
 
     results = []
     for i, (name, group, tk, policy, cfg, n_ep) in enumerate(runs):

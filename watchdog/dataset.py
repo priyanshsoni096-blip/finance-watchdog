@@ -55,7 +55,7 @@ class Source:
 
 
 def sources(tag: str = "main") -> dict[str, list[Source]]:
-    from train_spoofer import AGENTS
+    from train_spoofer import AGENTS, DECISION_ENV
     train, heldout = [], []
     for agent, spec in AGENTS.items():
         path = ROOT / "checkpoints" / agent / tag / "model.zip"
@@ -66,9 +66,10 @@ def sources(tag: str = "main") -> dict[str, list[Source]]:
         (heldout if spec["ticker"] == HELD_OUT else train).append(src)
     for tk in TICKERS:
         bucket = heldout if tk == HELD_OUT else train
-        bucket.append(Source("HONEST", tk, Honest, {}))
-        bucket.append(Source("FLICKER", tk, Flicker, {}))
-        heldout.append(Source("SCRIPTED-ATK", tk, ScriptedSpoof, {}))
+        # controls share the Spoofers' decision granularity, so every source has the same step size
+        bucket.append(Source("HONEST", tk, Honest, DECISION_ENV))
+        bucket.append(Source("FLICKER", tk, Flicker, DECISION_ENV))
+        heldout.append(Source("SCRIPTED-ATK", tk, ScriptedSpoof, DECISION_ENV))
     return {"train": train, "test": train, "heldout": heldout}
 
 
