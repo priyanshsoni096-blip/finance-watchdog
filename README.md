@@ -320,6 +320,18 @@ Each was driven by a measurement.
   - Participant-only raised GOOG recall at a 0.5 threshold (0.67 → 0.96) only by flagging more: legitimate FPR rose 0.19 → 0.34, and ranking was no better on GOOG and worse elsewhere.
   - **Decision: the Watchdog keeps all 46 features; no change is adopted.** The stock-identity shortcut remains an unverified hypothesis supported only by the heldout split. Testing it cleanly needs a fresh attacker variant that has not been inspected.
 
+## Pre-registered clean held-out test: LATEBURST-ATK
+
+The scripted attacker has been inspected during analysis, so it no longer gives a clean generalisation result. This test was defined and committed **before** any of its data was generated or any result was seen.
+
+- **Attacker** (`LateBurstSpoof` in `evaluation/agents.py`). Spoof one side, wait 100–200 market events, trade 4–8 lots on the other side in a burst, cancel immediately, unwind. Identical behaviour on AAPL, MSFT, GOOG, INTC and AMZN.
+- **Evaluation.** 50 episodes per stock at 10 events per step. The existing Watchdog (`checkpoints/WATCHDOG/main`) and the train-tuned rule are scored on the same orders. Negatives are FLICKER on the same stock (test-split seeds). No model, threshold or feature is changed after results are seen.
+- **Hypothesis (stock-identity shortcut).** The Watchdog's order-level recall on MSFT+INTC is at least **2×** its recall on AAPL+GOOG+AMZN.
+  - Supported if the ratio is ≥ 2.
+  - Not supported if it is below 2.
+  - Undetermined if recall is 0 on both groups.
+- **Also reported, not used for any decision.** Overall Watchdog recall, precision and FPR versus the rule.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from.

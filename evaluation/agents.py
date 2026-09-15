@@ -56,6 +56,32 @@ class Flicker:
         return NOOP
 
 
+class LateBurstSpoof:
+    """Pre-registered clean held-out attacker (defined and committed before any data or results existed).
+
+    Spoof one side, wait 100-200 market events, trade 4-8 lots on the other side in a burst, cancel
+    immediately, then unwind. Its timing differs from SCRIPTED-ATK (wait 30-80, 1-5 trades, hold 0-20) and from
+    the trained Spoofers. Behaviour is identical on every stock, which is what the stock-shortcut test needs.
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            trade = SELL if side > 0 else BUY
+            wait = -(-int(rng.integers(100, 201)) // per_step)
+            self.plan = [NOOP] * wait + [trade] * int(rng.integers(4, 9)) + [CANCEL]
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP
+
+
 class ScriptedSpoof:
     """Spoof one side, wait 30-80 market events for the impact to build, trade 1-5 lots on the other
     side, hold 0-20 events, cancel, then unwind. A single large order per cycle, not Coscia-style
