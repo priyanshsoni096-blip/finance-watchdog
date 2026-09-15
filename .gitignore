@@ -1,5 +1,6 @@
 data/raw/
 data/cache/
+data/watchdog/
 checkpoints/
 __pycache__/
 *.pyc

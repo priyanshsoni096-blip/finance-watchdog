@@ -34,117 +34,16 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "training"))
 
-from env.lob_env import (BUY, CANCEL, NOOP, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig,  # noqa: E402
-                         LimitOrderBookEnv)
+from env.lob_env import EnvConfig, LimitOrderBookEnv  # noqa: E402
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
-from evaluation.baseline_detector import (OrderRecord, RuleDetector,  # noqa: E402
-                                          classification_metrics, real_data_flags, tune)
+from evaluation.agents import Flicker, Honest, ModelPolicy, ScriptedSpoof  # noqa: E402
+from evaluation.baseline_detector import classification_metrics, real_data_flags, tune  # noqa: E402
+from evaluation.rollout import record_episode  # noqa: E402
 
 TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
 TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
 HELD_OUT = "AMZN"
-
-
-# ------------------------------------------------------------------ policies
-class ModelPolicy:
-    def __init__(self, path: Path):
-        from stable_baselines3 import PPO
-        self.model = PPO.load(path, device="cpu")
-
-    def reset(self, rng):
-        pass
-
-    def act(self, obs, env, rng):
-        return int(self.model.predict(obs, deterministic=True)[0])
-
-
-class Honest:
-    """Legitimate trader: occasional market orders, leaning toward flattening inventory. No spoofs."""
-
-    def reset(self, rng):
-        pass
-
-    def act(self, obs, env, rng):
-        if rng.random() > 0.1:
-            return NOOP
-        flatten = SELL if env.inventory > 0 else BUY
-        other = BUY if flatten == SELL else SELL
-        return flatten if rng.random() < 0.7 else other
-
-
-class Flicker:
-    """Large orders placed and cancelled with no trading — the pattern SPOOFER-01 converged to.
-    No intent to profit from a distortion, so every order is labelled legitimate."""
-
-    def reset(self, rng):
-        self.hold = 0
-
-    def act(self, obs, env, rng):
-        if env.spoofs:
-            self.hold -= 1
-            return CANCEL if self.hold <= 0 else NOOP
-        if rng.random() < 0.02:
-            self.hold = int(rng.integers(1, 300))
-            return SPOOF_BUY if rng.random() < 0.5 else SPOOF_SELL
-        return NOOP
-
-
-class ScriptedSpoof:
-    """Hand-scripted spoofer (not RL): spoof one side, trade 1-5 lots on the other side while it
-    rests, hold briefly, cancel, then unwind. A single large order, not Coscia-style layering."""
-
-    def reset(self, rng):
-        self.plan = []
-
-    def act(self, obs, env, rng):
-        if self.plan:
-            return self.plan.pop(0)
-        if env.inventory != 0:
-            return SELL if env.inventory > 0 else BUY
-        if rng.random() < 0.02:
-            side = 1 if rng.random() < 0.5 else -1
-            trade = SELL if side > 0 else BUY
-            self.plan = [trade] * int(rng.integers(1, 6)) + [NOOP] * int(rng.integers(0, 50)) + [CANCEL]
-            return SPOOF_BUY if side > 0 else SPOOF_SELL
-        return NOOP
-
-
-# ------------------------------------------------------------------ rollouts
-def run_episode(env: LimitOrderBookEnv, policy, rng, seed: int) -> dict:
-    obs, _ = env.reset(seed=seed)
-    policy.reset(rng)
-    live: dict[int, tuple] = {}   # id(spoof) -> (spoof, OrderRecord); holding the object keeps id unique
-    done: list[OrderRecord] = []
-    next_id = step = trades = manip_trades = 0
-    while True:
-        a = policy.act(obs, env, rng)
-        t = env.t
-        pre = {id(s): s for s in env.spoofs}
-        obs, _, term, trunc, info = env.step(a)
-
-        if info["trade_price"] is not None:
-            trades += 1
-            trade_side = 1 if a == BUY else -1
-            against = [k for k, s in pre.items() if s.side == -trade_side and k in live]
-            for k in against:
-                live[k][1].opposite_trades += 1
-            manip_trades += bool(against)
-
-        post = {id(s): s for s in env.spoofs}
-        for k, s in post.items():
-            if k not in live:
-                live[k] = (s, OrderRecord(next_id, s.side, s.size, s.size / env.stats.touch_depth[t], step))
-                next_id += 1
-        run_over = {(f["side"], f["price"]) for f in info["run_over"]}
-        for k in [k for k in live if k not in post]:
-            s, rec = live.pop(k)
-            rec.removed_step = step
-            rec.removed_by = "run_over" if (s.side, s.price) in run_over else ("episode_end" if trunc else "cancel")
-            done.append(rec)
-        step += 1
-        if term or trunc:
-            return {"pnl": float(info["pnl"]), "orders": done, "trades": trades, "manip_trades": manip_trades}
 
 
 def ci95(x) -> tuple[float, float]:
@@ -153,7 +52,6 @@ def ci95(x) -> tuple[float, float]:
     return float(x.mean()), float(half)
 
 
-# ------------------------------------------------------------------ main
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--episodes", type=int, default=20)
@@ -198,7 +96,7 @@ def main() -> int:
     for i, (name, group, tk, policy, cfg, n_ep) in enumerate(runs):
         env = env_for(tk, cfg)
         rng = np.random.default_rng(10_000 + i)
-        eps = [run_episode(env, policy, rng, seed=50_000 + 97 * j) for j in range(n_ep)]
+        eps = [record_episode(env, policy, rng, seed=50_000 + 97 * j, features=False) for j in range(n_ep)]
         orders = [o for e in eps for o in e["orders"]]
         pnl_mean, pnl_ci = ci95([e["pnl"] for e in eps])
         spread_lot = float(np.median(env.stats.ref_spread)) * env.lot
@@ -214,7 +112,7 @@ def main() -> int:
             "_orders": orders,
         }
         results.append(row)
-        print(f"[{time.time() - t0:6.0f}s] {name:28s} {tk} pnl={pnl_mean:+12.1f} ±{pnl_ci:9.1f} "
+        print(f"[{time.time() - t0:6.0f}s] {name:40s} {tk} pnl={pnl_mean:+12.1f} ±{pnl_ci:9.1f} "
               f"trades/ep={row['trades_per_ep']:7.1f} against-spoof/ep={row['trades_against_own_spoof_per_ep']:6.1f} "
               f"orders/ep={row['orders_per_ep']:5.1f}", flush=True)
 
