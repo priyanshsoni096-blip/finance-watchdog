@@ -52,7 +52,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-88 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
+113 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
