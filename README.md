@@ -17,7 +17,7 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 | Piece | State |
 |---|---|
 | Data loader, cross-stock normalization, price-impact calibration | Done, tested on real data |
-| `LimitOrderBookEnv` (spoof impact, self-impact, run-over, liquidation) | Done, tested — **one open modelling issue** (see Open issues) |
+| `LimitOrderBookEnv` (spoof impact, self-impact, run-over, liquidation) | Done, tested. Spoof profitability depends on the replay impact model (see Open issues and the synthetic market section). |
 | Spoofer population SPOOFER-01..05 (PPO) | Trained on the current env; see `results/basic_eval.md` |
 | Rule-based baseline detector | Done |
 | Basic evaluation (`evaluation/basic_eval.py`) | Done |
@@ -53,12 +53,12 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-113 tests, about 1–2 minutes. Tests that need data skip themselves if it isn't downloaded.
+113 tests, about 40 seconds (36 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
 ```
-Trains one Spoofer (roster below). Output goes to `checkpoints/SPOOFER-04/main/`: `model.zip`, `progress.csv` (one row per 4,000 steps), `config.txt`. About 25 minutes at 600k steps on this laptop. `--threads`, `--seed`, `--tag` are optional.
+Trains one Spoofer (roster below) at the shared setting of 10 market events per decision with entropy 0.01. Output goes to `checkpoints/SPOOFER-04/main/`: `model.zip`, `progress.csv` (one row per 4,000 steps), `config.txt`. The final population took 14.8–15.7 minutes per Spoofer at 600k steps, five trained in parallel with one thread each. `--threads`, `--seed`, `--tag` are optional.
 
 ```bash
 python training/summarize.py SPOOFER-04 --buckets 10
@@ -68,7 +68,7 @@ Prints how behaviour changed over training: reward, PnL, action mix, trades agai
 ```bash
 python evaluation/basic_eval.py --episodes 20
 ```
-Runs the basic evaluation (about 10–15 minutes) and writes:
+Runs the basic evaluation (54 s measured for the final population) and writes:
 - `results/basic_eval.md` — readable report with the tables described below
 - `results/basic_eval.json` — every number, including the full detector tuning grid
 
@@ -84,9 +84,9 @@ python watchdog/dataset.py --episodes 150
 Rolls out every frozen agent once and saves what surveillance can see into `data/watchdog/{train,test,heldout}/`: 40 book features plus 6 features of the watched trader's own orders, with hindsight labels per step. SPOOFER-05, SCRIPTED-ATK and every AMZN source go only into `heldout`.
 
 ```bash
-python watchdog/train_watchdog.py --timesteps 400000
+python watchdog/train_watchdog.py --timesteps 400000 --norm-obs --ent-coef 0.01
 ```
-Trains the Watchdog (RecurrentPPO, LSTM) on the `train` split. At each step it chooses to flag or clear: +1 for a correct flag, −1 for a miss, −2 for a false flag, 0 for correctly clearing. It is never told the spoofing rule. Output goes to `checkpoints/WATCHDOG/main/` (`model.zip`, `progress.csv` with precision, recall and false-positive rate per rollout).
+Trains the Watchdog (RecurrentPPO, LSTM) on the `train` split. **Both flags are required to reproduce the reported Watchdog.** Without `--norm-obs` training collapses to never flagging (see Findings). The script's defaults are kept so the collapse can be reproduced. At each step it chooses to flag or clear: +1 for a correct flag, −1 for a miss, −2 for a false flag, 0 for correctly clearing. It is never told the spoofing rule. Output goes to `checkpoints/WATCHDOG/main/` (`model.zip`, `progress.csv` with precision, recall and false-positive rate per rollout).
 
 ```bash
 python watchdog/evaluate_watchdog.py
@@ -102,6 +102,50 @@ The pre-registered clean held-out test: a new attacker defined before any of its
 python watchdog/multiseed_summary.py --tags main main_s2 main_s3
 ```
 Scores every trained Watchdog seed on the same test, heldout and saved LATEBURST-ATK data. Reports each headline metric per seed, with its mean and a 95% Student-t CI, plus the seed-independent rule. Output: `results/multiseed.md` and `.json`. Train extra seeds with `python watchdog/train_watchdog.py --timesteps 400000 --norm-obs --ent-coef 0.01 --tag main_s2 --seed 11`.
+
+### Further analyses
+
+Each writes a `results/*.md` report and a matching `.json`. Run after the Watchdog pipeline.
+
+```bash
+python watchdog/pnl_suppression.py --episodes 50
+```
+The Watchdog and the rule act inside episodes; PnL suppression and wrongful interventions.
+
+```bash
+python watchdog/feature_ablation.py
+```
+Which observation features the Watchdog relies on.
+
+```bash
+python scripts/pnl_decompose.py SPOOFER-04 main 10 --stochastic
+```
+Where a Spoofer's PnL comes from, with a no-impact counterfactual. Prints to the terminal.
+
+```bash
+python scripts/feature_signal_check.py --no-heldout
+```
+Supervised diagnostic of whether the features carry the signal. Prints to the terminal.
+
+```bash
+python scripts/real_case_stats.py
+```
+Simulated order structure for the Coscia/Sarao comparison.
+
+```bash
+python synthetic/calibrate.py
+```
+Calibrates the synthetic market to real MSFT/INTC statistics; writes `configs/synthetic_calibration.json`.
+
+```bash
+python synthetic/spoof_impact.py --trials 300
+```
+Emergent spoof impact in the synthetic market. Add `--p-follower 0.3 --tag pf030` for the sensitivity runs.
+
+```bash
+python synthetic/evaluate_synthetic.py --episodes 30
+```
+Frozen agents and the Watchdog in the synthetic market.
 
 ### Reading `results/basic_eval.md`
 
@@ -151,8 +195,8 @@ scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain v
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 
-tests/                            unit and real-data tests (data, normalization, impact, env, detector, rollout,
-                                  Watchdog env/eval, roster granularity)
+tests/                            113 unit and real-data tests (data, normalization, impact, env, detector, rollout,
+                                  Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
                                   feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval
@@ -168,11 +212,14 @@ results/                          basic_eval, watchdog_eval, lateburst_test, mul
 | SPOOFER-03 | GOOG | training pool | can only spoof the bid |
 | SPOOFER-04 | INTC | training pool | default |
 | SPOOFER-05 | AMZN | **held out** | default; never used for tuning |
-| HONEST, FLICKER, SCRIPTED-ATK | all | scripted controls in the eval | legitimate trading / large orders cancelled with no trading / spoof one side, trade the other |
+| HONEST | all | scripted control | legitimate trading, no large orders |
+| FLICKER | all | scripted control | large orders placed and cancelled with no trading |
+| SCRIPTED-ATK | all | held-out attacker (inspected during analysis) | spoof one side, wait 30–80 events, trade 1–5 lots on the other side, cancel |
+| LATEBURST-ATK | all | pre-registered clean held-out attacker | spoof one side, wait 100–200 events, trade 4–8 lots in a burst, cancel |
 
 ### Environment in one paragraph
 
-Each step replays one real LOBSTER event. The agent can do nothing, market buy or sell one lot, place a large "spoof" order at the best bid or ask (10 × trailing touch depth), or cancel. A resting spoof shifts the price the agent trades at by `lambda × spread × size / depth`. Its own market orders push the price too (self-impact). A spoof's effect builds up over its first ~200 events, and only as many shares as the spoof's size can trade at the favourable price. The position is valued at the *real* historical mid and liquidated across the spread at the end. A spoof is filled ("run over") if the real market moves through its price. Reward is the PnL change in units of spread × lot, minus an inventory penalty. Lot = half the stock's median touch depth; episodes are 2,000 events and start after event 30,000.
+Each agent decision advances 10 real LOBSTER events. The agent can do nothing, market buy or sell one lot, place a large "spoof" order at the best bid or ask (10 × trailing touch depth), or cancel. A resting spoof shifts the price the agent trades at by `lambda × spread × size / depth`. Its own market orders push the price too (self-impact). A spoof's effect builds up over its first ~200 events, and only as many shares as the spoof's size can trade at the favourable price. The position is valued at the *real* historical mid and liquidated across the spread at the end. A spoof is filled ("run over") if the real market moves through its price. Reward is the PnL change in units of spread × lot, minus an inventory penalty. Lot = half the stock's median touch depth; episodes are 2,000 events and start after event 30,000.
 
 ---
 
@@ -207,6 +254,10 @@ Each was driven by a measurement.
     - Each spoof's favourable shift applies to at most its own size in opposite-side shares; adverse shifts always apply.
     - A per-trade cost was considered and dropped: lots fill within the best level, where the measured walking cost is zero.
     - Replaying the v2 policies for 5 episodes: MSFT **+$232,119 → −$8,052**, INTC **+$255,487 → −$6,905** (fix off vs on).
+12. **Ten market events per agent decision, entropy bonus 0.01.** After change 11 every Spoofer converged to never trading at one event per decision, although a scripted probe showed spoofing was profitable. With 10 events per decision, INTC learned genuine spoofing. Every agent the Watchdog observes uses this granularity (`DECISION_ENV`), and order lifetimes are converted to market events for the rule.
+13. **Sampled actions when running trained Spoofers.** With the most likely action, SPOOFER-02 (MSFT) lost its learned spoofing (−$1,291 per episode, no spoof gain). Sampling from the policy PPO optimised gave +$2,085 with +$7,664 spoof gain.
+14. **Standardised Watchdog observations** (`--norm-obs`). Without them, Watchdog training collapsed to never flagging at entropy 0, 0.01, 0.03 and 0.1. The normalisation statistics are saved with the model and applied at evaluation.
+15. **Scripted attacker waits 30–80 events before trading.** Trading immediately after placing the spoof lost money on every stock once change 11 was in place, so the attacker no longer represented profitable manipulation.
 
 ---
 
@@ -223,6 +274,11 @@ Each was driven by a measurement.
     | AAPL | loses | loses (every setting) | loses |
 
   - So the Spoofers' failure is an exploration and credit-assignment problem, not a missing opportunity. Random trading early in training cost about $13.6k per episode on INTC, and the default entropy bonus is 0, so the policy settled on not trading before it found the delayed payoff.
+- **Basic eval on the v3 Spoofers (20 episodes per run):**
+  - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
+  - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).
+  - All three replayed exploit policies lose on average (−$6.9k to −$24.3k), so the fixes hold.
+- **The scripted attacker now waits 30–80 market events before trading.** Over 6 episodes at 1 event per step: INTC **+$2,827** (100% of episodes profitable), MSFT **+$2,145** (83%), AAPL −$584 (0%).
 - **Exploration experiments (300k steps, one seed each)** — fix for the no-trade convergence:
 
   | Setting | Stock | Deterministic PnL/episode | Spoof gain | No-impact counterfactual |
@@ -248,6 +304,15 @@ Each was driven by a measurement.
   - INTC and MSFT learned genuine spoofing: with impact switched off, the same trading loses money.
   - Taking the most likely action erased MSFT's learned behaviour, so evaluation and the Watchdog dataset sample actions from the policy PPO actually optimised.
   - **The held-out SPOOFER-05 (AMZN) never spoofs**, because spoofing isn't profitable on AMZN under the calibrated impact. The held-out RL test therefore has no manipulation to catch; the scripted attacker on AMZN is the held-out check.
+- **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
+  - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
+  - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
+  - The patient scripted attacker makes +$951 on MSFT and +$629 on INTC, and loses on AAPL, GOOG and AMZN.
+  - **The rule-based baseline is weak on the RL population.** Tuned to size ≥2× depth and cancel within 200 events, it scores precision **0.20**, recall 0.82 and false-positive rate **0.84** on the RL training pool.
+    - The Spoofers place many large orders they never trade against (SPOOFER-01 52 per episode, SPOOFER-05 46), and a size-plus-cancel rule can't tell those from spoofs.
+    - It flags 93% of held-out SPOOFER-05's orders, every one of them legitimate.
+    - On the scripted attacker it scores precision 0.56–0.57 and recall 0.93–0.97, the same on training stocks as on AMZN.
+- **Profit is not guaranteed to come from manipulation.** Checking where PnL comes from (spoof gain vs spread cost vs self-impact) turned out to be essential; headline PnL alone hid an env bug twice.
 - **Watchdog dataset (`python watchdog/dataset.py --episodes 150`, 213 s, 52 MB).** Share of steps with a manipulative order resting:
 
   | Split | Source | Episodes | Positive steps |
@@ -520,7 +585,7 @@ F1 per manipulator (each pooled with the legitimate sources):
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
 2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
-3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. It has not yet been run on real unlabeled order flow (SPY); only the rule has.
+3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. Only the rule has been run on real, unlabeled order flow (AAPL, MSFT, GOOG, INTC, AMZN). The Watchdog cannot be, because LOBSTER messages carry no participant identities, so its participant features cannot be built from real data.
 
 Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Student-t CI over 3 training seeds scored on the same data (`results/multiseed.md`):
 
@@ -534,38 +599,30 @@ Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Stude
 | PnL suppression of SPOOFER-04 INTC (main Watchdog, 50 episodes) | **83%** (+$12,625 → +$2,165) | 55% (→ +$5,655) |
 | Interventions per episode on legitimate FLICKER orders (main Watchdog) | **0.3–0.4** | 4.7 |
 
-- All three comparisons hold for every seed: in-distribution F1 about 2× the rule, false positives about 20× lower, and unseen-attacker recall about 4× lower.
+- All three comparisons hold for every seed. On the means, in-distribution F1 is 2.1× the rule's, the false-positive rate on legitimate orders is about 26× lower (0.031 vs 0.823), and unseen-attacker recall is 4.1× lower.
 - Seeds differ mainly in the precision/recall balance. One seed (main_s3) is conservative: order precision 0.95, recall 0.59, and step recall 0.50 versus 0.87 for the other two. Recall intervals are therefore wide (order ±0.27, step ±0.52).
 - The pre-registered LATEBURST verdict was fixed in advance on the `main` model (recall ratio 1.50). The extra seeds only measure variability.
-- **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
-  - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
-  - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
-  - The patient scripted attacker makes +$951 on MSFT and +$629 on INTC, and loses on AAPL, GOOG and AMZN.
-  - **The rule-based baseline is weak on the RL population.** Tuned to size ≥2× depth and cancel within 200 events, it scores precision **0.20**, recall 0.82 and false-positive rate **0.84** on the RL training pool.
-    - The Spoofers place many large orders they never trade against (SPOOFER-01 52 per episode, SPOOFER-05 46), and a size-plus-cancel rule can't tell those from spoofs.
-    - It flags 93% of held-out SPOOFER-05's orders, every one of them legitimate.
-    - On the scripted attacker it scores precision 0.56–0.57 and recall 0.93–0.97, the same on training stocks as on AMZN.
-- **Basic eval on the v3 Spoofers (20 episodes per run):**
-  - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
-  - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).
-  - All three replayed exploit policies lose on average (−$6.9k to −$24.3k), so the fixes hold.
-- **The scripted attacker now waits 30–80 market events before trading.** Over 6 episodes at 1 event per step: INTC **+$2,827** (100% of episodes profitable), MSFT **+$2,145** (83%), AAPL −$584 (0%).
-- **Profit is not guaranteed to come from manipulation.** Checking where PnL comes from (spoof gain vs spread cost vs self-impact) turned out to be essential; headline PnL alone hid an env bug twice.
 
-## Open issues (to decide before the Watchdog)
+## Open issues
 
-1. ~~Alternating-side spoofing very profitable on 1-tick stocks~~ — addressed by change 11. Check the retrained Spoofers in `results/basic_eval.md` against the scripted attacker to judge whether their profit is now realistic.
-2. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population and the held-out AMZN test.
-3. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
-4. **Seeds.** The Watchdog headline metrics use 3 training seeds with Student-t 95% CIs (`results/multiseed.md`). Each Spoofer is still a single training seed, and the basic eval's PnL CIs use a normal approximation over episodes.
+1. **Profitable spoofing depends on the replay impact model.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, every manipulator loses money. Profit results do not transfer across market mechanisms.
+2. **The Watchdog misses sparse spoofing** (a wait, then a few trades). This holds in training (SPOOFER-03 GOOG) and on unseen attackers (LATEBURST-ATK recall 0.24), and ablation shows detection rests on trade direction.
+3. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population, and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+4. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
+5. **Seeds.** The Watchdog headline metrics use 3 training seeds with Student-t 95% CIs (`results/multiseed.md`). Each Spoofer is still a single training seed, and PnL CIs use a normal approximation over episodes.
+6. **The environment allows one large order per side at the best price**, so layering (Coscia's progressively priced orders, Sarao's orders held several levels back) cannot be simulated or detected.
 
 ## Known limitations
 
 - Single trading day (2012-06-21) — the sample release has no other days.
-- **SPY covers only 09:30–10:30**, so the planned false-positive test will use one hour of data.
+- **No participant identities in LOBSTER.** The Watchdog cannot be run on real order flow. SPY (which also covers only 09:30–10:30) was therefore not used; the rule's real-flow flag rates come from the five other stocks.
 - The impact layer is a model on top of historical replay; historical prices never react to the agent.
 - Run-over uses "price moves through the level", not queue position.
+- The synthetic market is minimal: imbalance following is its only reactive channel, with no market makers repricing quotes.
 
 ## Design changes to sync into the Claude Project "RL"
 
-`project-design-consolidated.md` and `execution-plan-10.md` could not be reached from this environment. Copy changes 1–10, Open issues 1–2 and the SPY one-hour limitation into both, then search for stale references ("RLlib", "10,000 shares", "ticks", "PnL = Cash + Inventory × Mid_Price", "full day" for SPY).
+`project-design-consolidated.md` and `execution-plan-10.md` could not be reached from this environment.
+- Copy into both: design changes 1–15, Open issues 1–6, and the known limitations (no participant identities, SPY one hour, synthetic market scope).
+- Also copy the three sections that change the plan's evaluation: the pre-registered LATEBURST test, the synthetic-market robustness results, and PnL suppression.
+- Then search both documents for stale references: "RLlib", "10,000 shares", "ticks", "PnL = Cash + Inventory × Mid_Price", "one event per step", "SPY false-positive test", "pooled calibration".
