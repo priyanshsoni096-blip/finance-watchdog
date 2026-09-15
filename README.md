@@ -216,6 +216,17 @@ Each was driven by a measurement.
   | heldout | SPOOFER-05 AMZN, HONEST / FLICKER AMZN | 50 each | 0% |
 
   The held-out RL source has no positives, so on AMZN only false positives can be measured.
+- **The surveillance features carry the signal (`python scripts/feature_signal_check.py`).** This check is supervised, so it is a diagnostic, not a detector result. A class-balanced logistic regression on [current step, mean of the previous 10 steps], trained on the `train` split, step level:
+
+  | Scored on | Precision | Recall | False-positive rate |
+  |---|---|---|---|
+  | test: SPOOFER-02/03/04 | 0.94 | 0.95 | 0.07 |
+  | test: legitimate only (HONEST + FLICKER) | — | — | 0.19 |
+  | test: SPOOFER-01 (large orders, no manipulation) | 0.01 | 0.29 | 0.14 |
+  | heldout: SCRIPTED-ATK, all stocks | 0.98 | 0.49 | 0.009 |
+  | heldout: AMZN legitimate sources | — | — | 0.09 |
+
+  If the Watchdog fails to separate positives, the cause is RL optimisation, not missing information. Even a simple model loses half its recall on the held-out scripted attacker's unseen structure.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
