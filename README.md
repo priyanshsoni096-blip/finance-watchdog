@@ -138,6 +138,11 @@ watchdog/multiseed_summary.py     headline metrics across Watchdog training seed
 watchdog/pnl_suppression.py       Watchdog and rule acting inside episodes: PnL suppression, wrongful interventions
 watchdog/feature_ablation.py      which observation features the Watchdog relies on (group ablation, test split)
 
+synthetic/market.py               price-time-priority limit order book (synthetic market, evaluation only)
+synthetic/simulator.py            background traders: noise traders and imbalance followers
+synthetic/calibrate.py            grid search against real MSFT/INTC market statistics -> configs/synthetic_calibration.json
+synthetic/spoof_impact.py         emergent price impact of a spoof vs an identical control market
+
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
@@ -147,7 +152,8 @@ tests/                            unit and real-data tests (data, normalization,
                                   Watchdog env/eval, roster granularity)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
-                                  feature_ablation, real_case_stats (.md and .json each); real_case_comparison.md
+                                  feature_ablation, real_case_stats, synthetic_spoof_impact (.md and .json each);
+                                  real_case_comparison.md
 ```
 
 ### Agent roster
@@ -426,6 +432,42 @@ Interventions on legitimate activity, per episode:
 - **Not comparable:** size ratio (fixed by design), small-order fill rate, profit scale.
 
 This is a comparison of structure, not validation of detection on real manipulation.
+
+## Synthetic agent-based market (sim-to-sim robustness, in progress)
+
+An evaluation-only market in which prices come from order matching between simple background traders, not from historical replay plus an impact formula. Nothing is trained in it.
+
+- **Engine** (`synthetic/market.py`): price-time-priority limit order book.
+- **Background traders** (`synthetic/simulator.py`):
+  - noise traders placing limit and market orders, with every resting order cancelled at a constant per-event rate
+  - imbalance followers trading toward the heavier visible side, which is how a spoof can move the price here
+
+**Calibration (`python synthetic/calibrate.py`).** A parameter grid is scored only against real MSFT/INTC market statistics, never on spoof profitability. MSFT/INTC are used instead of all four training stocks because pooling 1-tick and 15–28-tick spreads describes no real market.
+
+| Statistic | Real MSFT/INTC | Synthetic |
+|---|---|---|
+| Median spread | 1 tick | 1 tick |
+| Events where the mid changes | 0.48% | 0.58% |
+| Median mid range over 2,000 events | 2.0 ticks | 2.25 ticks |
+| Median touch depth | 13,450 | 8,304 |
+| Event mix: new / cancel / execution | 0.49 / 0.46 / 0.05 | 0.49 / 0.41 / 0.10 |
+
+Two earlier versions failed and are recorded in the code:
+- A fixed cancel probability let liquidity grow without bound (touch depth 88,770 shares, the mid never moved).
+- Thin-tailed market-order sizes left the mid near-frozen in all 36 settings of the first grid. Heavier-tailed sizes fixed it.
+
+**Emergent spoof impact (`python synthetic/spoof_impact.py`, 300 paired trials).** A 10× touch-depth spoof buy is compared with an identical market without it:
+
+| Events after placement | Synthetic, in spreads | Replay model MSFT / INTC, in spreads |
+|---|---|---|
+| 10 | +0.04 ± 0.03 | +1.45 / +1.37 |
+| 50 | +0.14 ± 0.07 | +2.27 / +2.12 |
+| 200 | +0.55 ± 0.15 | +2.55 / +2.47 |
+
+- **The spoof does move the synthetic price, and the effect builds up over time**, the same shape as the replay model's ramp, with no formula involved.
+- **It is about 4.5× smaller at 200 events** and about 35× smaller at 10.
+- **Caveat:** the size depends on the share of imbalance followers, which none of the calibration statistics constrain (fixed at 0.1). Sensitivity to that parameter is the next check.
+- **Still to do:** running the frozen Spoofers and the Watchdog inside this market.
 
 ## Where the three claims stand
 
