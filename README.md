@@ -202,6 +202,20 @@ Each was driven by a measurement.
   - INTC and MSFT learned genuine spoofing: with impact switched off, the same trading loses money.
   - Taking the most likely action erased MSFT's learned behaviour, so evaluation and the Watchdog dataset sample actions from the policy PPO actually optimised.
   - **The held-out SPOOFER-05 (AMZN) never spoofs**, because spoofing isn't profitable on AMZN under the calibrated impact. The held-out RL test therefore has no manipulation to catch; the scripted attacker on AMZN is the held-out check.
+- **Watchdog dataset (`python watchdog/dataset.py --episodes 150`, 213 s, 52 MB).** Share of steps with a manipulative order resting:
+
+  | Split | Source | Episodes | Positive steps |
+  |---|---|---|---|
+  | train | SPOOFER-04 INTC | 150 | 92.4% |
+  | train | SPOOFER-02 MSFT | 150 | 44.1% |
+  | train | SPOOFER-03 GOOG | 150 | 20.2% |
+  | train | SPOOFER-01 AAPL | 150 | 0.2% (7,877 large orders, almost none traded against) |
+  | train | HONEST / FLICKER on AAPL, MSFT, GOOG, INTC | 150 each | 0% |
+  | test | same sources, unseen seeds | 50 each | within about 1 point of train |
+  | heldout | SCRIPTED-ATK on all five stocks | 50 each | 51–57% |
+  | heldout | SPOOFER-05 AMZN, HONEST / FLICKER AMZN | 50 each | 0% |
+
+  The held-out RL source has no positives, so on AMZN only false positives can be measured.
 - **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
   - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
   - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
