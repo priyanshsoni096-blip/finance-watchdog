@@ -62,7 +62,9 @@ def sources(tag: str = "main") -> dict[str, list[Source]]:
         if not path.exists():
             print(f"[skip] {agent}: no checkpoint at {path.relative_to(ROOT)}")
             continue
-        src = Source(agent, spec["ticker"], lambda p=path: ModelPolicy(p), spec["cfg"])
+        # sampled actions: with argmax, SPOOFER-02 (MSFT) lost its learned spoofing (-$1,291/episode, no spoof
+        # gain) while sampling gave +$2,085 with +$7,664 spoof gain
+        src = Source(agent, spec["ticker"], lambda p=path: ModelPolicy(p, deterministic=False), spec["cfg"])
         (heldout if spec["ticker"] == HELD_OUT else train).append(src)
     for tk in TICKERS:
         bucket = heldout if tk == HELD_OUT else train
@@ -99,6 +101,8 @@ def build_source(src: Source, split: str, episodes: int, cache: dict) -> dict:
     policy = src.make_policy()
     salt = zlib.crc32(f"{src.name}/{src.ticker}".encode()) % 10_000
     rng = np.random.default_rng(SEED_BASE[split] + salt)
+    import torch
+    torch.manual_seed(SEED_BASE[split] + salt)  # reproducible action sampling for trained Spoofers
     eps = [record_episode(env, policy, rng, seed=SEED_BASE[split] + salt * 7 + 97 * j) for j in range(episodes)]
     lengths = np.array([len(e["y"]) for e in eps])
     return {

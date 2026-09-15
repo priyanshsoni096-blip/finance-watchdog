@@ -75,7 +75,9 @@ def main() -> int:
         path = ROOT / "checkpoints" / agent / "main" / "model.zip"
         if path.exists():
             group = "rl_heldout" if spec["ticker"] == HELD_OUT else "rl_train"
-            runs.append((agent, group, spec["ticker"], ModelPolicy(path), spec["cfg"], args.episodes))
+            # sampled actions, as in the Watchdog dataset (argmax lost SPOOFER-02's learned spoofing)
+            runs.append((agent, group, spec["ticker"], ModelPolicy(path, deterministic=False), spec["cfg"],
+                         args.episodes))
         else:
             print(f"[skip] {agent}: no checkpoint at {path.relative_to(ROOT)}")
     for tk in TICKERS:
@@ -98,6 +100,8 @@ def main() -> int:
     for i, (name, group, tk, policy, cfg, n_ep) in enumerate(runs):
         env = env_for(tk, cfg)
         rng = np.random.default_rng(10_000 + i)
+        import torch
+        torch.manual_seed(10_000 + i)  # reproducible action sampling for trained Spoofers
         eps = [record_episode(env, policy, rng, seed=50_000 + 97 * j, features=False) for j in range(n_ep)]
         orders = [o for e in eps for o in e["orders"]]
         pnl_mean, pnl_ci = ci95([e["pnl"] for e in eps])

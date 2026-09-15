@@ -13,15 +13,19 @@ from env.lob_env import BUY, CANCEL, NOOP, SELL, SPOOF_BUY, SPOOF_SELL
 
 
 class ModelPolicy:
-    def __init__(self, path: Path):
+    """A frozen trained Spoofer. deterministic=False samples from the learned action distribution, which is
+    the policy PPO actually optimised; taking the most likely action can lose the learned behaviour."""
+
+    def __init__(self, path: Path, deterministic: bool = True):
         from stable_baselines3 import PPO
         self.model = PPO.load(path, device="cpu")
+        self.deterministic = deterministic
 
     def reset(self, rng):
         pass
 
     def act(self, obs, env, rng):
-        return int(self.model.predict(obs, deterministic=True)[0])
+        return int(self.model.predict(obs, deterministic=self.deterministic)[0])
 
 
 class Honest:

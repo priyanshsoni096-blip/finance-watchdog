@@ -189,6 +189,19 @@ Each was driven by a measurement.
   - Deciding once per 10 market events makes the ~50-event wait before trading a 5-decision delay instead of 50, and INTC learns genuine spoofing. The same trades with impact switched off lose money, so the profit comes from the spoof, not an exploit.
   - MSFT still fails: +$881/episode in training with sampled actions, but the deterministic policy never trades.
   - All agents now use 10 events per decision and entropy 0.01 (`DECISION_ENV` in `training/train_spoofer.py`).
+- **Final Spoofer population (10 events/step, entropy 0.01, 600k steps).** PnL breakdown over 10 episodes each, sampling actions from the trained policy:
+
+  | Spoofer | Stock | PnL/episode | Spoof gain | No-impact counterfactual | Most-likely-action PnL |
+  |---|---|---|---|---|---|
+  | SPOOFER-04 | INTC | **+$13,655** (171 trades) | +$22,086 | −$8,414 | +$10,618 |
+  | SPOOFER-02 | MSFT | **+$2,085** (108 trades) | +$7,664 | −$5,407 | −$1,291 (no spoof gain) |
+  | SPOOFER-03 | GOOG | +$126 (12 trades) | +$182 | −$18 | +$202 |
+  | SPOOFER-01 | AAPL | −$91 (essentially no trades) | ~$0 | — | +$199 (0 trades) |
+  | SPOOFER-05 | AMZN | $0 (no trades) | $0 | — | $0 |
+
+  - INTC and MSFT learned genuine spoofing: with impact switched off, the same trading loses money.
+  - Taking the most likely action erased MSFT's learned behaviour, so evaluation and the Watchdog dataset sample actions from the policy PPO actually optimised.
+  - **The held-out SPOOFER-05 (AMZN) never spoofs**, because spoofing isn't profitable on AMZN under the calibrated impact. The held-out RL test therefore has no manipulation to catch; the scripted attacker on AMZN is the held-out check.
 - **Basic eval on the v3 Spoofers (20 episodes per run):**
   - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
   - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).
