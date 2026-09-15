@@ -89,12 +89,13 @@ def test_holding_through_spoof_earns_nothing_extra(make, ticker):
 @pytest.mark.parametrize("ticker", ["AAPL", "INTC"])
 def test_spoof_then_trade_is_profitable_only_with_impact(make, ticker):
     on, off = make(ticker), make(ticker, impact_lambda=0.0)
-    start = _quiet_start(on)
-    actions = [SPOOF_BUY, NOOP, SELL, CANCEL, NOOP, BUY, NOOP]
+    hold = 250  # let the spoof's impact build up fully (ramp reaches 1 at 200 events)
+    start = _quiet_start(on, horizon=hold + 10)
+    actions = [SPOOF_BUY] + [NOOP] * hold + [SELL, CANCEL, NOOP, BUY, NOOP]
     _, i_on = _run(on, start, actions)
     _, i_off = _run(off, start, actions)
     gain = i_on[-1]["pnl"] - i_off[-1]["pnl"]
-    shift_at_sell = i_on[1]["impact_shift"]  # shift in force at the step where SELL executes
+    shift_at_sell = i_on[hold]["impact_shift"]  # shift in force at the step where SELL executes
     print(f"{ticker}: extra PnL from spoof-then-sell = ${gain:.2f}; shift at sell = {shift_at_sell:.4f}")
     assert shift_at_sell > 0
     # self-impact of the sell and the later buy-back cancel up to intraday depth/spread drift
@@ -120,6 +121,40 @@ def test_self_impact_closes_unlimited_buying_under_spoof(make):
             assert info["trade_price"] >= env.day.ask_price[t, 0] - 1e-9
             checked += 1
     assert checked > 0
+
+
+def test_spoof_impact_builds_with_age_and_resets_on_replace(make):
+    env = make("INTC")
+    env.reset(options={"start": _quiet_start(env, horizon=260)})
+    env.step(SPOOF_SELL)
+    young = env.impact_shift()                      # age 1 event
+    for _ in range(199):
+        env.step(NOOP)
+    t = env.t
+    full = env.impact.shift(-env.spoofs[0].size, env.stats.touch_depth[t], env.stats.ref_spread[t])
+    print(f"INTC spoof shift at age 1: {young:+.5f}, age 200: {env.impact_shift():+.5f}, full: {full:+.5f}")
+    assert abs(young) < 0.2 * abs(full)
+    assert env.impact_shift() == pytest.approx(full, rel=1e-9)
+    env.step(CANCEL)
+    env.step(SPOOF_SELL)
+    assert abs(env.impact_shift()) < 0.2 * abs(full)
+
+
+def test_spoof_benefit_capped_at_spoof_size(make):
+    """After buying as many shares as the spoof's size under it, further buys get no spoof discount."""
+    env = make("INTC", max_inventory_lots=100)
+    env.reset(options={"start": _quiet_start(env, horizon=320)})
+    env.step(SPOOF_SELL)
+    for _ in range(200):
+        env.step(NOOP)
+    spoof = env.spoofs[0]
+    while spoof.capacity > 0:
+        env.step(BUY)
+    assert env.spoofs and env.spoofs[0] is spoof
+    t, v = env.t, env.volume
+    *_, info = env.step(BUY)
+    expected = env.day.ask_price[t, 0] + env.self_shift(v + env.lot / 2, t)
+    assert info["trade_price"] == pytest.approx(expected, abs=1e-9)
 
 
 def test_one_sided_trading_without_spoof_loses(make):

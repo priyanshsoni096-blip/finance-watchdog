@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import encode_book, reference_stats  # noqa: E402
-from env.price_impact import calibrate_lambda  # noqa: E402
+from env.price_impact import calibrate_lambda, impact_ramp  # noqa: E402
 
 TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
 TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
@@ -50,7 +50,14 @@ def main() -> int:
               f"{tg['median_nonzero_mid_move']:9.4f} {lam:8.4f} {row['median_abs_best_ask_price_feature']:8.3f} "
               f"{row['median_best_ask_size_feature']:7.3f}")
 
-    # The environment uses one lambda pooled over training stocks only (AMZN stays unseen).
+    print("impact ramp beta(W)/beta(200), W = events:")
+    for t in TICKERS:
+        d = load_day(t)
+        ramp = impact_ramp(d, reference_stats(d), args.form)
+        out["tickers"][t]["ramp"] = {str(w): r for w, r in ramp.items()}
+        print(f"  {t}: " + "  ".join(f"W={w}: {r:.2f}" for w, r in ramp.items()))
+
+    # Pooled lambda is reported for reference only; the environment uses per-ticker values.
     out["pooled_lambda_train"] = float(np.median([out["tickers"][t]["lambda"] for t in TRAIN_TICKERS]))
     print(f"pooled lambda (median over {TRAIN_TICKERS}): {out['pooled_lambda_train']:.4f}")
 

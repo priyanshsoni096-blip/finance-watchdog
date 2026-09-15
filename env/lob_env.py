@@ -13,6 +13,11 @@ Economics:
     + self-impact of the agent's own cumulative signed market-order volume (same calibrated lambda,
     no decay within an episode; each order pays the average impact of walking through its own size).
     Without self-impact a trained agent bought ~20x touch depth at a spoof-depressed price for free.
+  * A spoof's impact builds up with its age following the measured order-flow response
+    beta(W)/beta(200) (about half after 10 events on INTC, full at 200), so cancel-and-replace
+    cannot refresh a full distortion. Each spoof's FAVOURABLE shift applies to at most its own size
+    of opposite-side volume; adverse shifts always apply. Without these, trained agents swung
+    +-40 lots under alternating spoofs for ~$240k/episode on MSFT/INTC.
   * Inventory is marked to the UNIMPACTED historical mid. Holding a position while a spoof rests
     therefore earns nothing; profit requires actually trading at the distorted price.
   * A resting spoof buy is run over (filled at its price) when the historical best ask falls to
@@ -33,7 +38,7 @@ from gymnasium import spaces
 from env.lobster_data import LobsterDay, load_day
 from env.normalization import (AGENT_CLIP, PRICE_CLIP, SIZE_CLIP, ReferenceStats,
                                encode_agent, encode_book, reference_stats)
-from env.price_impact import PriceImpact, calibrate_lambda
+from env.price_impact import PriceImpact, calibrate_lambda, impact_ramp
 
 NOOP, BUY, SELL, SPOOF_BUY, SPOOF_SELL, CANCEL = range(6)
 CALIBRATION_PATH = Path(__file__).resolve().parent.parent / "configs" / "calibration.json"
@@ -58,6 +63,8 @@ class EnvConfig:
     impact_form: str = "linear"
     impact_lambda: float | None = None  # None -> per-ticker calibrated value
     bid_only: bool = False             # SPOOFER-03 constraint: spoof-sell disabled
+    impact_ramp: bool = True           # spoof impact builds up with order age (measured)
+    spoof_capacity: bool = True        # favourable spoof shift limited to the spoof's size in volume
     extra: dict = field(default_factory=dict)
 
 
@@ -66,6 +73,8 @@ class Spoof:
     side: int      # +1 buy (rests on bid), -1 sell (rests on ask)
     size: float
     price: float
+    placed_t: int = 0
+    capacity: float = 0.0  # opposite-side shares that can still trade at this spoof's favourable shift
 
 
 class LimitOrderBookEnv(gym.Env):
@@ -80,6 +89,7 @@ class LimitOrderBookEnv(gym.Env):
         self.stats = stats if stats is not None else reference_stats(self.day)
         lam = cfg.impact_lambda if cfg.impact_lambda is not None else self._calibrated_lambda()
         self.impact = PriceImpact(lam, cfg.impact_form)
+        self._ramp = self._load_ramp()
         if cfg.lot is None:
             depth = float(np.median(self.stats.touch_depth[cfg.warmup:]))
             self.lot = max(100, int(round(depth / 2 / 100)) * 100)
@@ -110,13 +120,48 @@ class LimitOrderBookEnv(gym.Env):
         lam, _ = calibrate_lambda(self.day, self.stats, key[1])
         return lam
 
+    def _load_ramp(self):
+        if not self.cfg.impact_ramp:
+            return None
+        ramp = None
+        if CALIBRATION_PATH.exists():
+            cal = json.loads(CALIBRATION_PATH.read_text())
+            entry = cal.get("tickers", {}).get(self.cfg.ticker, {})
+            if cal.get("form") == self.cfg.impact_form and "ramp" in entry:
+                ramp = {int(k): float(v) for k, v in entry["ramp"].items()}
+        if ramp is None:
+            ramp = impact_ramp(self.day, self.stats, self.cfg.impact_form)
+        ws = sorted(ramp)
+        return np.array([0.0] + ws, dtype=float), np.array([0.0] + [max(ramp[w], 0.0) for w in ws])
+
     # --------------------------------------------------------------- helpers
-    def _net_resting(self) -> float:
-        return sum(s.side * s.size for s in self.spoofs)
+    def age_factor(self, spoof: Spoof, t: int) -> float:
+        if self._ramp is None:
+            return 1.0
+        return float(np.interp(t - spoof.placed_t, *self._ramp))
+
+    def _spoof_shift(self, spoof: Spoof, t: int) -> float:
+        return self.impact.shift(spoof.side * spoof.size * self.age_factor(spoof, t),
+                                 self.stats.touch_depth[t], self.stats.ref_spread[t])
 
     def impact_shift(self, t: int | None = None) -> float:
+        """Total price shift from resting spoofs (before any capacity limit)."""
         t = self.t if t is None else t
-        return self.impact.shift(self._net_resting(), self.stats.touch_depth[t], self.stats.ref_spread[t])
+        return sum(self._spoof_shift(s, t) for s in self.spoofs)
+
+    def _fill_spoof_shift(self, direction: int, qty: float, t: int) -> float:
+        """Spoof shift applied to an executed market order of `qty` shares (+1 buy / -1 sell).
+        Adverse shifts apply in full. A favourable shift (buy under a spoof sell, sell under a spoof
+        buy) applies only to the part of the order within that spoof's remaining capacity."""
+        total = 0.0
+        for s in self.spoofs:
+            c = self._spoof_shift(s, t)
+            if self.cfg.spoof_capacity and c * direction < 0:
+                frac = min(1.0, s.capacity / qty)
+                s.capacity = max(0.0, s.capacity - qty)
+                c *= frac
+            total += c
+        return total
 
     def self_shift(self, volume: float | None = None, t: int | None = None) -> float:
         """Price shift from the agent's own signed market-order volume (buys positive)."""
@@ -186,18 +231,17 @@ class LimitOrderBookEnv(gym.Env):
     def step(self, action):
         action = int(action)
         cfg, d, t = self.cfg, self.day, self.t
-        shift = self.impact_shift(t)
 
         lot = self.lot
         self._last_trade = None
         if action == BUY and self.inventory + lot <= self.max_inventory:
-            price = d.ask_price[t, 0] + shift + self.self_shift(self.volume + lot / 2, t)
+            price = d.ask_price[t, 0] + self._fill_spoof_shift(1, lot, t) + self.self_shift(self.volume + lot / 2, t)
             self.inventory += lot
             self.volume += lot
             self.cash -= lot * price
             self._last_trade = float(price)
         elif action == SELL and self.inventory - lot >= -self.max_inventory:
-            price = d.bid_price[t, 0] + shift + self.self_shift(self.volume - lot / 2, t)
+            price = d.bid_price[t, 0] + self._fill_spoof_shift(-1, lot, t) + self.self_shift(self.volume - lot / 2, t)
             self.inventory -= lot
             self.volume -= lot
             self.cash += lot * price
@@ -208,7 +252,7 @@ class LimitOrderBookEnv(gym.Env):
             if allowed and not any(s.side == side for s in self.spoofs):
                 size = max(lot, round(cfg.spoof_k * self.stats.touch_depth[t] / lot) * lot)
                 price = d.bid_price[t, 0] if side > 0 else d.ask_price[t, 0]
-                self.spoofs.append(Spoof(side, float(size), float(price)))
+                self.spoofs.append(Spoof(side, float(size), float(price), placed_t=t, capacity=float(size)))
         elif action == CANCEL:
             self.spoofs.clear()
 

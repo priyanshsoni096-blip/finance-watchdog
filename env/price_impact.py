@@ -72,11 +72,10 @@ def order_flow_imbalance(day: LobsterDay) -> np.ndarray:
     return np.nan_to_num(e)
 
 
-def calibrate_lambda(day: LobsterDay, stats: ReferenceStats, form: str = "linear",
-                     window: int = 200, warmup: int = 5_000) -> tuple[float, dict]:
-    """Fit lambda from real order flow: over non-overlapping windows of `window` events,
-    regress mid change (in trailing spreads) on g(OFI / touch depth) through the origin,
-    where g is the impact form. The slope is exactly PriceImpact.lam."""
+RAMP_WINDOWS = (10, 50, 200, 1000)
+
+
+def _ofi_fit(day: LobsterDay, stats: ReferenceStats, form: str, window: int, warmup: int) -> tuple[float, float, int]:
     cum = np.cumsum(order_flow_imbalance(day))
     idx = np.arange(warmup, len(day) - window, window)
     x = (cum[idx + window] - cum[idx]) / np.maximum(stats.touch_depth[idx], 1.0)
@@ -86,7 +85,27 @@ def calibrate_lambda(day: LobsterDay, stats: ReferenceStats, form: str = "linear
     g = x if form == "linear" else np.sign(x) * np.sqrt(np.abs(x))
     lam = float((g @ y) / (g @ g))
     r2 = float(1 - np.sum((y - lam * g) ** 2) / np.sum((y - y.mean()) ** 2))
+    return lam, r2, int(ok.sum())
+
+
+def impact_ramp(day: LobsterDay, stats: ReferenceStats, form: str = "linear",
+                windows=RAMP_WINDOWS, ref_window: int = 200, warmup: int = 5_000) -> dict[int, float]:
+    """How the price response to order flow builds up with time: beta(W) / beta(ref_window).
+
+    Used to make a spoof's impact grow with the order's age instead of appearing instantly, so
+    cancelling and re-placing a spoof every step cannot refresh a full price distortion.
+    """
+    ref = _ofi_fit(day, stats, form, ref_window, warmup)[0]
+    return {w: _ofi_fit(day, stats, form, w, warmup)[0] / ref for w in windows}
+
+
+def calibrate_lambda(day: LobsterDay, stats: ReferenceStats, form: str = "linear",
+                     window: int = 200, warmup: int = 5_000) -> tuple[float, dict]:
+    """Fit lambda from real order flow: over non-overlapping windows of `window` events,
+    regress mid change (in trailing spreads) on g(OFI / touch depth) through the origin,
+    where g is the impact form. The slope is exactly PriceImpact.lam."""
+    lam, r2, n = _ofi_fit(day, stats, form, window, warmup)
     t = calibration_targets(day, stats)
-    t.update({"ofi_window": window, "ofi_r2": r2, "ofi_samples": int(ok.sum()),
+    t.update({"ofi_window": window, "ofi_r2": r2, "ofi_samples": n,
               "percentile_rule_lambda": percentile_rule_lambda(day, stats, form)})
     return lam, t

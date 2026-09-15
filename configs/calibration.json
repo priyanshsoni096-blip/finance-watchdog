@@ -15,7 +15,13 @@
       "percentile_rule_lambda": 0.04987350075757493,
       "lambda": 0.04579947209682721,
       "median_abs_best_ask_price_feature": 0.5,
-      "median_best_ask_size_feature": 0.5603578686714172
+      "median_best_ask_size_feature": 0.5603578686714172,
+      "ramp": {
+        "10": 1.032609229855549,
+        "50": 1.0883995834252547,
+        "200": 1.0,
+        "1000": 0.9001868475882314
+      }
     },
     "MSFT": {
       "events": 668765,
@@ -31,7 +37,13 @@
       "percentile_rule_lambda": 4.439432549585301,
       "lambda": 0.2550031899120812,
       "median_abs_best_ask_price_feature": 0.5,
-      "median_best_ask_size_feature": 0.6696556806564331
+      "median_best_ask_size_feature": 0.6696556806564331,
+      "ramp": {
+        "10": 0.5688910154048105,
+        "50": 0.8908180649383978,
+        "200": 1.0,
+        "1000": 1.0691904559242895
+      }
     },
     "GOOG": {
       "events": 147916,
@@ -47,7 +59,13 @@
       "percentile_rule_lambda": 0.10198317267810127,
       "lambda": 0.062439657241450355,
       "median_abs_best_ask_price_feature": 0.4864864945411682,
-      "median_best_ask_size_feature": 0.6312465667724609
+      "median_best_ask_size_feature": 0.6312465667724609,
+      "ramp": {
+        "10": 0.8106831636109263,
+        "50": 0.9495052291254719,
+        "200": 1.0,
+        "1000": 0.9275938117177834
+      }
     },
     "INTC": {
       "events": 624040,
@@ -63,7 +81,13 @@
       "percentile_rule_lambda": 5.797933791395325,
       "lambda": 0.2472878084209637,
       "median_abs_best_ask_price_feature": 0.5,
-      "median_best_ask_size_feature": 0.679072380065918
+      "median_best_ask_size_feature": 0.679072380065918,
+      "ramp": {
+        "10": 0.5530960434897516,
+        "50": 0.8592602808611426,
+        "200": 1.0,
+        "1000": 0.9954181164564403
+      }
     },
     "AMZN": {
       "events": 269748,
@@ -79,7 +103,13 @@
       "percentile_rule_lambda": 0.06291900518544795,
       "lambda": 0.03707177412771344,
       "median_abs_best_ask_price_feature": 0.5,
-      "median_best_ask_size_feature": 0.5738530158996582
+      "median_best_ask_size_feature": 0.5738530158996582,
+      "ramp": {
+        "10": 0.49315097899764393,
+        "50": 0.6124166913993511,
+        "200": 1.0,
+        "1000": 1.0274696595325847
+      }
     }
   },
   "pooled_lambda_train": 0.15486373283120702
