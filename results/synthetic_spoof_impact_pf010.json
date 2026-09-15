@@ -1,0 +1,71 @@
+{
+  "trials": 300,
+  "spoof_k": 10.0,
+  "burn_in": 2000,
+  "params": {
+    "start_price": 5000,
+    "tick_value": 0.01,
+    "init_levels": 10,
+    "init_size": 500,
+    "size_log_mean": 5.703782474656201,
+    "size_log_sd": 0.8,
+    "market_size_log_mean": 4.605170185988092,
+    "market_size_log_sd": 2.4,
+    "cancel_hazard": 0.0035,
+    "p_follower": 0.1,
+    "noise_p_market": 0.05,
+    "noise_inside_spread": 0.3,
+    "noise_depth_geom_p": 0.25,
+    "follower_levels": 3,
+    "follower_threshold": 0.35,
+    "follower_p_react": 0.6
+  },
+  "overrides": {
+    "p_follower": 0.1
+  },
+  "market_stats": {
+    "spread_ticks": 1.0,
+    "mid_change_share": 0.006550109168486142,
+    "range_2000_ticks": 2.5,
+    "touch_depth": 7655.25,
+    "cancel_share": 0.40729879939816377,
+    "exec_share": 0.1071022814505481,
+    "new_share": 0.4855989191512881
+  },
+  "impact_by_horizon": {
+    "10": {
+      "mean_ticks": 0.03833333333333333,
+      "ci95_ticks": 0.02475523314756425,
+      "share_up": 0.04666666666666667,
+      "share_down": 0.0033333333333333335
+    },
+    "50": {
+      "mean_ticks": 0.13833333333333334,
+      "ci95_ticks": 0.06753880049756265,
+      "share_up": 0.12,
+      "share_down": 0.02
+    },
+    "200": {
+      "mean_ticks": 0.5533333333333333,
+      "ci95_ticks": 0.15223599274784758,
+      "share_up": 0.34,
+      "share_down": 0.05
+    }
+  },
+  "spoof_filled_within_200": {
+    "median": 0.0,
+    "mean": 0.03591088883106496
+  },
+  "replay_impact_spreads": {
+    "MSFT": {
+      "10": 1.450690236405496,
+      "50": 2.2716144819059894,
+      "200": 2.550031899120812
+    },
+    "INTC": {
+      "10": 1.367739084408867,
+      "50": 2.124845917173337,
+      "200": 2.472878084209637
+    }
+  }
+}

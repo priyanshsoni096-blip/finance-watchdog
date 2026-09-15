@@ -83,9 +83,20 @@ def replay_reference() -> dict:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--trials", type=int, default=300)
+    # sensitivity to the imbalance-follower population, which the calibration statistics do not constrain
+    p.add_argument("--p-follower", type=float, default=None)
+    p.add_argument("--follower-threshold", type=float, default=None)
+    p.add_argument("--tag", default="", help="suffix for output files, e.g. pf030")
     args = p.parse_args()
 
+    from dataclasses import asdict, replace
+    from synthetic.calibrate import synthetic_stats
+
     params = load_params()
+    overrides = {k: v for k, v in (("p_follower", args.p_follower), ("follower_threshold", args.follower_threshold))
+                 if v is not None}
+    params = replace(params, **overrides)
+    market_stats = synthetic_stats(params, seed=1)
     trials = [trial(params, 1_000 + i) for i in range(args.trials)]
     rows = {}
     for h in HORIZONS:
@@ -94,18 +105,22 @@ def main() -> int:
                    "share_up": float(np.mean(x > 0)), "share_down": float(np.mean(x < 0))}
     filled = np.array([t["filled_share"] for t in trials])
     payload = {"trials": args.trials, "spoof_k": SPOOF_K, "burn_in": BURN_IN,
+               "params": asdict(params), "overrides": overrides, "market_stats": market_stats,
                "impact_by_horizon": rows,
                "spoof_filled_within_200": {"median": float(np.median(filled)), "mean": float(filled.mean())},
                "replay_impact_spreads": replay_reference()}
     out = ROOT / "results"
     out.mkdir(exist_ok=True)
-    (out / "synthetic_spoof_impact.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    (out / "synthetic_spoof_impact.md").write_text(render(payload), encoding="utf-8")
+    stem = "synthetic_spoof_impact" + (f"_{args.tag}" if args.tag else "")
+    (out / f"{stem}.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    (out / f"{stem}.md").write_text(render(payload), encoding="utf-8")
+    print("overrides: " + (json.dumps(overrides) if overrides else "none") + " | market: "
+          + ", ".join(f"{k}={market_stats[k]:.4g}" for k in ("mid_change_share", "range_2000_ticks", "touch_depth", "exec_share")))
     for h, r in rows.items():
         print(f"after {h:3d} events: mean {r['mean_ticks']:+.3f} ticks ± {r['ci95_ticks']:.3f}, "
               f"up {r['share_up']:.0%}, down {r['share_down']:.0%}")
     print(f"spoof filled within 200 events: median {np.median(filled):.1%}, mean {filled.mean():.1%}")
-    print(f"wrote {out / 'synthetic_spoof_impact.md'}")
+    print(f"wrote {out / (stem + '.md')}")
     return 0
 
 
@@ -113,6 +128,9 @@ def render(pl: dict) -> str:
     L = ["# Spoof price impact in the synthetic market", "",
          f"{pl['trials']} paired trials (spoofed vs identical control after a {pl['burn_in']}-event burn-in). "
          f"Spoof buy at the best bid, size {pl['spoof_k']:g}× touch depth. The synthetic spread is 1 tick, so ticks equal spreads.", "",
+         "Parameter overrides: " + (", ".join(f"{k}={v}" for k, v in pl["overrides"].items()) if pl["overrides"] else "none (calibrated)")
+         + ". Resulting market: " + ", ".join(f"{k} {pl['market_stats'][k]:.4g}" for k in
+                                             ("mid_change_share", "range_2000_ticks", "touch_depth", "exec_share")) + ".", "",
          "| Events after placement | Mean mid difference (ticks) | 95% CI | Trials up | Trials down |",
          "|---|---|---|---|---|"]
     for h, r in pl["impact_by_horizon"].items():
