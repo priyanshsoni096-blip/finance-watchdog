@@ -202,6 +202,14 @@ Each was driven by a measurement.
   - INTC and MSFT learned genuine spoofing: with impact switched off, the same trading loses money.
   - Taking the most likely action erased MSFT's learned behaviour, so evaluation and the Watchdog dataset sample actions from the policy PPO actually optimised.
   - **The held-out SPOOFER-05 (AMZN) never spoofs**, because spoofing isn't profitable on AMZN under the calibrated impact. The held-out RL test therefore has no manipulation to catch; the scripted attacker on AMZN is the held-out check.
+- **Basic eval on the final population (20 episodes per run, sampled actions; `results/basic_eval.md`):**
+  - SPOOFER-04 INTC **+$13,208 ± $1,654** (97% of its orders manipulative) and SPOOFER-02 MSFT **+$2,437 ± $1,068** (70%). Both CIs exclude zero.
+  - SPOOFER-03 GOOG −$19 ± $244 and SPOOFER-01 AAPL +$61 ± $113 are indistinguishable from zero.
+  - The patient scripted attacker makes +$951 on MSFT and +$629 on INTC, and loses on AAPL, GOOG and AMZN.
+  - **The rule-based baseline is weak on the RL population.** Tuned to size ≥2× depth and cancel within 200 events, it scores precision **0.20**, recall 0.82 and false-positive rate **0.84** on the RL training pool.
+    - The Spoofers place many large orders they never trade against (SPOOFER-01 52 per episode, SPOOFER-05 46), and a size-plus-cancel rule can't tell those from spoofs.
+    - It flags 93% of held-out SPOOFER-05's orders, every one of them legitimate.
+    - On the scripted attacker it scores precision 0.56–0.57 and recall 0.93–0.97, the same on training stocks as on AMZN.
 - **Basic eval on the v3 Spoofers (20 episodes per run):**
   - All five RL Spoofers make 0 trades per episode, so the RL training pool has no manipulative orders.
   - The original immediate-trading scripted attacker lost on every stock, from −$802 (AMZN) to −$5,900 (MSFT).

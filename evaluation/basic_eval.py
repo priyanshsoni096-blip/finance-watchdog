@@ -163,8 +163,8 @@ def render_markdown(pl: dict) -> str:
          "limit-order-book simulation, and evaluates the structural similarity of the emergently-learned "
          "manipulation strategy to documented real-world manipulation cases.", "",
          f"Episodes per run: {pl['episodes']}. 95% CI uses a normal approximation (1.96·sd/√n). "
-         f"Runtime {pl['runtime_s']} s. The Watchdog is not built yet, so every detection number below is "
-         "the **rule-based baseline** — the bar the Watchdog has to beat.", "",
+         f"Runtime {pl['runtime_s']} s. Every detection number below is the **rule-based baseline** — the bar "
+         "the Watchdog has to beat. The Watchdog is scored on the same kind of orders in `results/watchdog_eval.md`.", "",
          "## C1 — Does RL learn meaningful manipulation?", "",
          "PnL is also shown in units of (median spread × lot) so stocks are comparable.", "",
          "| Agent | Group | Ticker | PnL mean ± 95% CI ($) | PnL (spread·lots) | Profitable eps | Trades/ep | Trades against own spoof/ep | Spoof orders/ep | Manipulative orders |",
