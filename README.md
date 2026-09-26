@@ -10,6 +10,8 @@ No labeled real-world spoofing dataset exists to validate detection recall again
 
 Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 
+**New here? Read [HANDOFF.md](HANDOFF.md) first** — project orientation, what is established, what is not, and what to do next. This README is the reference manual.
+
 ---
 
 ## Results at a glance
@@ -138,6 +140,7 @@ What has been checked to reproduce exactly:
 - **`scripts/calibrate.py`, in that fresh clone**: regenerated `configs/calibration.json` with no difference from the committed file.
 - **`dataset.py`, in that fresh clone**: the full Watchdog dataset was regenerated (131 s). All 32 source files (12 train, 12 test, 8 heldout) matched the original dataset bit for bit.
 - **`evaluate_watchdog.py`, in that fresh clone** (on the regenerated dataset and the committed Watchdog): all 282 numbers matched `results/watchdog_eval.json`. It had also matched twice in the working copy.
+- **`lateburst_test.py`, in that fresh clone**: all 267 numbers matched `results/lateburst_test.json`.
 - **Everything else** uses fixed seeds but has not been re-run and compared.
 
 ```bash
