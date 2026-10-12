@@ -1,0 +1,805 @@
+{
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "detection": [
+    {
+      "market": "replay",
+      "bucket": "In-distribution (test split)",
+      "source": "watchdog_eval",
+      "watchdog": {
+        "n": 7243,
+        "positives": 1543,
+        "tp": 1230,
+        "fp": 414,
+        "fn": 313,
+        "tn": 5286,
+        "precision": 0.7481751824817519,
+        "recall": 0.7971484121840571,
+        "f1": 0.7718857860056481,
+        "fpr": 0.07263157894736842
+      },
+      "rule": {
+        "n": 7243,
+        "positives": 1543,
+        "tp": 1452,
+        "fp": 5244,
+        "fn": 91,
+        "tn": 456,
+        "precision": 0.2168458781362007,
+        "recall": 0.9410239792611795,
+        "f1": 0.35246995994659547,
+        "fpr": 0.92
+      },
+      "watchdog_median_delay_steps": 0.0,
+      "rule_median_delay_steps": 8.0
+    },
+    {
+      "market": "replay",
+      "bucket": "Held-out RL: SPOOFER-05 + AMZN controls",
+      "source": "watchdog_eval",
+      "watchdog": {
+        "n": 2920,
+        "positives": 0,
+        "tp": 0,
+        "fp": 37,
+        "fn": 0,
+        "tn": 2883,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.012671232876712329
+      },
+      "rule": {
+        "n": 2920,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2837,
+        "fn": 0,
+        "tn": 83,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9715753424657534
+      },
+      "watchdog_median_delay_steps": NaN,
+      "rule_median_delay_steps": NaN
+    },
+    {
+      "market": "replay",
+      "bucket": "Scripted attacker, train stocks + FLICKER",
+      "source": "watchdog_eval",
+      "watchdog": {
+        "n": 4226,
+        "positives": 1942,
+        "tp": 476,
+        "fp": 98,
+        "fn": 1466,
+        "tn": 2186,
+        "precision": 0.8292682926829268,
+        "recall": 0.2451081359423275,
+        "f1": 0.37837837837837834,
+        "fpr": 0.042907180385288964
+      },
+      "rule": {
+        "n": 4226,
+        "positives": 1942,
+        "tp": 1821,
+        "fp": 1754,
+        "fn": 121,
+        "tn": 530,
+        "precision": 0.5093706293706294,
+        "recall": 0.9376930998970134,
+        "f1": 0.660141381185427,
+        "fpr": 0.7679509632224168
+      },
+      "watchdog_median_delay_steps": 6.0,
+      "rule_median_delay_steps": 11.0
+    },
+    {
+      "market": "replay",
+      "bucket": "Scripted attacker, AMZN + AMZN controls",
+      "source": "watchdog_eval",
+      "watchdog": {
+        "n": 1042,
+        "positives": 478,
+        "tp": 74,
+        "fp": 27,
+        "fn": 404,
+        "tn": 537,
+        "precision": 0.7326732673267327,
+        "recall": 0.15481171548117154,
+        "f1": 0.2556131260794473,
+        "fpr": 0.047872340425531915
+      },
+      "rule": {
+        "n": 1042,
+        "positives": 478,
+        "tp": 454,
+        "fp": 458,
+        "fn": 24,
+        "tn": 106,
+        "precision": 0.49780701754385964,
+        "recall": 0.9497907949790795,
+        "f1": 0.6532374100719424,
+        "fpr": 0.8120567375886525
+      },
+      "watchdog_median_delay_steps": 7.5,
+      "rule_median_delay_steps": 11.0
+    },
+    {
+      "market": "replay",
+      "bucket": "Legitimate only (HONEST + FLICKER)",
+      "source": "watchdog_eval",
+      "watchdog": {
+        "n": 2688,
+        "positives": 0,
+        "tp": 0,
+        "fp": 120,
+        "fn": 0,
+        "tn": 2568,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.044642857142857144
+      },
+      "rule": {
+        "n": 2688,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2212,
+        "fn": 0,
+        "tn": 476,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.8229166666666666
+      },
+      "watchdog_median_delay_steps": NaN,
+      "rule_median_delay_steps": NaN
+    },
+    {
+      "market": "replay",
+      "bucket": "LATEBURST-ATK (pre-registered) + FLICKER, all stocks",
+      "source": "lateburst_test",
+      "watchdog": {
+        "n": 4044,
+        "positives": 1132,
+        "tp": 271,
+        "fp": 140,
+        "fn": 861,
+        "tn": 2772,
+        "precision": 0.6593673965936739,
+        "recall": 0.2393992932862191,
+        "f1": 0.35126377187297475,
+        "fpr": 0.04807692307692308
+      },
+      "rule": {
+        "n": 4044,
+        "positives": 1132,
+        "tp": 1002,
+        "fp": 2205,
+        "fn": 130,
+        "tn": 707,
+        "precision": 0.3124415341440599,
+        "recall": 0.8851590106007067,
+        "f1": 0.4618575708688638,
+        "fpr": 0.7572115384615384
+      },
+      "watchdog_median_delay_steps": 12.0,
+      "rule_median_delay_steps": 22.0
+    },
+    {
+      "market": "synthetic",
+      "bucket": "Manipulators + legitimate",
+      "source": "synthetic_eval",
+      "watchdog": {
+        "n": 1893,
+        "positives": 1125,
+        "tp": 543,
+        "fp": 77,
+        "fn": 582,
+        "tn": 691,
+        "precision": 0.8758064516129033,
+        "recall": 0.4826666666666667,
+        "f1": 0.6223495702005731,
+        "fpr": 0.10026041666666667
+      },
+      "rule": {
+        "n": 1893,
+        "positives": 1125,
+        "tp": 1085,
+        "fp": 739,
+        "fn": 40,
+        "tn": 29,
+        "precision": 0.5948464912280702,
+        "recall": 0.9644444444444444,
+        "f1": 0.7358426585283148,
+        "fpr": 0.9622395833333334
+      },
+      "watchdog_median_delay_steps": 0.0,
+      "rule_median_delay_steps": 7.0
+    },
+    {
+      "market": "synthetic",
+      "bucket": "Legitimate only",
+      "source": "synthetic_eval",
+      "watchdog": {
+        "n": 302,
+        "positives": 0,
+        "tp": 0,
+        "fp": 34,
+        "fn": 0,
+        "tn": 268,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.11258278145695365
+      },
+      "rule": {
+        "n": 302,
+        "positives": 0,
+        "tp": 0,
+        "fp": 277,
+        "fn": 0,
+        "tn": 25,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9172185430463576
+      },
+      "watchdog_median_delay_steps": NaN,
+      "rule_median_delay_steps": NaN
+    },
+    {
+      "market": "synthetic",
+      "bucket": "LAYER-ATK (pre-registered) + FLICKER",
+      "source": "layering_test",
+      "watchdog": {
+        "n": 718,
+        "positives": 400,
+        "tp": 120,
+        "fp": 24,
+        "fn": 280,
+        "tn": 294,
+        "precision": 0.8333333333333334,
+        "recall": 0.3,
+        "f1": 0.4411764705882353,
+        "fpr": 0.07547169811320754
+      },
+      "rule": {
+        "n": 718,
+        "positives": 400,
+        "tp": 400,
+        "fp": 291,
+        "fn": 0,
+        "tn": 27,
+        "precision": 0.5788712011577424,
+        "recall": 1.0,
+        "f1": 0.7332722273143905,
+        "fpr": 0.9150943396226415
+      },
+      "watchdog_median_delay_steps": 0.0,
+      "rule_median_delay_steps": 9.0
+    }
+  ],
+  "oracle_rule": [
+    {
+      "bucket": "In-distribution (test split)",
+      "n_mult": 2,
+      "m_events": 1000,
+      "tp": 1452,
+      "fp": 5244,
+      "fn": 91,
+      "tn": 456,
+      "precision": 0.2168458781362007,
+      "recall": 0.9410239792611795,
+      "f1": 0.35246995994659547,
+      "fpr": 0.92
+    },
+    {
+      "bucket": "Held-out RL: SPOOFER-05 + AMZN controls",
+      "n_mult": 2,
+      "m_events": 10,
+      "tp": 0,
+      "fp": 2131,
+      "fn": 0,
+      "tn": 789,
+      "precision": 0.0,
+      "recall": NaN,
+      "f1": 0.0,
+      "fpr": 0.7297945205479452
+    },
+    {
+      "bucket": "Scripted attacker, train stocks + FLICKER",
+      "n_mult": 2,
+      "m_events": 200,
+      "tp": 1821,
+      "fp": 1257,
+      "fn": 121,
+      "tn": 1027,
+      "precision": 0.5916179337231969,
+      "recall": 0.9376930998970134,
+      "f1": 0.7254980079681275,
+      "fpr": 0.5503502626970228
+    },
+    {
+      "bucket": "Scripted attacker, AMZN + AMZN controls",
+      "n_mult": 2,
+      "m_events": 200,
+      "tp": 454,
+      "fp": 327,
+      "fn": 24,
+      "tn": 237,
+      "precision": 0.5813060179257362,
+      "recall": 0.9497907949790795,
+      "f1": 0.7212073073868149,
+      "fpr": 0.5797872340425532
+    },
+    {
+      "bucket": "Legitimate only (HONEST + FLICKER)",
+      "n_mult": 2,
+      "m_events": 10,
+      "tp": 0,
+      "fp": 94,
+      "fn": 0,
+      "tn": 2594,
+      "precision": 0.0,
+      "recall": NaN,
+      "f1": 0.0,
+      "fpr": 0.034970238095238096
+    },
+    {
+      "bucket": "LATEBURST-ATK (pre-registered) + FLICKER, all stocks",
+      "n_mult": 2,
+      "m_events": 1000,
+      "tp": 1002,
+      "fp": 2205,
+      "fn": 130,
+      "tn": 707,
+      "precision": 0.3124415341440599,
+      "recall": 0.8851590106007067,
+      "f1": 0.4618575708688638,
+      "fpr": 0.7572115384615384
+    }
+  ],
+  "multiseed": {
+    "tags": [
+      "main",
+      "main_s2",
+      "main_s3"
+    ],
+    "summary": {
+      "in-distribution order F1": {
+        "mean": 0.7533701849036651,
+        "ci95": 0.058425218327626836
+      },
+      "in-distribution order precision": {
+        "mean": 0.820693104344322,
+        "ci95": 0.2765291996610027
+      },
+      "in-distribution order recall": {
+        "mean": 0.7146251890257075,
+        "ci95": 0.2744701302556583
+      },
+      "in-distribution step precision": {
+        "mean": 0.9662447452493188,
+        "ci95": 0.05997371327095839
+      },
+      "in-distribution step recall": {
+        "mean": 0.7434148190259617,
+        "ci95": 0.5220084691099871
+      },
+      "legitimate-only order FPR": {
+        "mean": 0.03125,
+        "ci95": 0.06746267574185318
+      },
+      "held-out AMZN legitimate order FPR": {
+        "mean": 0.0043378995433789955,
+        "ci95": 0.017934212635151582
+      },
+      "LATEBURST-ATK order recall": {
+        "mean": 0.21731448763250882,
+        "ci95": 0.15557231880462527
+      },
+      "LATEBURST-ATK order precision": {
+        "mean": 0.7741209971024435,
+        "ci95": 0.4859995718758471
+      },
+      "LATEBURST-ATK order FPR": {
+        "mean": 0.03353937728937729,
+        "ci95": 0.0723727347926869
+      }
+    },
+    "rule": {
+      "in-distribution order F1": 0.35246995994659547,
+      "in-distribution order precision": 0.2168458781362007,
+      "in-distribution order recall": 0.9410239792611795,
+      "legitimate-only order FPR": 0.8229166666666666,
+      "held-out AMZN legitimate order FPR": 0.9715753424657534,
+      "LATEBURST-ATK order recall": 0.8851590106007067,
+      "LATEBURST-ATK order precision": 0.3124415341440599,
+      "LATEBURST-ATK order FPR": 0.7572115384615384
+    }
+  },
+  "pnl_suppression": [
+    {
+      "source": "SPOOFER-02",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 3186.184927673156,
+        "pnl_ci95": 516.8601541099421,
+        "manip_trades_per_ep": 60.2,
+        "trades_per_ep": 107.6,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -4560.468163379859,
+        "pnl_ci95": 1275.1279445237908,
+        "manip_trades_per_ep": 6.42,
+        "trades_per_ep": 63.68,
+        "triggers_per_ep": 7.96,
+        "cancelled_per_ep": 7.84,
+        "blocked_per_ep": 29.8,
+        "suppression_pct": 243.13256345451143
+      },
+      "rule": {
+        "pnl_mean": 139.9922653043078,
+        "pnl_ci95": 830.4861331745369,
+        "manip_trades_per_ep": 45.08,
+        "trades_per_ep": 97.92,
+        "triggers_per_ep": 5.5,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 16.1,
+        "suppression_pct": 95.60627306693893
+      }
+    },
+    {
+      "source": "SPOOFER-04",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 12624.920932536255,
+        "pnl_ci95": 1162.4095251267368,
+        "manip_trades_per_ep": 173.08,
+        "trades_per_ep": 173.7,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": 2165.4377584282893,
+        "pnl_ci95": 485.0204882607537,
+        "manip_trades_per_ep": 36.36,
+        "trades_per_ep": 44.0,
+        "triggers_per_ep": 7.88,
+        "cancelled_per_ep": 7.88,
+        "blocked_per_ep": 140.0,
+        "suppression_pct": 82.84791033544106
+      },
+      "rule": {
+        "pnl_mean": 5655.358603272216,
+        "pnl_ci95": 656.6723084062407,
+        "manip_trades_per_ep": 75.92,
+        "trades_per_ep": 76.16,
+        "triggers_per_ep": 5.86,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 110.06,
+        "suppression_pct": 55.204799828111916
+      }
+    },
+    {
+      "source": "SCRIPTED-ATK",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 417.6047074746882,
+        "pnl_ci95": 956.0082880536861,
+        "manip_trades_per_ep": 29.36,
+        "trades_per_ep": 65.48,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -547.6600612490606,
+        "pnl_ci95": 594.379414972501,
+        "manip_trades_per_ep": 18.1,
+        "trades_per_ep": 64.0,
+        "triggers_per_ep": 2.62,
+        "cancelled_per_ep": 2.62,
+        "blocked_per_ep": 2.3,
+        "suppression_pct": 231.1431723461248
+      },
+      "rule": {
+        "pnl_mean": -944.7667112074291,
+        "pnl_ci95": 371.4716575035661,
+        "manip_trades_per_ep": 15.2,
+        "trades_per_ep": 64.58,
+        "triggers_per_ep": 4.78,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 5.38,
+        "suppression_pct": 326.2346890006486
+      }
+    },
+    {
+      "source": "LATEBURST-ATK",
+      "ticker": "MSFT",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 531.1127182921784,
+        "pnl_ci95": 674.1507818492653,
+        "manip_trades_per_ep": 26.46,
+        "trades_per_ep": 62.62,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -693.4161273429933,
+        "pnl_ci95": 723.3243360319391,
+        "manip_trades_per_ep": 19.9,
+        "trades_per_ep": 61.98,
+        "triggers_per_ep": 1.24,
+        "cancelled_per_ep": 1.24,
+        "blocked_per_ep": 0.24,
+        "suppression_pct": 230.5591268031973
+      },
+      "rule": {
+        "pnl_mean": -973.745374622646,
+        "pnl_ci95": 756.5689376600371,
+        "manip_trades_per_ep": 16.04,
+        "trades_per_ep": 60.1,
+        "triggers_per_ep": 2.58,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 2.1,
+        "suppression_pct": 283.3406245201163
+      }
+    },
+    {
+      "source": "HONEST",
+      "ticker": "MSFT",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -961.3169414015056,
+        "pnl_ci95": 101.30723132401042,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 21.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "FLICKER",
+      "ticker": "MSFT",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -2480.6705619762574,
+        "pnl_ci95": 1025.6746107639017,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -3088.545997820407,
+        "pnl_ci95": 1246.8124177611544,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.32,
+        "cancelled_per_ep": 0.32,
+        "blocked_per_ep": 1.12,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -2045.0153834436926,
+        "pnl_ci95": 990.2303734124921,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 4.72,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 17.64,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "SCRIPTED-ATK",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": 748.1878856049863,
+        "pnl_ci95": 633.6309741195932,
+        "manip_trades_per_ep": 30.04,
+        "trades_per_ep": 64.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -20.442807436626172,
+        "pnl_ci95": 525.208070960806,
+        "manip_trades_per_ep": 20.98,
+        "trades_per_ep": 63.04,
+        "triggers_per_ep": 2.42,
+        "cancelled_per_ep": 2.36,
+        "blocked_per_ep": 1.94,
+        "suppression_pct": 102.73230933431861
+      },
+      "rule": {
+        "pnl_mean": -1280.6692511892068,
+        "pnl_ci95": 613.3815733307765,
+        "manip_trades_per_ep": 15.22,
+        "trades_per_ep": 63.66,
+        "triggers_per_ep": 4.7,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 5.16,
+        "suppression_pct": 271.16947171012464
+      }
+    },
+    {
+      "source": "LATEBURST-ATK",
+      "ticker": "INTC",
+      "kind": "manipulator",
+      "none": {
+        "pnl_mean": -86.61329302041966,
+        "pnl_ci95": 1007.4038239955329,
+        "manip_trades_per_ep": 24.8,
+        "trades_per_ep": 60.82,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": 261.96763506553833,
+        "pnl_ci95": 621.6200951849809,
+        "manip_trades_per_ep": 21.26,
+        "trades_per_ep": 58.8,
+        "triggers_per_ep": 1.32,
+        "cancelled_per_ep": 1.3,
+        "blocked_per_ep": 0.28,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -85.7945768378413,
+        "pnl_ci95": 526.8044529779264,
+        "manip_trades_per_ep": 17.28,
+        "trades_per_ep": 59.14,
+        "triggers_per_ep": 2.74,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 2.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "HONEST",
+      "ticker": "INTC",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -875.2164818362938,
+        "pnl_ci95": 78.35219564253669,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 20.12,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0,
+        "suppression_pct": NaN
+      }
+    },
+    {
+      "source": "FLICKER",
+      "ticker": "INTC",
+      "kind": "legitimate",
+      "none": {
+        "pnl_mean": -2093.516303566074,
+        "pnl_ci95": 1114.0149189590993,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.0,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 0.0
+      },
+      "watchdog": {
+        "pnl_mean": -1882.590808318248,
+        "pnl_ci95": 1103.0448441990425,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 0.42,
+        "cancelled_per_ep": 0.42,
+        "blocked_per_ep": 1.6,
+        "suppression_pct": NaN
+      },
+      "rule": {
+        "pnl_mean": -1267.4530401005131,
+        "pnl_ci95": 676.6846913517928,
+        "manip_trades_per_ep": 0.0,
+        "trades_per_ep": 0.0,
+        "triggers_per_ep": 4.74,
+        "cancelled_per_ep": 0.0,
+        "blocked_per_ep": 18.8,
+        "suppression_pct": NaN
+      }
+    }
+  ],
+  "real_flow": {
+    "AAPL": {
+      "events": 370391,
+      "new_orders": 176867,
+      "large_orders": 2037,
+      "flags": 1322,
+      "flags_per_10k_events": 35.69201195493411
+    },
+    "MSFT": {
+      "events": 638765,
+      "new_orders": 314831,
+      "large_orders": 12,
+      "flags": 2,
+      "flags_per_10k_events": 0.031310419324790804
+    },
+    "GOOG": {
+      "events": 117916,
+      "new_orders": 56666,
+      "large_orders": 308,
+      "flags": 209,
+      "flags_per_10k_events": 17.724481834526273
+    },
+    "INTC": {
+      "events": 594040,
+      "new_orders": 290056,
+      "large_orders": 32,
+      "flags": 17,
+      "flags_per_10k_events": 0.2861760150831594
+    },
+    "AMZN": {
+      "events": 239748,
+      "new_orders": 117265,
+      "large_orders": 2921,
+      "flags": 2443,
+      "flags_per_10k_events": 101.8986602599396
+    }
+  }
+}
