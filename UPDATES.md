@@ -177,3 +177,18 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - Miss cost 2 is rejected: less stable (one seed at legit FPR 0.204) and no better on GOOG.
 - Next: the same configuration at 1M steps, to test whether stuck seeds find the sparse act with more training.
 - Checkpoint: CP-7 (development; no held-out data seen).
+
+### U-020 — CP-7 experiment 3: 1M steps makes it reliable; the Watchdog now detects the act (2026-10-12)
+- Type: experiment + result (test split only) · Paper section: Results, Discussion
+- Causal label, γ 0, 1M steps, seeds 7/11/23 (`checkpoints/WATCHDOG/causal_g0_1m{,_s2,_s3}`; about 10 min each, 3 in parallel). `results/cp7_long.md`:
+  - Order F1 **0.978 ± 0.015** (main: 0.753 ± 0.058); precision 0.967 ± 0.030; recall 0.990 ± 0.000.
+  - Legitimate-order FPR **0.003 ± 0.009** (main: 0.035 ± 0.078).
+  - SPOOFER-03 GOOG (sparse) order recall **0.997** in every seed (main: 0.056). MSFT 0.994, INTC 0.996.
+- Flag timing (`python scripts/flag_timing_diagnostic.py --tag causal_g0_1m`), compared with U-017:
+  - Caught orders flagged before any opposite trade: 0.6% (main 89.5%). Flagged on the trade step itself: 99.4% (main 6.1%).
+  - Flag rate before the first opposite trade: GOOG 0.006, MSFT 0.002, INTC 0.007 (main: 0.008 / 0.840 / 0.990).
+  - Recall on orders with a single opposite trade: 0.974 (main 0.429).
+- Interpretation: with a causal label and a myopic objective, the Watchdog learned the conjunction "the owner trades on the side opposite its own resting large order". It does so from rewards alone, never told the rule.
+- **Caveat for the paper (must be stated):** that conjunction *is* the definition of the proxy label. A hand-written rule using the label's own definition would score perfectly on these labels by construction. The meaningful comparisons are: (1) against the industry-style size + fast-cancel rule, which cannot see the owner's trades; (2) learning it without being given the rule; (3) generalisation to attackers never seen in training. The label stays a proxy for intent (Open issue 4).
+- Decision (test-split evidence only): candidate for the pre-registered test is `causal_g0_1m` (seed 7), with `_s2`/`_s3` reported for variability, the same protocol as LATEBURST. No held-out or LATEBURST data has been loaded for any CP-7 model.
+- Checkpoint: CP-7 (development complete; pre-registration next).
