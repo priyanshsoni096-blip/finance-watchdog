@@ -151,3 +151,8 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - Likely cause: the training label is set with hindsight over the whole resting window, including steps before any evidence exists. Reward is maximised by predicting *who* will trade, which works for dense spoofers and fails for sparse ones.
 - Methodological note for the paper: the manipulation label is defined by an observable act (an opposite trade while the order rests). An engineered feature counting such trades would leak the label definition and undercut "never told the rule", so CP-7 will not add one.
 - Checkpoint: CP-7 (diagnosis).
+
+### U-018 — Version control restored (2026-10-12)
+- Type: setup · Paper section: none (process; needed for pre-registration timestamps)
+- The working folder was attached to the original history (`origin/main` at d9e242b). All work since 2026-10-10 is committed on branch `arnav`. The only differences from `main` were this session's additions; every committed result and checkpoint file was identical.
+- From here, CP-7's pre-registered attacker and hypothesis are committed before any of its data is generated.
