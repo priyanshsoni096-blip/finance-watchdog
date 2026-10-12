@@ -702,6 +702,21 @@ The replay environment allows one large order per side, so layering (Open issue 
 - **Recall by layer is not informative.** Recall is 0.30 at every layer only because all layers rest over the same interval and share the same flag window by construction. It cannot show whether depth in the book matters.
 - **Layering does not pay in this market.** −$15,001 ± 4,362 per episode; manipulation gain −$967 ± 3,694.
 
+## Pre-registered test: DRIP-ATK (CP-7)
+
+The CP-7 Watchdog was retrained with a causal label and a myopic objective (`--label causal --gamma 0`, 1M steps), with every choice made on the test split only (`UPDATES.md` U-017 to U-020). Its models were frozen in git (commit ef76cb4) before this test was written. The test was committed and pushed **before** any of its data was generated or scored.
+
+- **Attacker** (`DripSpoof` in `evaluation/agents.py`). Spoof one side, then 2–4 single-lot trades on the other side, each after a fresh 30–90 market-event wait. In each wait, with probability 0.5, one same-side trade as camouflage. Hold 0–50 events, cancel, unwind.
+- **Legitimate control** (`SameSideTrader`). A large order on one side, 1–5 trades on the same side while it rests, cancelled after 100–300 events. Busy, large and cancelling, but never trading against its own order.
+- **Evaluation** (`python watchdog/drip_test.py`, run once). 50 episodes per stock (AAPL, MSFT, GOOG, INTC, AMZN) each of DRIP-ATK, SAMESIDE and FLICKER, on test-split seeds. The verdict model is `checkpoints/WATCHDOG/causal_g0_1m`; the baseline is the rule tuned on the train split.
+- **H1.** The Watchdog's order-level F1 on DRIP-ATK + SAMESIDE + FLICKER (all five stocks pooled) is at least the rule's. Supported if Watchdog F1 ≥ rule F1.
+- **H2.** The Watchdog's order-level false-positive rate on SAMESIDE orders is at most 0.10.
+- **Context only.** Seeds `_s2` and `_s3`, the original `main` Watchdog, per-stock rows and attacker PnL.
+- **Disclosure.** Before this commit, `DripSpoof` and `SameSideTrader` were run for 3 GOOG episodes on throwaway seeds (999–1001) only to check that the labels come out as intended (all DRIP-ATK orders manipulative, no SAMESIDE order manipulative). No detector scored them.
+- **What a pass would and would not mean.** The proxy label is defined by the act the Watchdog now detects, so a hand-written rule with the label's own definition would score perfectly by construction. A pass shows that a detector learned from rewards alone, never told the rule, transfers to an unseen attacker with camouflage and to an unseen legitimate style. It does not show detection of intent on real markets.
+
+**Result:** not yet run.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.

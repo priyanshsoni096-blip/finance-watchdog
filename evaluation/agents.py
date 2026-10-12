@@ -110,3 +110,64 @@ class ScriptedSpoof:
             self.plan = [NOOP] * wait + [trade] * int(rng.integers(1, 6)) + [NOOP] * hold + [CANCEL]
             return SPOOF_BUY if side > 0 else SPOOF_SELL
         return NOOP
+
+
+class DripSpoof:
+    """Pre-registered clean held-out attacker DRIP-ATK (CP-7; defined and committed before any of its data existed).
+
+    Spoof one side, then make 2-4 single-lot trades on the OTHER side, each after a fresh 30-90 market-event wait.
+    In each wait it trades one lot on the SAME side as the spoof with probability 0.5 (camouflage: activity that is
+    not evidence of manipulation). Hold 0-50 events after the last opposite trade, cancel, then unwind.
+    Sparser and more spread out than SCRIPTED-ATK (one wait, then a burst of 1-5 trades) and LATEBURST-ATK (one long
+    wait, then 4-8 trades); no source used in training trades on both sides of its own resting order.
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            opposite, same = (SELL, BUY) if side > 0 else (BUY, SELL)
+            plan = []
+            for _ in range(int(rng.integers(2, 5))):
+                gap = [NOOP] * -(-int(rng.integers(30, 91)) // per_step)
+                if rng.random() < 0.5:
+                    gap[int(rng.integers(len(gap)))] = same
+                plan += gap + [opposite]
+            self.plan = plan + [NOOP] * -(-int(rng.integers(0, 51)) // per_step) + [CANCEL]
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP
+
+
+class SameSideTrader:
+    """Legitimate control SAMESIDE for the pre-registered DRIP-ATK test (committed with it, before any data existed).
+
+    Places a large visible order on one side and, while it rests, makes 1-5 single-lot trades on the SAME side
+    (genuine interest in that direction), cancels after 100-300 market events, then unwinds. It is large, active and
+    cancels, so it looks busy, but it never trades against its own resting order: legitimate under the label.
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            hold = [NOOP] * -(-int(rng.integers(100, 301)) // per_step)
+            k = min(int(rng.integers(1, 6)), len(hold))
+            for i in rng.choice(len(hold), size=k, replace=False):
+                hold[int(i)] = BUY if side > 0 else SELL
+            self.plan = hold + [CANCEL]
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP

@@ -192,3 +192,10 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - **Caveat for the paper (must be stated):** that conjunction *is* the definition of the proxy label. A hand-written rule using the label's own definition would score perfectly on these labels by construction. The meaningful comparisons are: (1) against the industry-style size + fast-cancel rule, which cannot see the owner's trades; (2) learning it without being given the rule; (3) generalisation to attackers never seen in training. The label stays a proxy for intent (Open issue 4).
 - Decision (test-split evidence only): candidate for the pre-registered test is `causal_g0_1m` (seed 7), with `_s2`/`_s3` reported for variability, the same protocol as LATEBURST. No held-out or LATEBURST data has been loaded for any CP-7 model.
 - Checkpoint: CP-7 (development complete; pre-registration next).
+
+### U-021 — Pre-registration: DRIP-ATK test (2026-10-12)
+- Type: pre-registration · Paper section: Methods (evaluation protocol), Results
+- Committed and pushed before any DRIP-ATK/SAMESIDE data was generated for scoring: the attacker `DripSpoof`, the new legitimate control `SameSideTrader` (both `evaluation/agents.py`), `watchdog/drip_test.py`, and the hypotheses in README "Pre-registered test: DRIP-ATK".
+- H1: Watchdog (`causal_g0_1m`) order F1 on DRIP-ATK + SAMESIDE + FLICKER ≥ rule F1. H2: Watchdog FPR on SAMESIDE ≤ 0.10.
+- Disclosure: a 3-episode label-mechanics check on throwaway GOOG seeds 999–1001, with no detector scoring.
+- Checkpoint: CP-7 (pre-registered; not yet run).
