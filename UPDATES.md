@@ -199,3 +199,19 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - H1: Watchdog (`causal_g0_1m`) order F1 on DRIP-ATK + SAMESIDE + FLICKER ≥ rule F1. H2: Watchdog FPR on SAMESIDE ≤ 0.10.
 - Disclosure: a 3-episode label-mechanics check on throwaway GOOG seeds 999–1001, with no detector scoring.
 - Checkpoint: CP-7 (pre-registered; not yet run).
+
+### U-022 — DRIP-ATK result (run once) and post-hoc diagnosis (2026-10-12)
+- Type: result + negative result · Paper section: Results (Claim 2), Discussion, Limitations
+- `python watchdog/drip_test.py`, run once after pre-registration commit 8688d51 (pushed). `results/drip_test.md`:
+  - **H1 supported** (Watchdog F1 0.409 vs rule 0.336, pooled). **H2 supported** (SAMESIDE FPR 0.012).
+  - But DRIP-ATK recall is 0.26 against the rule's 0.74; on DRIP-ATK alone the rule's F1 is 0.85 vs 0.41. H1 passed because of the rule's false positives (FPR 0.78). Lesson: state recall hypotheses directly.
+  - Precision transfers: 19 false positives in 4,108 legitimate orders (rule: 3,273).
+  - Context: original `main` Watchdog on the same orders, F1 0.132 and recall 0.084. Seeds `_s2`/`_s3` reach recall 0.438/0.462 with SAMESIDE FPR 0.117/0.100.
+  - Per stock recall: AAPL 0.40, GOOG 0.42, AMZN 0.36, MSFT 0.08, INTC 0.06.
+- POST-HOC (`scripts/drip_posthoc.py`, after the verdict; informs no verdict):
+  - Act flag rate by order age at the act: 1–4 steps 0.55 (n = 11), 5–9 0.244, 10–19 0.193, 20+ 0.045.
+  - Camouflage before the act: 0.152 with, 0.219 without (minor).
+  - First act 0.238, later acts 0.132.
+  - MSFT/INTC acts flagged at 0.029–0.078 at every age.
+- Interpretation: CP-7 changed what the Watchdog detects (the act, not the trader) and kept false positives very low on unseen legitimate styles. It does not yet generalise across timing: the training population's acts nearly all come 1–4 steps after placement, and the 1-tick stocks' Spoofers only show dense, early trading. This points to training-population coverage (ERRORS_AND_FALLBACKS F-15, fallback 2) as the next lever. DRIP-ATK is now inspected and can no longer serve as a clean test.
+- Checkpoint: CP-7 iteration 1 complete.

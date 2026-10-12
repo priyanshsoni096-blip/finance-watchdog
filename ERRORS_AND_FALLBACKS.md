@@ -138,6 +138,7 @@ Entries F-01 to F-09 cover features that already exist; their failure modes were
 - Fallback 2: add sparse-style scripted sources with randomised waits and trade counts to training (never the attackers used for held-out tests, nor the new pre-registered one).
 - Fallback 3: rule-then-Watchdog hybrid (pre-registered before it is tried).
 - Last resort: Claim 2 stays "not shown". That is a valid, reportable negative result.
+- Status (2026-10-12): fallback 1 used (U-019 to U-022). It fixed in-distribution sparse detection (GOOG recall 0.056 → 0.997) but not timing generalisation (DRIP-ATK recall 0.26). Fallback 2 is next. When writing its scripted sources, vary the wait (including 10–40 steps) and add acts on old orders; avoid DRIP-ATK, LATEBURST and SCRIPTED parameters, and pre-register a fresh attacker.
 
 ### F-16 — Write-up (CP-8)
 - Fails if: a number cannot be traced to a committed file, or the headline the plan expected (Watchdog ahead on unseen attacks) does not hold.

@@ -715,7 +715,18 @@ The CP-7 Watchdog was retrained with a causal label and a myopic objective (`--l
 - **Disclosure.** Before this commit, `DripSpoof` and `SameSideTrader` were run for 3 GOOG episodes on throwaway seeds (999–1001) only to check that the labels come out as intended (all DRIP-ATK orders manipulative, no SAMESIDE order manipulative). No detector scored them.
 - **What a pass would and would not mean.** The proxy label is defined by the act the Watchdog now detects, so a hand-written rule with the label's own definition would score perfectly by construction. A pass shows that a detector learned from rewards alone, never told the rule, transfers to an unseen attacker with camouflage and to an unseen legitimate style. It does not show detection of intent on real markets.
 
-**Result:** not yet run.
+**Result (run once after the pre-registration commit 8688d51; `results/drip_test.md`): H1 supported, H2 supported, but recall on the attacker is low.**
+
+| Bucket (order level) | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR |
+|---|---|---|
+| DRIP-ATK + SAMESIDE + FLICKER | **0.94** / 0.26 / **0.41** / **0.00** | 0.22 / **0.74** / 0.34 / 0.78 |
+| DRIP-ATK only | 1.00 / 0.26 / 0.41 | 1.00 / **0.74** / **0.85** |
+| SAMESIDE only (unseen legitimate style) | FPR **0.012** | FPR 0.75 |
+
+- **H1 passed only because the rule's false positives lower its pooled F1.** On DRIP-ATK orders alone the rule is far ahead (F1 0.85 vs 0.41). Wording H1 as a pooled F1 let a weak recall pass; future tests should state a recall hypothesis directly.
+- **Precision transfers.** 19 false positives among 4,108 legitimate orders, against the rule's 3,273.
+- **Better than the original Watchdog on the same orders** (context): pooled F1 0.41 vs 0.13, DRIP-ATK recall 0.26 vs 0.08. Seeds `_s2`/`_s3` reach recall 0.44/0.46 but with SAMESIDE FPR 0.117/0.100.
+- **Post-hoc (`scripts/drip_posthoc.py`, after the verdict):** the Watchdog's flag rate on the act falls with the order's age: 0.24 at 5–9 steps, 0.19 at 10–19, 0.045 at 20+. Almost every act in training occurs within 1–4 steps of placement. MSFT/INTC acts are flagged at 4–5% at any age, against 24–29% on the wide-spread stocks. Camouflage is a minor factor (0.15 with vs 0.22 without). The CP-7 Watchdog learned the act, but only in the narrow timing the training Spoofers use.
 
 ## Where the three claims stand
 
