@@ -26,7 +26,7 @@ from sb3_contrib import RecurrentPPO  # noqa: E402
 from stable_baselines3.common.callbacks import BaseCallback  # noqa: E402
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize  # noqa: E402
 
-from watchdog.dataset import DATA_DIR, load_split  # noqa: E402
+from watchdog.dataset import DATA_DIR, causal_labels, load_split  # noqa: E402
 from watchdog.watchdog_env import WatchdogEnv  # noqa: E402
 
 
@@ -88,6 +88,12 @@ def main() -> int:
     # Standardise observations. Raw book price features sit near +-20 while the participant features that carry
     # the signal are 0-5; the logistic-regression diagnostic that separated positives standardised its inputs.
     p.add_argument("--norm-obs", action="store_true")
+    # Training label. "hindsight" (the recorded y, every step a manipulative order rests) reproduces the reported
+    # Watchdog; "causal" is positive only from the owner's first opposite trade (watchdog.dataset.causal_labels).
+    p.add_argument("--label", choices=["hindsight", "causal"], default="hindsight")
+    # Flags never change what the Watchdog observes next, so each step is a separate decision and the optimal policy
+    # is myopic; gamma > 0 only adds variance to the advantage. Default 0.9 reproduces the reported Watchdog.
+    p.add_argument("--gamma", type=float, default=0.9)
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
@@ -95,6 +101,8 @@ def main() -> int:
     if not sources:
         print(f"no training data in {Path(args.data) / 'train'}; run watchdog/dataset.py first")
         return 1
+    if args.label == "causal":
+        sources = {n: {**s, "y": causal_labels(s)} for n, s in sources.items()}
     for name, s in sources.items():
         print(f"train source {name:18s} steps={len(s['y']):7d} positive={s['y'].mean():.3f}")
 
@@ -113,7 +121,7 @@ def main() -> int:
     (out / "config.txt").write_text(f"{vars(args)}\nsources={sorted(sources)}\n")
 
     model = RecurrentPPO("MlpLstmPolicy", vec, learning_rate=3e-4, n_steps=512, batch_size=512, n_epochs=5,
-                         gamma=0.9, ent_coef=args.ent_coef, policy_kwargs=dict(lstm_hidden_size=64, net_arch=[128]),
+                         gamma=args.gamma, ent_coef=args.ent_coef, policy_kwargs=dict(lstm_hidden_size=64, net_arch=[128]),
                          seed=args.seed, verbose=0, device="cpu")
     model.learn(total_timesteps=args.timesteps, callback=DetectionLog(out / "progress.csv"))
     model.save(out / "model")

@@ -156,3 +156,24 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - Type: setup · Paper section: none (process; needed for pre-registration timestamps)
 - The working folder was attached to the original history (`origin/main` at d9e242b). All work since 2026-10-10 is committed on branch `arnav`. The only differences from `main` were this session's additions; every committed result and checkpoint file was identical.
 - From here, CP-7's pre-registered attacker and hypothesis are committed before any of its data is generated.
+
+### U-019 — CP-7 experiments 1–2: causal label, then γ = 0 (2026-10-12)
+- Type: experiment (test split only) · Paper section: Methods (Watchdog training), Results, Appendix
+- Code: `watchdog.dataset.causal_labels` and `train_watchdog.py --label causal` (positive only from the owner's first opposite trade; the defaults still reproduce the reported Watchdog). Also `--gamma`, `evaluate_watchdog.py --test-only`, and `watchdog/compare_candidates.py` (scores candidates on the test split only; never loads held-out or LATEBURST data). New unit test: 116 tests pass.
+- Effect of the causal label on training positives: SPOOFER-03 GOOG keeps 63% of its hindsight-positive steps, MSFT 86%, INTC 93%.
+- All runs: 400k steps, `--norm-obs --ent-coef 0.01`, seeds 7/11/23 as for `main`. Results in `results/cp7_label.md` (mean ± 95% Student-t CI, 3 seeds):
+
+  | Config | Order F1 | Legit FPR | GOOG order recall | INTC order recall |
+  |---|---|---|---|---|
+  | main (hindsight label, γ 0.9) | 0.753 ± 0.058 | 0.035 ± 0.078 | 0.056 ± 0.240 | 0.887 ± 0.487 |
+  | causal label, γ 0.9 | 0.783 ± 0.231 | 0.008 ± 0.017 | 0.003 ± 0.012 | 0.823 ± 0.727 |
+  | causal label, γ 0 | **0.923 ± 0.166** | 0.010 ± 0.019 | 0.641 ± 1.364 | 0.993 ± 0.013 |
+  | causal label, γ 0, miss cost 2 | 0.854 ± 0.288 | 0.070 ± 0.287 | 0.373 ± 1.346 | 0.994 ± 0.004 |
+
+- Findings:
+  - The causal label alone raises precision (0.82 → 0.95) and lowers legitimate FPR, but does not teach the act: GOOG recall falls to 0.003.
+  - γ = 0 is the change that matters. A flag never affects later observations, so the optimal policy is myopic and γ > 0 only adds variance.
+  - Outcomes are bimodal by seed. Causal + γ 0 seeds 11 and 23 reach F1 0.960/0.962 with GOOG recall 0.92/0.99 (legit FPR 0.009/0.018); seed 7 reaches F1 0.846 but GOOG recall 0.008. The act is learnable, but at 400k steps not reliably found.
+  - Miss cost 2 is rejected: less stable (one seed at legit FPR 0.204) and no better on GOOG.
+- Next: the same configuration at 1M steps, to test whether stuck seeds find the sparse act with more training.
+- Checkpoint: CP-7 (development; no held-out data seen).

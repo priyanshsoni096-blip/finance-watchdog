@@ -114,6 +114,9 @@ def main() -> int:
     p.add_argument("--tag", default="main")
     p.add_argument("--data", default=str(DATA_DIR))
     p.add_argument("--out", default=str(ROOT / "results"))
+    # For comparing candidate Watchdogs during development: held-out data must stay unseen until a final model is
+    # fixed (HANDOFF §9), so this scores the test split only.
+    p.add_argument("--test-only", action="store_true")
     args = p.parse_args()
 
     from sb3_contrib import RecurrentPPO
@@ -124,8 +127,9 @@ def main() -> int:
     model = RecurrentPPO.load(path, device="cpu")
     obs_norm = load_obs_norm(path.parent)
     data = Path(args.data)
-    train, test, held = load_split("train", data), load_split("test", data), load_split("heldout", data)
-    if not (train and test and held):
+    train, test = load_split("train", data), load_split("test", data)
+    held = {} if args.test_only else load_split("heldout", data)
+    if not (train and test and (held or args.test_only)):
         print("missing splits; run watchdog/dataset.py first")
         return 1
 

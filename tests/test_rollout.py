@@ -85,3 +85,19 @@ def test_orders_roundtrip_through_array(day):
     for (ea, a), (eb, b) in zip(back, flat):
         assert ea == eb and a.order_id == b.order_id and a.removed_by == b.removed_by
         assert a.manipulative == b.manipulative and a.depth_mult == pytest.approx(b.depth_mult)
+
+
+def test_causal_labels_start_at_first_opposite_trade():
+    from watchdog.dataset import TRADE_COL, causal_labels
+    from evaluation.baseline_detector import OrderRecord
+    X = np.zeros((10, OBS_DIM), dtype=np.float32)
+    X[4, TRADE_COL] = -1.0            # sell against a resting bid placed at step 1
+    X[6, TRADE_COL] = -1.0
+    X[8, TRADE_COL] = 1.0             # buy: same side as the bid, not evidence
+    orders = [OrderRecord(0, 1, 1000, 10, 1, 7, "cancel", 2),       # manipulative bid resting steps 1..6
+              OrderRecord(1, -1, 1000, 10, 7, 10, "cancel", 0)]     # legitimate ask
+    src = {"X": X, "y": np.array([0, 1, 1, 1, 1, 1, 1, 0, 0, 0], dtype=bool), "ep_offsets": np.array([0, 10]),
+           "orders": _orders_to_array([orders])}
+    y = causal_labels(src)
+    assert y.tolist() == [False] * 4 + [True] * 3 + [False] * 3
+    assert not (y & ~src["y"]).any()   # every causal positive is a hindsight positive

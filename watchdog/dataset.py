@@ -114,6 +114,31 @@ def build_source(src: Source, split: str, episodes: int, cache: dict) -> dict:
     }
 
 
+TRADE_COL = 40 + 4  # participant feature "trade direction this step" (evaluation/rollout.py)
+
+
+def causal_labels(src: dict) -> np.ndarray:
+    """Per-step labels that only become positive once the evidence exists: from the first step on which the owner
+    traded on the side opposite a resting manipulative order, until that order is removed.
+
+    The recorded label `y` is set with hindsight over the order's whole resting window, including steps before any
+    opposite trade. Training on it rewarded predicting which trader will spoof (the Watchdog flagged 99% of
+    SPOOFER-04's orders before any opposite trade) rather than detecting the act (it flagged 13.7% of SPOOFER-03's
+    opposite-trade steps); see scripts/flag_timing_diagnostic.py. Every causal positive is also a hindsight positive.
+    """
+    y = np.zeros(len(src["y"]), dtype=bool)
+    off = src["ep_offsets"]
+    for ep, o in orders_from_array(src["orders"]):
+        if not o.manipulative:
+            continue
+        a = off[ep]
+        trades = src["X"][a + o.placed_step:a + o.removed_step, TRADE_COL]
+        hit = np.flatnonzero(trades == -o.side)
+        if hit.size:
+            y[a + o.placed_step + hit[0]:a + o.removed_step] = True
+    return y
+
+
 def load_split(split: str, data_dir: Path = DATA_DIR) -> dict[str, dict]:
     """-> {"SOURCE_TICKER": {"X", "y", "ep_offsets", "orders", "pnl"}}"""
     out = {}
