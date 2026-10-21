@@ -1,0 +1,278 @@
+{
+  "split": "test",
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "per_tag": {
+    "causal_g0_1m": {
+      "order F1": 0.9816896884034694,
+      "order precision": 0.9732484076433121,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.0009254974548819991,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.46651785714285715,
+      "ACCUM order FPR": 0.01478953356086462,
+      "VARIED-SPOOF AAPL order recall": 0.49099099099099097,
+      "VARIED-SPOOF GOOG order recall": 0.4722222222222222,
+      "VARIED-SPOOF INTC order recall": 0.4364406779661017,
+      "VARIED-SPOOF MSFT order recall": 0.46846846846846846,
+      "VARIED-SPOOF recall, first act 10+ steps": 0.25862068965517243
+    },
+    "causal_g0_1m_s2": {
+      "order F1": 0.9713922441195169,
+      "order precision": 0.9532127261384903,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.006941230911614993,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.5055803571428571,
+      "ACCUM order FPR": 0.08191126279863481,
+      "VARIED-SPOOF AAPL order recall": 0.527027027027027,
+      "VARIED-SPOOF GOOG order recall": 0.5185185185185185,
+      "VARIED-SPOOF INTC order recall": 0.4703389830508475,
+      "VARIED-SPOOF MSFT order recall": 0.509009009009009,
+      "VARIED-SPOOF recall, first act 10+ steps": 0.3160919540229885
+    },
+    "causal_g0_1m_s3": {
+      "order F1": 0.9823207971713276,
+      "order precision": 0.9744897959183674,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.00046274872744099955,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.546875,
+      "ACCUM order FPR": 0.07508532423208192,
+      "VARIED-SPOOF AAPL order recall": 0.5180180180180181,
+      "VARIED-SPOOF GOOG order recall": 0.5092592592592593,
+      "VARIED-SPOOF INTC order recall": 0.5635593220338984,
+      "VARIED-SPOOF MSFT order recall": 0.5945945945945946,
+      "VARIED-SPOOF recall, first act 10+ steps": 0.39655172413793105
+    },
+    "cov": {
+      "order F1": 0.9842898364860533,
+      "order precision": 0.9739847715736041,
+      "order recall": 0.9948152948801037,
+      "legitimate order FPR": 0.0013882461823229986,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.9933035714285714,
+      "ACCUM order FPR": 0.019340159271899887,
+      "VARIED-SPOOF AAPL order recall": 0.990990990990991,
+      "VARIED-SPOOF GOOG order recall": 0.9953703703703703,
+      "VARIED-SPOOF INTC order recall": 0.9915254237288136,
+      "VARIED-SPOOF MSFT order recall": 0.9954954954954955,
+      "VARIED-SPOOF recall, first act 10+ steps": 1.0
+    },
+    "cov_s2": {
+      "order F1": 0.9836695485110472,
+      "order precision": 0.9721518987341772,
+      "order recall": 0.9954633830200907,
+      "legitimate order FPR": 0.002776492364645997,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.9944196428571429,
+      "ACCUM order FPR": 0.034129692832764506,
+      "VARIED-SPOOF AAPL order recall": 0.990990990990991,
+      "VARIED-SPOOF GOOG order recall": 1.0,
+      "VARIED-SPOOF INTC order recall": 0.9915254237288136,
+      "VARIED-SPOOF MSFT order recall": 0.9954954954954955,
+      "VARIED-SPOOF recall, first act 10+ steps": 1.0
+    },
+    "cov_s3": {
+      "order F1": 0.9846153846153847,
+      "order precision": 0.974001268230818,
+      "order recall": 0.9954633830200907,
+      "legitimate order FPR": 0.0009254974548819991,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0,
+      "VARIED-SPOOF order recall": 0.9933035714285714,
+      "ACCUM order FPR": 0.03981797497155859,
+      "VARIED-SPOOF AAPL order recall": 0.990990990990991,
+      "VARIED-SPOOF GOOG order recall": 0.9953703703703703,
+      "VARIED-SPOOF INTC order recall": 0.9915254237288136,
+      "VARIED-SPOOF MSFT order recall": 0.9954954954954955,
+      "VARIED-SPOOF recall, first act 10+ steps": 1.0
+    }
+  },
+  "groups": {
+    "causal_g0_1m": [
+      "causal_g0_1m",
+      "causal_g0_1m_s2",
+      "causal_g0_1m_s3"
+    ],
+    "cov": [
+      "cov",
+      "cov_s2",
+      "cov_s3"
+    ]
+  },
+  "summary": {
+    "causal_g0_1m": {
+      "order F1": {
+        "mean": 0.9784675765647712,
+        "ci95": 0.015242750455151536
+      },
+      "order precision": {
+        "mean": 0.9669836432333899,
+        "ci95": 0.029668228530583485
+      },
+      "order recall": {
+        "mean": 0.9902786779001943,
+        "ci95": 3.378053924858142e-16
+      },
+      "legitimate order FPR": {
+        "mean": 0.002776492364645997,
+        "ci95": 0.008978853163533971
+      },
+      "SPOOFER-02_MSFT order recall": {
+        "mean": 0.9938650306748467,
+        "ci95": 0.0
+      },
+      "SPOOFER-02_MSFT flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG order recall": {
+        "mean": 0.9972527472527473,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC order recall": {
+        "mean": 0.9955882352941177,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "VARIED-SPOOF order recall": {
+        "mean": 0.5063244047619048,
+        "ci95": 0.09982999589949275
+      },
+      "ACCUM order FPR": {
+        "mean": 0.05726204019719378,
+        "ci95": 0.09177213012638459
+      },
+      "VARIED-SPOOF AAPL order recall": {
+        "mean": 0.512012012012012,
+        "ci95": 0.04659065206703166
+      },
+      "VARIED-SPOOF GOOG order recall": {
+        "mean": 0.5,
+        "ci95": 0.060860565479614145
+      },
+      "VARIED-SPOOF INTC order recall": {
+        "mean": 0.4901129943502825,
+        "ci95": 0.1635337408885825
+      },
+      "VARIED-SPOOF MSFT order recall": {
+        "mean": 0.524024024024024,
+        "ci95": 0.15996587804417783
+      },
+      "VARIED-SPOOF recall, first act 10+ steps": {
+        "mean": 0.32375478927203066,
+        "ci95": 0.17212505328675134
+      }
+    },
+    "cov": {
+      "order F1": {
+        "mean": 0.9841915898708283,
+        "ci95": 0.0011937517359965695
+      },
+      "order precision": {
+        "mean": 0.9733793128461997,
+        "ci95": 0.002640860965169269
+      },
+      "order recall": {
+        "mean": 0.995247353640095,
+        "ci95": 0.0009295744221214522
+      },
+      "legitimate order FPR": {
+        "mean": 0.0016967453339503315,
+        "ci95": 0.002393133909967846
+      },
+      "SPOOFER-02_MSFT order recall": {
+        "mean": 0.9938650306748467,
+        "ci95": 0.0
+      },
+      "SPOOFER-02_MSFT flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG order recall": {
+        "mean": 0.9972527472527473,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC order recall": {
+        "mean": 0.9955882352941177,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "VARIED-SPOOF order recall": {
+        "mean": 0.9936755952380952,
+        "ci95": 0.0016008184523810661
+      },
+      "ACCUM order FPR": {
+        "mean": 0.031095942358740997,
+        "ci95": 0.026260990242841085
+      },
+      "VARIED-SPOOF AAPL order recall": {
+        "mean": 0.990990990990991,
+        "ci95": 0.0
+      },
+      "VARIED-SPOOF GOOG order recall": {
+        "mean": 0.9969135802469135,
+        "ci95": 0.006640432098765462
+      },
+      "VARIED-SPOOF INTC order recall": {
+        "mean": 0.9915254237288136,
+        "ci95": 0.0
+      },
+      "VARIED-SPOOF MSFT order recall": {
+        "mean": 0.9954954954954957,
+        "ci95": 3.378053924858142e-16
+      },
+      "VARIED-SPOOF recall, first act 10+ steps": {
+        "mean": 1.0,
+        "ci95": 0.0
+      }
+    }
+  },
+  "runtime_s": 113.5
+}

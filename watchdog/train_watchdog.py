@@ -94,6 +94,8 @@ def main() -> int:
     # Flags never change what the Watchdog observes next, so each step is a separate decision and the optimal policy
     # is myopic; gamma > 0 only adds variance to the advantage. Default 0.9 reproduces the reported Watchdog.
     p.add_argument("--gamma", type=float, default=0.9)
+    # Extra training sources merged into the train split, e.g. data/watchdog_ext (CP-7 round 2: VARIED-SPOOF, ACCUM)
+    p.add_argument("--extra-data", nargs="*", default=[])
     args = p.parse_args()
     torch.set_num_threads(args.threads)
 
@@ -101,6 +103,12 @@ def main() -> int:
     if not sources:
         print(f"no training data in {Path(args.data) / 'train'}; run watchdog/dataset.py first")
         return 1
+    for extra in args.extra_data:
+        more = load_split("train", Path(extra))
+        if not more:
+            print(f"no training data in {Path(extra) / 'train'}")
+            return 1
+        sources.update(more)
     if args.label == "causal":
         sources = {n: {**s, "y": causal_labels(s)} for n, s in sources.items()}
     for name, s in sources.items():

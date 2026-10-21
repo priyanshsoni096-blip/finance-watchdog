@@ -215,3 +215,18 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - MSFT/INTC acts flagged at 0.029–0.078 at every age.
 - Interpretation: CP-7 changed what the Watchdog detects (the act, not the trader) and kept false positives very low on unseen legitimate styles. It does not yet generalise across timing: the training population's acts nearly all come 1–4 steps after placement, and the 1-tick stocks' Spoofers only show dense, early trading. This points to training-population coverage (ERRORS_AND_FALLBACKS F-15, fallback 2) as the next lever. DRIP-ATK is now inspected and can no longer serve as a clean test.
 - Checkpoint: CP-7 iteration 1 complete.
+
+### U-023 — CP-7 round 2: training-population coverage (2026-10-21)
+- Type: method + experiment (test splits only) · Paper section: Methods (training population), Results
+- Correction to U-022: the RL Spoofers' data does contain acts on older orders, but nearly always after earlier acts on the same order. What was missing was a *first* act that comes late (1,511 of 1,536 manipulative test orders had their first act within 1–4 steps).
+- New training-only sources (`evaluation/agents.py`), on AAPL/MSFT/GOOG/INTC only, built with `python watchdog/dataset.py --extended --episodes 150` into `data/watchdog_ext/` (original splits untouched):
+  - VARIED-SPOOF: 1–6 opposite trades, each after a log-uniform 1–400-event wait, same-side noise trades with probability 0.2. 29% of its acts come at order age 20+ steps, against 8% in the RL Spoofers' data.
+  - ACCUM: the legitimate counterpart. Same order sizes, ages and trade counts, but trades only on the same side as its order.
+- Training: `--label causal --gamma 0 --extra-data data/watchdog_ext`, 1M steps, seeds 7/11/23 (`checkpoints/WATCHDOG/cov{,_s2,_s3}`), 20 sources.
+- Results (`results/cp7_round2.md`, mean ± 95% CI, 3 seeds; round 1 = `causal_g0_1m`):
+  - Original test split: order F1 0.984 ± 0.001 (round 1: 0.978 ± 0.015); legitimate FPR 0.002 ± 0.002 (0.003 ± 0.009).
+  - VARIED-SPOOF test recall 0.994 ± 0.002 (round 1: 0.506 ± 0.100). First act at 10+ steps: 1.000 (round 1: 0.324). MSFT 0.995, INTC 0.992 (round 1: 0.52, 0.49).
+  - ACCUM FPR 0.031 ± 0.026 (round 1: 0.057 ± 0.092).
+- Caveat: VARIED-SPOOF/ACCUM test numbers are in-distribution for this training family. Generalisation needs a new pre-registered attacker that is structurally different from it.
+- Decision (test splits only): `cov` (seed 7) is the verdict model for the next pre-registered test; `_s2`/`_s3` for variability.
+- Checkpoint: CP-7 round 2 (development complete).

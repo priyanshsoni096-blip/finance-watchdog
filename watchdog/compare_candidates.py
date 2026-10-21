@@ -49,7 +49,37 @@ def act_flag_rate(src: dict, step_flags: np.ndarray) -> tuple[int, int]:
     return hits, n
 
 
-def evaluate(tag: str, test: dict, det) -> dict:
+def late_first_act_recall(src: dict, step_flags: np.ndarray, min_age: int = 10) -> tuple[int, int]:
+    """(caught, orders) over manipulative orders whose FIRST opposite trade comes >= min_age steps after placement."""
+    off, caught, n = src["ep_offsets"], 0, 0
+    for ep, o in orders_from_array(src["orders"]):
+        if not o.manipulative:
+            continue
+        a = off[ep]
+        hit = np.flatnonzero(src["X"][a + o.placed_step:a + o.removed_step, TRADE_COL] == -o.side)
+        if hit.size and hit[0] >= min_age:
+            caught += int(step_flags[a + o.placed_step:a + o.removed_step].any())
+            n += 1
+    return caught, n
+
+
+def evaluate_extended(model, obs_norm, ext: dict, det) -> dict:
+    """CP-7 round-2 training-only sources on their test split: VARIED-SPOOF recall overall, per stock and on late first
+    acts, and the ACCUM (same-side legitimate) false-positive rate."""
+    scored = {n: score_source(model, s, det, obs_norm) for n, s in ext.items()}
+    varied = [n for n in scored if n.startswith("VARIED")]
+    row = {"VARIED-SPOOF order recall": combine([scored[n] for n in varied])["watchdog_orders"]["recall"],
+           "ACCUM order FPR": combine([v for n, v in scored.items() if n.startswith("ACCUM")])["watchdog_orders"]["fpr"]}
+    caught = total = 0
+    for n in varied:
+        c, k = late_first_act_recall(ext[n], scored[n]["step_flags"])
+        caught, total = caught + c, total + k
+        row[f"VARIED-SPOOF {n.split('_')[1]} order recall"] = combine([scored[n]])["watchdog_orders"]["recall"]
+    row["VARIED-SPOOF recall, first act 10+ steps"] = caught / total if total else float("nan")
+    return row
+
+
+def evaluate(tag: str, test: dict, det, ext: dict | None = None) -> dict:
     from sb3_contrib import RecurrentPPO
     path = ROOT / "checkpoints" / "WATCHDOG" / tag / "model.zip"
     model = RecurrentPPO.load(path, device="cpu")
@@ -64,6 +94,8 @@ def evaluate(tag: str, test: dict, det) -> dict:
             row[f"{n} order recall"] = combine([scored[n]])["watchdog_orders"]["recall"]
             h, k = act_flag_rate(test[n], scored[n]["step_flags"])
             row[f"{n} flag rate on the act"] = h / k if k else float("nan")
+    if ext:
+        row.update(evaluate_extended(model, obs_norm, ext, det))
     return row
 
 
@@ -75,6 +107,8 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--tags", nargs="+", required=True)
     p.add_argument("--name", default="cp7_candidates")
+    # test split of extra sources (e.g. data/watchdog_ext); the original-split metrics are computed without them
+    p.add_argument("--extra-test", default=None)
     args = p.parse_args()
 
     train, test = load_split("train"), load_split("test")
@@ -82,9 +116,10 @@ def main() -> int:
         print("missing train/test splits; run watchdog/dataset.py first")
         return 1
     det, _ = tune([o for s in train.values() for _, o in orders_from_array(s["orders"])])
+    ext = load_split("test", Path(args.extra_test)) if args.extra_test else None
     t0, per_tag = time.time(), {}
     for tag in args.tags:
-        per_tag[tag] = evaluate(tag, test, det)
+        per_tag[tag] = evaluate(tag, test, det, ext)
         print(f"[{time.time() - t0:5.0f}s] {tag}: " + ", ".join(f"{k}={v:.3f}" for k, v in per_tag[tag].items()), flush=True)
     groups: dict[str, list[str]] = {}
     for tag in per_tag:
@@ -110,6 +145,7 @@ def render(pl: dict) -> str:
     metrics = list(pl["per_tag"][tags[0]])
     L = ["# Candidate Watchdogs on the test split (CP-7 development)", "",
          "Test split only; held-out and pre-registered data were not loaded. Order level unless stated. "
+         "Rows for VARIED-SPOOF / ACCUM use the CP-7 round-2 training-only sources' test split. "
          "\"Flag rate on the act\" is the share of steps, on which the owner trades against its own resting "
          "manipulative order, that the Watchdog flags.", "",
          "## Per model", "", "| Metric | " + " | ".join(tags) + " |", "|---|" + "---|" * len(tags)]

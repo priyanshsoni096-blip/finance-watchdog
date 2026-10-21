@@ -32,11 +32,15 @@ sys.path.insert(0, str(ROOT / "training"))
 from env.lob_env import EnvConfig, LimitOrderBookEnv  # noqa: E402
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
-from evaluation.agents import Flicker, Honest, ModelPolicy, ScriptedSpoof  # noqa: E402
+from evaluation.agents import Accumulator, Flicker, Honest, ModelPolicy, ScriptedSpoof, VariedSpoof  # noqa: E402
 from evaluation.baseline_detector import OrderRecord  # noqa: E402
 from evaluation.rollout import OBS_DIM, record_episode  # noqa: E402
 
 DATA_DIR = ROOT / "data" / "watchdog"
+# CP-7 round 2: training-only scripted sources kept apart, so the original splits and every result built on them
+# are unchanged (python watchdog/dataset.py --extended)
+EXT_DATA_DIR = ROOT / "data" / "watchdog_ext"
+TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
 TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
 HELD_OUT = "AMZN"
 SEED_BASE = {"train": 100_000, "test": 200_000, "heldout": 300_000}
@@ -73,6 +77,14 @@ def sources(tag: str = "main") -> dict[str, list[Source]]:
         bucket.append(Source("FLICKER", tk, Flicker, DECISION_ENV))
         heldout.append(Source("SCRIPTED-ATK", tk, ScriptedSpoof, DECISION_ENV))
     return {"train": train, "test": train, "heldout": heldout}
+
+
+def extended_sources() -> dict[str, list[Source]]:
+    """VARIED-SPOOF and ACCUM on the four training stocks (never AMZN), train and test splits only."""
+    from train_spoofer import DECISION_ENV
+    srcs = [Source(name, tk, make, DECISION_ENV) for tk in TRAIN_TICKERS
+            for name, make in (("VARIED-SPOOF", VariedSpoof), ("ACCUM", Accumulator))]
+    return {"train": srcs, "test": srcs}
 
 
 def _orders_to_array(orders_by_ep: list[list[OrderRecord]]) -> np.ndarray:
@@ -156,11 +168,16 @@ def main() -> int:
     p.add_argument("--eval-episodes", type=int, default=None, help="override test/heldout episodes per source")
     p.add_argument("--tag", default="main")
     p.add_argument("--splits", nargs="*", default=["train", "test", "heldout"])
-    p.add_argument("--out", default=str(DATA_DIR))
+    p.add_argument("--out", default=None)
+    p.add_argument("--extended", action="store_true", help="build the CP-7 round-2 training-only sources instead")
     args = p.parse_args()
+    if args.out is None:
+        args.out = str(EXT_DATA_DIR if args.extended else DATA_DIR)
+    if args.extended:
+        args.splits = [s for s in args.splits if s != "heldout"]
 
     t0, cache = time.time(), {}
-    by_split = sources(args.tag)
+    by_split = extended_sources() if args.extended else sources(args.tag)
     for split in args.splits:
         if split == "train":
             n = args.episodes

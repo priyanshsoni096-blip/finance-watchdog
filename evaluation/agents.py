@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+
 from env.lob_env import BUY, CANCEL, NOOP, SELL, SPOOF_BUY, SPOOF_SELL
 
 
@@ -166,6 +168,73 @@ class SameSideTrader:
             side = 1 if rng.random() < 0.5 else -1
             hold = [NOOP] * -(-int(rng.integers(100, 301)) // per_step)
             k = min(int(rng.integers(1, 6)), len(hold))
+            for i in rng.choice(len(hold), size=k, replace=False):
+                hold[int(i)] = BUY if side > 0 else SELL
+            self.plan = hold + [CANCEL]
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP
+
+
+def _log_uniform_steps(rng, lo_events: int, hi_events: int, per_step: int) -> int:
+    """A wait drawn log-uniformly between lo and hi market events, converted to agent steps (at least 1)."""
+    events = float(np.exp(rng.uniform(np.log(lo_events), np.log(hi_events))))
+    return max(1, -(-int(round(events)) // per_step))
+
+
+class VariedSpoof:
+    """TRAINING-ONLY scripted Spoofer family VARIED-SPOOF (CP-7 round 2). Never used as a held-out attacker.
+
+    Spoof one side; then 1-6 single-lot trades on the OTHER side, each after a wait drawn log-uniformly from 1 to 400
+    market events, so the incriminating act happens at order ages from one step to several hundred events. In each
+    wait, with probability 0.2, one same-side trade. Hold a log-uniform 1-200 events, cancel, unwind. It exists
+    because the round-1 Watchdog only flagged acts on young orders: almost every act in the RL Spoofers' data comes
+    1-4 steps after placement (UPDATES.md U-022).
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            opposite, same = (SELL, BUY) if side > 0 else (BUY, SELL)
+            plan = []
+            for _ in range(int(rng.integers(1, 7))):
+                gap = [NOOP] * (_log_uniform_steps(rng, 1, 400, per_step) - 1)
+                if gap and rng.random() < 0.2:
+                    gap[int(rng.integers(len(gap)))] = same
+                plan += gap + [opposite]
+            self.plan = plan + [NOOP] * _log_uniform_steps(rng, 1, 200, per_step) + [CANCEL]
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP
+
+
+class Accumulator:
+    """TRAINING-ONLY legitimate control ACCUM (CP-7 round 2), the counterpart of VARIED-SPOOF.
+
+    A large visible order on one side resting a log-uniform 50-1,000 market events, with 0-6 single-lot trades on the
+    SAME side while it rests, then cancel and unwind. Same order sizes, ages and trade counts as VARIED-SPOOF, so
+    the only difference between the two is the side of the trades relative to the resting order.
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            hold = [NOOP] * _log_uniform_steps(rng, 50, 1000, per_step)
+            k = min(int(rng.integers(0, 7)), len(hold))
             for i in rng.choice(len(hold), size=k, replace=False):
                 hold[int(i)] = BUY if side > 0 else SELL
             self.plan = hold + [CANCEL]
