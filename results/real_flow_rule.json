@@ -1,0 +1,128 @@
+{
+  "rules": {
+    "M=200 (basic_eval)": {
+      "n_mult": 2,
+      "m_events": 200
+    },
+    "M=1000 (train split)": {
+      "n_mult": 2,
+      "m_events": 1000
+    }
+  },
+  "stocks": {
+    "AAPL": {
+      "levels": 10,
+      "events": 400391,
+      "window": "09:30-16:00",
+      "M=200 (basic_eval)": {
+        "events": 370391,
+        "new_orders": 176867,
+        "large_orders": 2037,
+        "flags": 1322,
+        "flags_per_10k_events": 35.69201195493411
+      },
+      "M=1000 (train split)": {
+        "events": 370391,
+        "new_orders": 176867,
+        "large_orders": 2037,
+        "flags": 1388,
+        "flags_per_10k_events": 37.47391270306244
+      }
+    },
+    "MSFT": {
+      "levels": 10,
+      "events": 668765,
+      "window": "09:30-16:00",
+      "M=200 (basic_eval)": {
+        "events": 638765,
+        "new_orders": 314831,
+        "large_orders": 12,
+        "flags": 2,
+        "flags_per_10k_events": 0.031310419324790804
+      },
+      "M=1000 (train split)": {
+        "events": 638765,
+        "new_orders": 314831,
+        "large_orders": 12,
+        "flags": 5,
+        "flags_per_10k_events": 0.07827604831197701
+      }
+    },
+    "GOOG": {
+      "levels": 10,
+      "events": 147916,
+      "window": "09:30-16:00",
+      "M=200 (basic_eval)": {
+        "events": 117916,
+        "new_orders": 56666,
+        "large_orders": 308,
+        "flags": 209,
+        "flags_per_10k_events": 17.724481834526273
+      },
+      "M=1000 (train split)": {
+        "events": 117916,
+        "new_orders": 56666,
+        "large_orders": 308,
+        "flags": 214,
+        "flags_per_10k_events": 18.14851250042403
+      }
+    },
+    "INTC": {
+      "levels": 10,
+      "events": 624040,
+      "window": "09:30-16:00",
+      "M=200 (basic_eval)": {
+        "events": 594040,
+        "new_orders": 290056,
+        "large_orders": 32,
+        "flags": 17,
+        "flags_per_10k_events": 0.2861760150831594
+      },
+      "M=1000 (train split)": {
+        "events": 594040,
+        "new_orders": 290056,
+        "large_orders": 32,
+        "flags": 24,
+        "flags_per_10k_events": 0.4040131977644603
+      }
+    },
+    "AMZN": {
+      "levels": 10,
+      "events": 269748,
+      "window": "09:30-16:00",
+      "M=200 (basic_eval)": {
+        "events": 239748,
+        "new_orders": 117265,
+        "large_orders": 2921,
+        "flags": 2443,
+        "flags_per_10k_events": 101.8986602599396
+      },
+      "M=1000 (train split)": {
+        "events": 239748,
+        "new_orders": 117265,
+        "large_orders": 2921,
+        "flags": 2562,
+        "flags_per_10k_events": 106.86220531558136
+      }
+    },
+    "SPY": {
+      "levels": 30,
+      "events": 1152693,
+      "window": "09:30-10:30",
+      "M=200 (basic_eval)": {
+        "events": 1122693,
+        "new_orders": 557100,
+        "large_orders": 16,
+        "flags": 3,
+        "flags_per_10k_events": 0.026721463481111932
+      },
+      "M=1000 (train split)": {
+        "events": 1122693,
+        "new_orders": 557100,
+        "large_orders": 16,
+        "flags": 6,
+        "flags_per_10k_events": 0.053442926962223865
+      }
+    }
+  }
+}

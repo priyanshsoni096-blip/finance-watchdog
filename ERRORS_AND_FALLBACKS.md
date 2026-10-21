@@ -90,6 +90,7 @@ Entries F-01 to F-09 cover features that already exist; their failure modes were
 | K-4 | Committed reports contain Windows paths | `results/*.md` | Spurious diffs when regenerated on macOS |
 | K-5 | `basic_eval.py --episodes 20` is listed twice in "How to run" | `README.md` | Cosmetic |
 | K-6 | Fresh-clone reproduction check never finished | `HANDOFF.md` §8 | Some results not independently re-verified |
+| K-7 | `results/consolidated.md` real-flow section reads as if it used the M = 1000 rule, but its numbers come from `basic_eval` (M = 200) | `scripts/consolidate_results.py` | Mislabelled table; fix in CP-8 (both settings are now in `results/real_flow_rule.md`) |
 
 ---
 

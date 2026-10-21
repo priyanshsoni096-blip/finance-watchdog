@@ -299,3 +299,15 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - SPOOFER-01 / -05: 53 / 49 large orders per episode, 0.5% / 0% manipulative, median rest 10 events.
   - Realised spoof size is about 10× touch depth for all five (fixed by design).
 - Checkpoint: CP-2 done.
+
+### U-029 — CP-4: rule on real SPY order flow (2026-10-21)
+- Type: result · Paper section: Results (Claim 3, real data), Limitations
+- Downloaded the SPY sample (`python data/download.py --spy --tickers`; 30 levels, 09:30–10:30, 942 MB). New `scripts/real_flow_rule.py` → `results/real_flow_rule.md`, both rule settings (N = 2 × depth; M = 200 as in `basic_eval`, and M = 1000 tuned on the train split), same 30,000-event warmup.
+- Consistency check: the five-stock M = 200 rows equal `results/basic_eval.json` exactly.
+- SPY: 1,122,693 events after warmup, 557,100 new orders, 16 large orders. Flags: 3 at M = 200 (0.03 per 10k events), 6 at M = 1000 (0.05 per 10k).
+- Context, flags per 10k events at M = 1000: MSFT 0.08, INTC 0.40, GOOG 18.15, AAPL 37.47, AMZN 106.86. On the deep, 1-tick books (SPY, MSFT, INTC) almost no real order reaches 2× the trailing touch depth. On the wide-spread stocks the rule flags 68–88% of large orders.
+- Limits:
+  - Real data has no labels, so these are flag rates, not false-positive rates.
+  - The Watchdog cannot run on real flow, because LOBSTER has no participant identities. The plan's "real clean-data false-positive test" is therefore possible only for the rule.
+  - SPY covers one hour.
+- Checkpoint: CP-4 done.

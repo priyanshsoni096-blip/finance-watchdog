@@ -82,8 +82,8 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 7
 - Exit criterion: the train-tuned rule's flag rate on SPY (30 levels truncated to 10, 09:30–10:30) is added to the real-flow results. The report states plainly that the Watchdog cannot be run on real flow because LOBSTER has no participant identities.
 - Depends on: CP-1
-- Status: not started
-- Fallback: F-12
+- Status: done (2026-10-21). SPY: 6 flags in 1.12M events (0.05 per 10k, M = 1000). Evidence: `results/real_flow_rule.md`, U-029.
+- Fallback: F-12 (not needed; 30-level files load directly)
 
 ## CP-5 — Multi-seed PnL suppression and generalisation gap
 
