@@ -728,6 +728,24 @@ The CP-7 Watchdog was retrained with a causal label and a myopic objective (`--l
 - **Better than the original Watchdog on the same orders** (context): pooled F1 0.41 vs 0.13, DRIP-ATK recall 0.26 vs 0.08. Seeds `_s2`/`_s3` reach recall 0.44/0.46 but with SAMESIDE FPR 0.117/0.100.
 - **Post-hoc (`scripts/drip_posthoc.py`, after the verdict):** the Watchdog's flag rate on the act falls with the order's age: 0.24 at 5–9 steps, 0.19 at 10–19, 0.045 at 20+. Almost every act in training occurs within 1–4 steps of placement. MSFT/INTC acts are flagged at 4–5% at any age, against 24–29% on the wide-spread stocks. Camouflage is a minor factor (0.15 with vs 0.22 without). The CP-7 Watchdog learned the act, but only in the narrow timing the training Spoofers use.
 
+## Pre-registered test: REVERSAL-ATK (CP-7 round 2)
+
+DRIP-ATK showed the round-1 Watchdog caught the act only soon after an order was placed. Round 2 added training-only sources with varied act timing (VARIED-SPOOF, and ACCUM as the legitimate counterpart; `UPDATES.md` U-023). Every choice was made on test splits only. The round-2 models were frozen in git (commit 44508ca) before this test was written. The test was committed and pushed **before** any of its data was generated or scored.
+
+- **Attacker** (`ReversalSpoof` in `evaluation/agents.py`). Coscia-style reversal: spoof one side, wait a log-uniform 20–300 events, trade 1–3 lots on the other side on consecutive steps, cancel, and on the very next step spoof the *other* side, carrying the position. 2–4 legs per cycle, then unwind. Every training source and earlier attacker is flat when it places a spoof and works one side per cycle; this attacker is neither.
+- **Legitimate control** (`CancelThenTrade`, REVERT). A large order rests a log-uniform 50–500 events with no trading, is cancelled, and 0–2 steps later the trader makes 1–3 opposite-side trades. Legitimate under the label, because the order is gone. It is a boundary case for flags that are merely close in time to an opposite trade.
+- **Evaluation** (`python watchdog/reversal_test.py`, run once). 50 episodes per stock (AAPL, MSFT, GOOG, INTC, AMZN) each of REVERSAL-ATK, REVERT and FLICKER, on test-split seeds. The verdict model is `checkpoints/WATCHDOG/cov`; the baseline is the rule tuned on the original train split.
+- **H1 (recall, stated directly).** The Watchdog's order-level recall on REVERSAL-ATK is at least **0.80**.
+- **H2.** The Watchdog's order-level false-positive rate on REVERT + FLICKER is at most **0.10**.
+- **H3.** The Watchdog's order-level F1 on REVERSAL-ATK + REVERT + FLICKER (pooled) is at least the rule's.
+- **Context only.** Seeds `cov_s2`/`cov_s3`, the round-1 `causal_g0_1m`, the original `main`, per-stock rows and attacker PnL.
+- **Disclosure.** Before this commit:
+  - `ReversalSpoof` and `CancelThenTrade` ran 3 GOOG episodes on throwaway seeds (999–1001) to check the labels. No detector scored them.
+  - The test script ran once end to end on throwaway seeds (999,000 base, 1 episode per stock) in a scratch folder, only to check that it completes. Its outputs were deleted without being read.
+- **What a pass would and would not mean.** As for DRIP-ATK: the label is defined by the act the Watchdog detects. A pass shows that a detector learned from rewards alone, never told the rule, transfers to a structurally new attacker and a new legitimate boundary case. It does not show detection of intent on real markets.
+
+**Result:** not yet run.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.

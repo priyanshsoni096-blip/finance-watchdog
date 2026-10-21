@@ -240,3 +240,63 @@ class Accumulator:
             self.plan = hold + [CANCEL]
             return SPOOF_BUY if side > 0 else SPOOF_SELL
         return NOOP
+
+
+class ReversalSpoof:
+    """Pre-registered clean held-out attacker REVERSAL-ATK (CP-7 round 2; committed before any of its data existed).
+
+    Coscia-style reversal ("designed to promptly operate in reverse"): spoof side s, wait a log-uniform 20-300 market
+    events, trade 1-3 lots on the other side on consecutive steps, cancel, and on the very next step spoof the OTHER
+    side, carrying the position into the new leg. 2-4 legs per cycle, then unwind. Structurally new against every
+    training source and earlier attacker, all of which are flat when they place a spoof and work one side per cycle.
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            plan = []
+            for leg in range(int(rng.integers(2, 5))):
+                s = side if leg % 2 == 0 else -side
+                if leg > 0:
+                    plan.append(SPOOF_BUY if s > 0 else SPOOF_SELL)
+                plan += [NOOP] * (_log_uniform_steps(rng, 20, 300, per_step) - 1)
+                plan += [SELL if s > 0 else BUY] * int(rng.integers(1, 4))
+                plan.append(CANCEL)
+            self.plan = plan
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP
+
+
+class CancelThenTrade:
+    """Legitimate control REVERT for the pre-registered REVERSAL-ATK test (committed with it, before any data existed).
+
+    A large order on side s rests a log-uniform 50-500 market events with no trading, is cancelled, and 0-2 steps
+    later the trader makes 1-3 trades on the OPPOSITE side, then unwinds. The opposite trades happen only after the
+    order is gone, so it is legitimate under the label: a boundary case for precision (flags that are merely close in
+    time to an opposite trade are false positives here).
+    """
+
+    def reset(self, rng):
+        self.plan = []
+
+    def act(self, obs, env, rng):
+        if self.plan:
+            return self.plan.pop(0)
+        if env.inventory != 0:
+            return SELL if env.inventory > 0 else BUY
+        per_step = env.cfg.events_per_step
+        if rng.random() < 0.01 * per_step:
+            side = 1 if rng.random() < 0.5 else -1
+            opposite = SELL if side > 0 else BUY
+            self.plan = ([NOOP] * _log_uniform_steps(rng, 50, 500, per_step) + [CANCEL]
+                         + [NOOP] * int(rng.integers(0, 3)) + [opposite] * int(rng.integers(1, 4)))
+            return SPOOF_BUY if side > 0 else SPOOF_SELL
+        return NOOP

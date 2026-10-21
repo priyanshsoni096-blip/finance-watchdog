@@ -230,3 +230,10 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - Caveat: VARIED-SPOOF/ACCUM test numbers are in-distribution for this training family. Generalisation needs a new pre-registered attacker that is structurally different from it.
 - Decision (test splits only): `cov` (seed 7) is the verdict model for the next pre-registered test; `_s2`/`_s3` for variability.
 - Checkpoint: CP-7 round 2 (development complete).
+
+### U-024 — Pre-registration: REVERSAL-ATK test (2026-10-21)
+- Type: pre-registration · Paper section: Methods (evaluation protocol), Results
+- Committed and pushed before any REVERSAL-ATK/REVERT data was generated for scoring: `ReversalSpoof` (Coscia-style reversal, carrying the position into each new spoof), the legitimate boundary control `CancelThenTrade` (opposite trades only after cancelling), `watchdog/reversal_test.py`, and the hypotheses in README "Pre-registered test: REVERSAL-ATK".
+- Verdict model `cov` (frozen in 44508ca). H1: recall ≥ 0.80 (the recall hypothesis is now stated directly, the lesson from U-022). H2: FPR on REVERT + FLICKER ≤ 0.10. H3: pooled F1 ≥ rule F1.
+- Disclosure: a 3-episode label check on throwaway seeds, and one end-to-end smoke run of the script on throwaway seeds whose outputs were deleted unread.
+- Checkpoint: CP-7 round 2 (pre-registered; not yet run).
