@@ -311,3 +311,22 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - The Watchdog cannot run on real flow, because LOBSTER has no participant identities. The plan's "real clean-data false-positive test" is therefore possible only for the rule.
   - SPY covers one hour.
 - Checkpoint: CP-4 done.
+
+### U-030 — Baselines: label-definition rule and supervised classifiers (development, test splits) (2026-10-21)
+- Type: experiment + negative result for the RL framing · Paper section: Results (baselines), Discussion
+- `python watchdog/supervised_baselines.py train` (new). Same data as the CP-7 Watchdog (original train + `data/watchdog_ext`), causal labels, observations clipped and standardised. Threshold 0.5 (cost-optimal under the Watchdog's +1/−1/−2/0 reward). 3 seeds each. Models in `checkpoints/SUPERVISED/`. `results/baselines_dev.md` (test splits only):
+
+  | Test split: original / VARIED+ACCUM | Recall | Legitimate FPR | F1 |
+  |---|---|---|---|
+  | LABEL-RULE (label definition) | 0.995 / 0.993 | 0.000 / 0.000 | 0.986 / 0.997 |
+  | SUP-LSTM (LSTM 64 → 128, cross-entropy) | 0.995 / 0.993 | 0.000 / 0.000 | 0.986 / 0.997 |
+  | RL Watchdog `cov` | 0.995 / 0.994 | 0.002 / 0.031 | 0.984 / 0.980 |
+  | LOGREG ([step, 10-step mean]) | 0.469 / 0.303 | 0.123 / 0.267 | 0.528 / 0.386 |
+
+- Findings:
+  - The RL Watchdog sits at the label-definition ceiling.
+  - A supervised LSTM with the same labels and architecture matches the ceiling exactly. It trains in minutes, against about 10 minutes per seed of 1M-step PPO, and has fewer false positives on ACCUM.
+  - Logistic regression fails: the task needs a nonlinear interaction (trade side × resting side), not RL specifically.
+  - With γ = 0, RL here is cost-weighted classification learned by policy gradient. The paper must not attribute the gains to RL. The gains come from the causal label, the myopic objective and training coverage.
+- LABEL-RULE recall is 0.995, not 1.0: a few orders' only opposite trade falls on the removal step, outside the resting window used for scoring.
+- Next: the baselines are committed, then scored once on every held-out dataset (`final`).
