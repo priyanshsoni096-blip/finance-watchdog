@@ -330,3 +330,19 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - With γ = 0, RL here is cost-weighted classification learned by policy gradient. The paper must not attribute the gains to RL. The gains come from the causal label, the myopic objective and training coverage.
 - LABEL-RULE recall is 0.995, not 1.0: a few orders' only opposite trade falls on the removal step, outside the resting window used for scoring.
 - Next: the baselines are committed, then scored once on every held-out dataset (`final`).
+
+### U-031 — Baselines scored once on every held-out dataset (2026-10-21)
+- Type: result + negative result for the RL framing · Paper section: Results (baselines), Discussion (central)
+- `python watchdog/supervised_baselines.py final`, run once after commit e3115bc (pushed). `results/baselines_final.md`. Recall / legitimate FPR (mean of 3 seeds):
+  - Held-out split: LABEL-RULE 0.990 / 0.000; SUP-LSTM 0.990 / 0.000; RL `cov` 0.990 / 0.004; LOGREG 0.198 / 0.000; size + fast-cancel rule 0.940 / 0.869.
+  - LATEBURST-ATK: 0.983 / 0.000; 0.983 / 0.000; 0.984 / 0.002; 0.218 / 0.098; rule 0.885 / 0.819.
+  - DRIP-ATK: 0.989 / 0.000; 0.989 / 0.000; 0.989 / 0.012; 0.324 / 0.144; rule 0.744 / 0.797.
+  - REVERSAL-ATK: 0.984 / 0.000; 0.984 / 0.001; 0.983 / 0.012; 0.218 / 0.099; rule 0.964 / 0.804.
+  - Median detection delay is identical for LABEL-RULE, SUP-LSTM and RL `cov` on every dataset (7–16 steps from placement, i.e. at the first opposite trade).
+- Conclusions for the paper:
+  - (1) The RL Watchdog has converged to the label's definition.
+  - (2) Supervised learning with the same labels reaches the same result, with slightly fewer false positives and far less compute. RL is not responsible for the gains.
+  - (3) What mattered is the label design (causal), the myopic objective, training coverage, and the participant features (the detector must see the owner's trades).
+  - (4) The research question "can RL learn to detect unseen manipulation…" gets a qualified yes: it can, in simulation and under this proxy label, but so can a supervised model. The proxy label is directly observable, so a hand-written rule using it is optimal.
+  - RL's potential advantage, learning from delayed or partial feedback, is untested here: future work.
+- Checkpoint: baselines done (added to CP-8 inputs).

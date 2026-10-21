@@ -112,6 +112,13 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Status: done (2026-10-21). Round 1 (causal label + γ 0) partly passed DRIP-ATK (recall 0.26). Round 2 (training coverage) passed pre-registered REVERSAL-ATK: recall 0.981, legitimate FPR 0.006, F1 0.986 vs rule 0.591 (U-019 to U-025). Follow-ups done (U-026): synthetic market, layering, PnL suppression and all replay data re-scored post-hoc. The consolidated table is to be refreshed in CP-8.
 - Fallback: F-15
 
+## CP-7b — Baselines: label-definition rule and supervised classifiers
+
+- Goal: answer "is RL needed?" and "how does the Watchdog compare with the rule that defines the label?" before writing.
+- Plan phase: 4 (extension; requested in the pre-write-up review)
+- Exit criterion: baselines trained on the same data, committed, then scored once on every held-out dataset.
+- Status: done (2026-10-21). The supervised LSTM and the label rule match the RL Watchdog everywhere (RL slightly more false positives); logistic regression fails. Evidence: `results/baselines_final.md`, U-030, U-031.
+
 ## CP-8 — Write-up
 
 - Goal: the plan's Phase 10 report, built from `UPDATES.md`.

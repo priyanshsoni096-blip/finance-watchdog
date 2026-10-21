@@ -792,6 +792,24 @@ Every attacker here was inspected before CP-7, so these numbers describe the rou
 - **The one false-positive mechanism found is temporal.** A recent opposite trade made just *before* an order was placed is remembered by the LSTM and attributed to the new order (C). This matches where most REVERSAL-test false positives fell (REVERT, FPR 0.015).
 - **Scope.** These are four decisions; per-group importance across the whole test split is in `results/feature_ablation.md` (original Watchdog).
 
+## Baselines: is RL needed? (label-definition rule and supervised classifiers)
+
+`python watchdog/supervised_baselines.py train` fits the supervised baselines; their test-split results were committed (e3115bc) before `... final` scored them once on every held-out dataset (`results/baselines_final.md`). Same data, features, causal labels and threshold logic as the CP-7 Watchdog; 3 seeds each.
+
+| Recall / legitimate FPR | Label-definition rule (ceiling) | Supervised LSTM | RL Watchdog `cov` | Logistic regression | Size + fast-cancel rule |
+|---|---|---|---|---|---|
+| Original test split | 0.995 / 0.000 | 0.995 / 0.000 | 0.995 / 0.002 | 0.469 / 0.123 | 0.941 / 0.812 |
+| Held-out split (SCRIPTED-ATK, AMZN) | 0.990 / 0.000 | 0.990 / 0.000 | 0.990 / 0.004 | 0.198 / 0.000 | 0.940 / 0.869 |
+| LATEBURST-ATK | 0.983 / 0.000 | 0.983 / 0.000 | 0.984 / 0.002 | 0.218 / 0.098 | 0.885 / 0.819 |
+| DRIP-ATK | 0.989 / 0.000 | 0.989 / 0.000 | 0.989 / 0.012 | 0.324 / 0.144 | 0.744 / 0.797 |
+| REVERSAL-ATK | 0.984 / 0.000 | 0.984 / 0.001 | 0.983 / 0.012 | 0.218 / 0.099 | 0.964 / 0.804 |
+
+- **The RL Watchdog has reached the ceiling.** It matches the rule that defines the label, with the same median detection delay. Recall below 1.0 is the same for all three: those orders' only opposite trade falls on the removal step, outside the resting window.
+- **RL is not what makes it work.** A supervised LSTM with the same labels matches the ceiling everywhere, with slightly fewer false positives, and trains in minutes.
+- **A linear model cannot do it.** Logistic regression fails (recall 0.20–0.47): detection needs the interaction between the trade's side and the resting order's side.
+- **What drove the gains:** the causal label, the myopic (γ = 0) objective, and training coverage of act timing (CP-7). With γ = 0, the Watchdog's RL training is cost-weighted classification by policy gradient. RL would matter where feedback is delayed or partial (for example, investigations confirming manipulation later); that is not tested here.
+- **What the comparison with the size + fast-cancel rule still shows:** a detector that sees the participant's own trades separates manipulation from legitimate large orders far better than a size-and-cancel rule. That holds whether the detector is learned by RL, learned by supervision, or written by hand from the label's definition.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
