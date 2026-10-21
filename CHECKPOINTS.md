@@ -64,8 +64,8 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 2
 - Exit criterion: one figure per Spoofer from the committed `checkpoints/*/main/progress.csv` (and the failed earlier runs where logs exist), and `results/spoofer_behaviour.md` produced by a committed script. No retraining.
 - Depends on: CP-1
-- Status: not started
-- Fallback: F-10
+- Status: done (2026-10-21). Evidence: `results/spoofer_behaviour.md`, `results/figures/spoofer_*.png`, U-028.
+- Fallback: F-10 (not needed; every log needed was present)
 
 ## CP-3 — Consolidated results table with confusion matrices
 

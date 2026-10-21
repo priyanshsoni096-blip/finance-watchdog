@@ -286,3 +286,16 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - D, ACCUM AAPL: P = 0.000 on a same-side buy while its own bid rests; the same trade flipped to the other side gives P = 1.000.
 - Paper takeaway: the Watchdog's decision is the side-specific conjunction "trade opposite your own resting order", read at the current step. Its one observed failure mode is a recent opposite trade made just before an order is placed. That is a candidate for future work (e.g. order-relative trade timing).
 - Checkpoint: CP-6 done.
+
+### U-028 — CP-2: Spoofer training curves and behaviour summary (2026-10-21)
+- Type: result · Paper section: Results (Claim 1: emergent spoofing), Appendix (failed runs)
+- `python scripts/spoofer_training_report.py` (new; adds `matplotlib` to `requirements.txt`) → `results/spoofer_behaviour.md` and three figures in `results/figures/`, all from the committed training logs. No retraining.
+- Training curves: SPOOFER-04 INTC PnL rises from about −$3.4k to +$14.5k per episode over 600k steps. Its trades against its own resting spoof rise from about 30 to about 840 per 1,000 actions. SPOOFER-02 MSFT rises to about +$2.9k and about 290. AAPL and AMZN converge near $0, with trades against their own spoof falling to about 0: they learn that spoofing does not pay there. GOOG is U-shaped, ending near +$40 and about 60.
+- Failed runs figure: the free-accumulation exploit (v1) and the alternating-swing exploit (v2) both plateau at about $250k per episode, against about $14k for the final genuine run. This supports the plan's "initial failure → diagnosis → redesign" narrative.
+- Behaviour, 20 episodes each, sampled actions, seed 950,000:
+  - SPOOFER-04: 95% of large orders manipulative; resting time median 130 market events (p90 247); 92% cancelled; first opposite trade 10 events after placement; 171 trades against its own spoof per episode.
+  - SPOOFER-02: 71% manipulative; median rest 40 events; 97% cancelled; 61 trades against its own spoof per episode.
+  - SPOOFER-03: 29% manipulative; median rest 20 events; 14 trades against its own spoof per episode.
+  - SPOOFER-01 / -05: 53 / 49 large orders per episode, 0.5% / 0% manipulative, median rest 10 events.
+  - Realised spoof size is about 10× touch depth for all five (fixed by design).
+- Checkpoint: CP-2 done.
