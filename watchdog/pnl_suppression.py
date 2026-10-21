@@ -97,6 +97,7 @@ def main() -> int:
     p.add_argument("--episodes", type=int, default=50)
     p.add_argument("--freeze-events", type=int, default=200)
     p.add_argument("--tag", default="main")
+    p.add_argument("--out", default=str(ROOT / "results"))  # post-hoc re-scoring of other Watchdogs (CP-7 follow-up); defaults reproduce the committed results
     args = p.parse_args()
 
     import torch
@@ -156,8 +157,8 @@ def main() -> int:
     payload = {"watchdog": str(model_path.relative_to(ROOT)), "rule": {"n_mult": det.n_mult, "m_events": det.m_events},
                "episodes": args.episodes, "freeze_events": args.freeze_events, "rows": rows,
                "runtime_s": round(time.time() - t0, 1)}
-    out = ROOT / "results"
-    out.mkdir(exist_ok=True)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
     (out / "pnl_suppression.json").write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
     (out / "pnl_suppression.md").write_text(render(payload), encoding="utf-8")
     print(f"wrote {out / 'pnl_suppression.md'}")

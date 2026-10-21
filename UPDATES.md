@@ -259,3 +259,20 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - Round 2: training coverage. REVERSAL-ATK passed, with recall stated directly.
   - DRIP-ATK and REVERSAL-ATK are now inspected and no longer clean.
 - Checkpoint: CP-7 done.
+
+### U-026 — Post-hoc re-scoring of the CP-7 Watchdog, and multi-seed PnL suppression (CP-5) (2026-10-21)
+- Type: result (post-hoc) · Paper section: Results (robustness, economic result), Appendix
+- Code: `--tag/--out` options for `synthetic/evaluate_synthetic.py`, `synthetic/layering_test.py` and `watchdog/pnl_suppression.py` (defaults unchanged). New `watchdog/posthoc_rescore.py` (all replay data on disk) and `watchdog/posthoc_summary.py`. Outputs: `results/posthoc/<tag>/`, `results/posthoc_rescore.md`, `results/posthoc_summary.md`.
+- Consistency check: the original `main` seeds re-scored by the new script give the committed `results/multiseed.md` values (F1 0.753 ± 0.058, legitimate FPR 0.031 ± 0.067, LATEBURST recall 0.217 ± 0.156).
+- Replay, mean of 3 seeds (`posthoc_rescore.md`), original → round 2 (rule):
+  - Recall: SCRIPTED train stocks 0.257 → 0.991 (0.938); LATEBURST 0.217 → 0.984 (0.885); DRIP 0.067 → 0.989 (0.744); REVERSAL 0.139 → 0.983 (0.964).
+  - Legitimate FPR 0.031 → 0.002 (0.820).
+- Synthetic market, Watchdog trained on replay only (`posthoc_summary.md`):
+  - All manipulators: F1 0.622 → 0.980 ± 0.011 (rule 0.736). Legitimate FPR 0.113 → 0.030 ± 0.108 (rule 0.917).
+  - LAYER-ATK recall 0.300 → 0.990 ± 0.025 (rule 1.000); pooled F1 0.441 → 0.984 (rule 0.733).
+- PnL suppression, 3 seeds each (CP-5):
+  - SPOOFER-04 INTC: 87.5% ± 19.1 (original) → 101.4% ± 0.9 (round 2); rule 55.2%. With the round-2 Watchdog the Spoofer loses $178 ± 109 per episode, against +$12,625 unsupervised.
+  - SPOOFER-02 MSFT: 243% ± 23 → 242% ± 3; rule 96%.
+  - Wrongful interventions on FLICKER per episode: 0.55/0.49 (original) → 0.013/0.007 (MSFT/INTC); rule 4.7.
+- Caveats: post-hoc for every attacker here (all inspected earlier). The VARIED-SPOOF training family was designed after DRIP-ATK was inspected, and SCRIPTED/LATEBURST share its structure. Only REVERSAL-ATK is a clean test of the round-2 model. The synthetic and layering rows for `main` are single runs.
+- Checkpoints: CP-7 follow-ups done; CP-5 done.

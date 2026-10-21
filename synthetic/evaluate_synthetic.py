@@ -53,6 +53,8 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--episodes", type=int, default=30)
     p.add_argument("--warmup-events", type=int, default=6_000)
+    p.add_argument("--tag", default="main")  # post-hoc re-scoring of other Watchdogs (CP-7 follow-up); defaults reproduce the committed results
+    p.add_argument("--out", default=str(ROOT / "results"))
     args = p.parse_args()
 
     import torch
@@ -60,7 +62,7 @@ def main() -> int:
     from train_spoofer import AGENTS, DECISION_ENV
 
     params = load_params()
-    wd_path = ROOT / "checkpoints" / "WATCHDOG" / "main" / "model.zip"
+    wd_path = ROOT / "checkpoints" / "WATCHDOG" / args.tag / "model.zip"
     model = RecurrentPPO.load(wd_path, device="cpu")
     obs_norm = load_obs_norm(wd_path.parent)
     train = load_split("train")
@@ -127,8 +129,8 @@ def main() -> int:
     payload = {"episodes": args.episodes, "warmup_events": args.warmup_events, "market_params": params.__dict__,
                "rule": {"n_mult": det.n_mult, "m_events": det.m_events}, "watchdog": str(wd_path.relative_to(ROOT)),
                "sources": rows, "detection": detection, "runtime_s": round(time.time() - t0, 1)}
-    out = ROOT / "results"
-    out.mkdir(exist_ok=True)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
     (out / "synthetic_eval.json").write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
     (out / "synthetic_eval.md").write_text(render(payload), encoding="utf-8")
     print(f"wrote {out / 'synthetic_eval.md'}")

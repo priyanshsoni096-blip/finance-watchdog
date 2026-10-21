@@ -1,0 +1,428 @@
+{
+  "episodes": 30,
+  "warmup_events": 6000,
+  "market_params": {
+    "start_price": 5000,
+    "tick_value": 0.01,
+    "init_levels": 10,
+    "init_size": 500,
+    "size_log_mean": 5.703782474656201,
+    "size_log_sd": 0.8,
+    "market_size_log_mean": 4.605170185988092,
+    "market_size_log_sd": 2.4,
+    "cancel_hazard": 0.0035,
+    "p_follower": 0.1,
+    "noise_p_market": 0.05,
+    "noise_inside_spread": 0.3,
+    "noise_depth_geom_p": 0.25,
+    "follower_levels": 3,
+    "follower_threshold": 0.35,
+    "follower_p_react": 0.6
+  },
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "watchdog": "checkpoints/WATCHDOG/cov/model.zip",
+  "sources": [
+    {
+      "source": "SPOOFER-02",
+      "kind": "manipulator",
+      "reactive": {
+        "pnl_mean": -2929.7439999999347,
+        "pnl_ci95": 685.7128217310585,
+        "trades_per_ep": 87.53333333333333,
+        "trades_against_own_spoof_per_ep": 48.56666666666667,
+        "large_orders_per_ep": 13.633333333333333,
+        "manipulative_share": 0.7017114914425427,
+        "filled_by_market_share": 0.0024449877750611247
+      },
+      "blind": {
+        "pnl_mean": -2467.226499999994,
+        "pnl_ci95": 661.2208029559606,
+        "trades_per_ep": 94.9,
+        "trades_against_own_spoof_per_ep": 58.06666666666667,
+        "large_orders_per_ep": 13.733333333333333,
+        "manipulative_share": 0.7524271844660194,
+        "filled_by_market_share": 0.021844660194174758
+      },
+      "manipulation_gain_mean": -462.51749999994087,
+      "manipulation_gain_ci95": 695.9350330453021,
+      "watchdog_step_flag_rate": 0.3448333333333333,
+      "positive_step_rate": 0.4216666666666667
+    },
+    {
+      "source": "SPOOFER-04",
+      "kind": "manipulator",
+      "reactive": {
+        "pnl_mean": -3269.7639999999255,
+        "pnl_ci95": 687.5198475933229,
+        "trades_per_ep": 122.8,
+        "trades_against_own_spoof_per_ep": 122.6,
+        "large_orders_per_ep": 34.7,
+        "manipulative_share": 0.6705091258405379,
+        "filled_by_market_share": 0.0038424591738712775
+      },
+      "blind": {
+        "pnl_mean": -4236.271166666853,
+        "pnl_ci95": 744.5904057223108,
+        "trades_per_ep": 132.36666666666667,
+        "trades_against_own_spoof_per_ep": 132.2,
+        "large_orders_per_ep": 30.533333333333335,
+        "manipulative_share": 0.6943231441048034,
+        "filled_by_market_share": 0.008733624454148471
+      },
+      "manipulation_gain_mean": 966.507166666927,
+      "manipulation_gain_ci95": 944.4402569055925,
+      "watchdog_step_flag_rate": 0.6346666666666667,
+      "positive_step_rate": 0.7605
+    },
+    {
+      "source": "SCRIPTED-ATK",
+      "kind": "manipulator",
+      "reactive": {
+        "pnl_mean": -16971.024666666657,
+        "pnl_ci95": 3389.80717243381,
+        "trades_per_ep": 163.33333333333334,
+        "trades_against_own_spoof_per_ep": 8.366666666666667,
+        "large_orders_per_ep": 2.8,
+        "manipulative_share": 0.9880952380952381,
+        "filled_by_market_share": 0.011904761904761904
+      },
+      "blind": {
+        "pnl_mean": -18667.701999999983,
+        "pnl_ci95": 3715.088626662245,
+        "trades_per_ep": 172.13333333333333,
+        "trades_against_own_spoof_per_ep": 6.7,
+        "large_orders_per_ep": 2.1666666666666665,
+        "manipulative_share": 0.9692307692307692,
+        "filled_by_market_share": 0.046153846153846156
+      },
+      "manipulation_gain_mean": 1696.6773333333272,
+      "manipulation_gain_ci95": 3827.877124784193,
+      "watchdog_step_flag_rate": 0.0845,
+      "positive_step_rate": 0.15733333333333333
+    },
+    {
+      "source": "LATEBURST-ATK",
+      "kind": "manipulator",
+      "reactive": {
+        "pnl_mean": -15249.034166666675,
+        "pnl_ci95": 3374.2959658031878,
+        "trades_per_ep": 154.96666666666667,
+        "trades_against_own_spoof_per_ep": 11.0,
+        "large_orders_per_ep": 1.9,
+        "manipulative_share": 1.0,
+        "filled_by_market_share": 0.0
+      },
+      "blind": {
+        "pnl_mean": -13979.48333333335,
+        "pnl_ci95": 2803.46469189487,
+        "trades_per_ep": 160.5,
+        "trades_against_own_spoof_per_ep": 9.633333333333333,
+        "large_orders_per_ep": 1.6666666666666667,
+        "manipulative_share": 1.0,
+        "filled_by_market_share": 0.04
+      },
+      "manipulation_gain_mean": -1269.5508333333273,
+      "manipulation_gain_ci95": 3231.4091420467166,
+      "watchdog_step_flag_rate": 0.08866666666666667,
+      "positive_step_rate": 0.21333333333333335
+    },
+    {
+      "source": "HONEST",
+      "kind": "legitimate",
+      "reactive": {
+        "pnl_mean": -222.70833333333357,
+        "pnl_ci95": 40.79888076893772,
+        "trades_per_ep": 20.666666666666668,
+        "trades_against_own_spoof_per_ep": 0.0,
+        "large_orders_per_ep": 0.0,
+        "manipulative_share": NaN,
+        "filled_by_market_share": NaN
+      },
+      "blind": {
+        "pnl_mean": -222.70833333333357,
+        "pnl_ci95": 40.79888076893772,
+        "trades_per_ep": 20.666666666666668,
+        "trades_against_own_spoof_per_ep": 0.0,
+        "large_orders_per_ep": 0.0,
+        "manipulative_share": NaN,
+        "filled_by_market_share": NaN
+      },
+      "manipulation_gain_mean": 0.0,
+      "manipulation_gain_ci95": 0.0,
+      "watchdog_step_flag_rate": 0.00016666666666666666,
+      "positive_step_rate": 0.0
+    },
+    {
+      "source": "FLICKER",
+      "kind": "legitimate",
+      "reactive": {
+        "pnl_mean": 117.41633333334678,
+        "pnl_ci95": 256.1015885717881,
+        "trades_per_ep": 0.0,
+        "trades_against_own_spoof_per_ep": 0.0,
+        "large_orders_per_ep": 10.066666666666666,
+        "manipulative_share": 0.0,
+        "filled_by_market_share": 0.009933774834437087
+      },
+      "blind": {
+        "pnl_mean": -430.1845000000024,
+        "pnl_ci95": 353.4237471443775,
+        "trades_per_ep": 0.0,
+        "trades_against_own_spoof_per_ep": 0.0,
+        "large_orders_per_ep": 10.066666666666666,
+        "manipulative_share": 0.0,
+        "filled_by_market_share": 0.013245033112582781
+      },
+      "manipulation_gain_mean": 547.6008333333491,
+      "manipulation_gain_ci95": 472.6869226387128,
+      "watchdog_step_flag_rate": 0.0265,
+      "positive_step_rate": 0.0
+    }
+  ],
+  "detection": {
+    "Manipulators + legitimate": {
+      "watchdog_orders": {
+        "n": 1893,
+        "positives": 1125,
+        "tp": 1114,
+        "fp": 45,
+        "fn": 11,
+        "tn": 723,
+        "precision": 0.9611734253666955,
+        "recall": 0.9902222222222222,
+        "f1": 0.9754816112084064,
+        "fpr": 0.05859375
+      },
+      "rule_orders": {
+        "n": 1893,
+        "positives": 1125,
+        "tp": 1085,
+        "fp": 739,
+        "fn": 40,
+        "tn": 29,
+        "precision": 0.5948464912280702,
+        "recall": 0.9644444444444444,
+        "f1": 0.7358426585283148,
+        "fpr": 0.9622395833333334
+      },
+      "watchdog_steps": {
+        "n": 36000,
+        "positives": 9317,
+        "tp": 6641,
+        "fp": 435,
+        "fn": 2676,
+        "tn": 26248,
+        "precision": 0.9385245901639344,
+        "recall": 0.7127830846839112,
+        "f1": 0.8102238760446532,
+        "fpr": 0.016302514709740284
+      },
+      "watchdog_median_delay": 1.0,
+      "rule_median_delay": 7.0
+    },
+    "Legitimate only": {
+      "watchdog_orders": {
+        "n": 302,
+        "positives": 0,
+        "tp": 0,
+        "fp": 24,
+        "fn": 0,
+        "tn": 278,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.07947019867549669
+      },
+      "rule_orders": {
+        "n": 302,
+        "positives": 0,
+        "tp": 0,
+        "fp": 277,
+        "fn": 0,
+        "tn": 25,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9172185430463576
+      },
+      "watchdog_steps": {
+        "n": 12000,
+        "positives": 0,
+        "tp": 0,
+        "fp": 160,
+        "fn": 0,
+        "tn": 11840,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.013333333333333334
+      },
+      "watchdog_median_delay": NaN,
+      "rule_median_delay": NaN
+    },
+    "SPOOFER-02 + legitimate": {
+      "watchdog_orders": {
+        "n": 711,
+        "positives": 287,
+        "tp": 284,
+        "fp": 36,
+        "fn": 3,
+        "tn": 388,
+        "precision": 0.8875,
+        "recall": 0.9895470383275261,
+        "f1": 0.9357495881383854,
+        "fpr": 0.08490566037735849
+      },
+      "rule_orders": {
+        "n": 711,
+        "positives": 287,
+        "tp": 276,
+        "fp": 397,
+        "fn": 11,
+        "tn": 27,
+        "precision": 0.4101040118870728,
+        "recall": 0.9616724738675958,
+        "f1": 0.575,
+        "fpr": 0.9363207547169812
+      },
+      "watchdog_steps": {
+        "n": 18000,
+        "positives": 2530,
+        "tp": 2067,
+        "fp": 162,
+        "fn": 463,
+        "tn": 15308,
+        "precision": 0.927321668909825,
+        "recall": 0.81699604743083,
+        "f1": 0.8686698886320656,
+        "fpr": 0.010471881060116353
+      },
+      "watchdog_median_delay": 1.0,
+      "rule_median_delay": 7.0
+    },
+    "SPOOFER-04 + legitimate": {
+      "watchdog_orders": {
+        "n": 1343,
+        "positives": 698,
+        "tp": 691,
+        "fp": 33,
+        "fn": 7,
+        "tn": 612,
+        "precision": 0.9544198895027625,
+        "recall": 0.9899713467048711,
+        "f1": 0.9718706047819973,
+        "fpr": 0.05116279069767442
+      },
+      "rule_orders": {
+        "n": 1343,
+        "positives": 698,
+        "tp": 669,
+        "fp": 619,
+        "fn": 29,
+        "tn": 26,
+        "precision": 0.5194099378881988,
+        "recall": 0.9584527220630372,
+        "f1": 0.6737160120845922,
+        "fpr": 0.9596899224806201
+      },
+      "watchdog_steps": {
+        "n": 18000,
+        "positives": 4563,
+        "tp": 3799,
+        "fp": 169,
+        "fn": 764,
+        "tn": 13268,
+        "precision": 0.9574092741935484,
+        "recall": 0.8325662941047557,
+        "f1": 0.8906341577775174,
+        "fpr": 0.012577212175336756
+      },
+      "watchdog_median_delay": 1.0,
+      "rule_median_delay": 5.0
+    },
+    "SCRIPTED-ATK + legitimate": {
+      "watchdog_orders": {
+        "n": 386,
+        "positives": 83,
+        "tp": 82,
+        "fp": 24,
+        "fn": 1,
+        "tn": 279,
+        "precision": 0.7735849056603774,
+        "recall": 0.9879518072289156,
+        "f1": 0.8677248677248678,
+        "fpr": 0.07920792079207921
+      },
+      "rule_orders": {
+        "n": 386,
+        "positives": 83,
+        "tp": 83,
+        "fp": 277,
+        "fn": 0,
+        "tn": 26,
+        "precision": 0.23055555555555557,
+        "recall": 1.0,
+        "f1": 0.3747178329571106,
+        "fpr": 0.9141914191419142
+      },
+      "watchdog_steps": {
+        "n": 18000,
+        "positives": 944,
+        "tp": 382,
+        "fp": 285,
+        "fn": 562,
+        "tn": 16771,
+        "precision": 0.5727136431784108,
+        "recall": 0.4046610169491525,
+        "f1": 0.47423960273122284,
+        "fpr": 0.01670966228893058
+      },
+      "watchdog_median_delay": 7.0,
+      "rule_median_delay": 12.0
+    },
+    "LATEBURST-ATK + legitimate": {
+      "watchdog_orders": {
+        "n": 359,
+        "positives": 57,
+        "tp": 57,
+        "fp": 24,
+        "fn": 0,
+        "tn": 278,
+        "precision": 0.7037037037037037,
+        "recall": 1.0,
+        "f1": 0.8260869565217391,
+        "fpr": 0.07947019867549669
+      },
+      "rule_orders": {
+        "n": 359,
+        "positives": 57,
+        "tp": 57,
+        "fp": 277,
+        "fn": 0,
+        "tn": 25,
+        "precision": 0.17065868263473055,
+        "recall": 1.0,
+        "f1": 0.2915601023017903,
+        "fpr": 0.9172185430463576
+      },
+      "watchdog_steps": {
+        "n": 18000,
+        "positives": 1280,
+        "tp": 393,
+        "fp": 299,
+        "fn": 887,
+        "tn": 16421,
+        "precision": 0.5679190751445087,
+        "recall": 0.30703125,
+        "f1": 0.39858012170385393,
+        "fpr": 0.017882775119617226
+      },
+      "watchdog_median_delay": 16.0,
+      "rule_median_delay": 23.0
+    }
+  },
+  "runtime_s": 230.4
+}

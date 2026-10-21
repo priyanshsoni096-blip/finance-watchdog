@@ -91,8 +91,8 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 9
 - Exit criterion: PnL suppression for all three Watchdog seeds (`main`, `main_s2`, `main_s3`), with mean ± 95% CI, and a CI on the recall gap between in-distribution and LATEBURST.
 - Depends on: CP-1
-- Status: not started
-- Fallback: F-13
+- Status: done (2026-10-21). 3 seeds each for the original and the CP-7 Watchdog. SPOOFER-04 suppression 87.5% ± 19.1 (original) and 101.4% ± 0.9 (CP-7), rule 55.2%. Evidence: `results/posthoc_summary.md`, U-026. The generalisation-gap CI is in `results/posthoc_rescore.md`.
+- Fallback: F-13 (not needed)
 
 ## CP-6 — Concrete flag explanations
 
@@ -109,7 +109,7 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 3, 4 (extension; not in the original plan)
 - Exit criterion: a change chosen on test-split evidence only, retrained over 3 seeds, then scored once on a **new** pre-registered attacker committed before any of its data exists. The result is reported whichever way it goes.
 - Depends on: CP-1, CP-3
-- Status: done (2026-10-21). Round 1 (causal label + γ 0) partly passed DRIP-ATK (recall 0.26). Round 2 (training coverage) passed pre-registered REVERSAL-ATK: recall 0.981, legitimate FPR 0.006, F1 0.986 vs rule 0.591 (U-019 to U-025). Follow-ups for CP-8: re-score the round-2 Watchdog on the synthetic market, layering, PnL suppression and the consolidated table (all post-hoc for inspected attackers).
+- Status: done (2026-10-21). Round 1 (causal label + γ 0) partly passed DRIP-ATK (recall 0.26). Round 2 (training coverage) passed pre-registered REVERSAL-ATK: recall 0.981, legitimate FPR 0.006, F1 0.986 vs rule 0.591 (U-019 to U-025). Follow-ups done (U-026): synthetic market, layering, PnL suppression and all replay data re-scored post-hoc. The consolidated table is to be refreshed in CP-8.
 - Fallback: F-15
 
 ## CP-8 — Write-up

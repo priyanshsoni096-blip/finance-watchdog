@@ -1,0 +1,162 @@
+{
+  "hypothesis": "Watchdog order-level F1 on LAYER-ATK + FLICKER >= rule F1",
+  "verdict": "supported",
+  "watchdog_f1": 0.9950248756218906,
+  "rule_f1": 0.7332722273143905,
+  "pooled": {
+    "watchdog_orders": {
+      "n": 718,
+      "positives": 400,
+      "tp": 400,
+      "fp": 4,
+      "fn": 0,
+      "tn": 314,
+      "precision": 0.9900990099009901,
+      "recall": 1.0,
+      "f1": 0.9950248756218906,
+      "fpr": 0.012578616352201259
+    },
+    "rule_orders": {
+      "n": 718,
+      "positives": 400,
+      "tp": 400,
+      "fp": 291,
+      "fn": 0,
+      "tn": 27,
+      "precision": 0.5788712011577424,
+      "recall": 1.0,
+      "f1": 0.7332722273143905,
+      "fpr": 0.9150943396226415
+    },
+    "watchdog_steps": {
+      "n": 12000,
+      "positives": 914,
+      "tp": 297,
+      "fp": 163,
+      "fn": 617,
+      "tn": 10923,
+      "precision": 0.6456521739130435,
+      "recall": 0.324945295404814,
+      "f1": 0.43231441048034935,
+      "fpr": 0.014703229298213964
+    },
+    "watchdog_median_delay": 6.0,
+    "rule_median_delay": 9.0
+  },
+  "layer_only": {
+    "watchdog_orders": {
+      "n": 404,
+      "positives": 400,
+      "tp": 400,
+      "fp": 0,
+      "fn": 0,
+      "tn": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0
+    },
+    "rule_orders": {
+      "n": 404,
+      "positives": 400,
+      "tp": 400,
+      "fp": 0,
+      "fn": 0,
+      "tn": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0
+    },
+    "watchdog_steps": {
+      "n": 6000,
+      "positives": 914,
+      "tp": 297,
+      "fp": 135,
+      "fn": 617,
+      "tn": 4951,
+      "precision": 0.6875,
+      "recall": 0.324945295404814,
+      "f1": 0.4413075780089153,
+      "fpr": 0.02654345261502163
+    },
+    "watchdog_median_delay": 6.0,
+    "rule_median_delay": 9.0
+  },
+  "flicker_only": {
+    "watchdog_orders": {
+      "n": 314,
+      "positives": 0,
+      "tp": 0,
+      "fp": 4,
+      "fn": 0,
+      "tn": 310,
+      "precision": 0.0,
+      "recall": NaN,
+      "f1": 0.0,
+      "fpr": 0.012738853503184714
+    },
+    "rule_orders": {
+      "n": 314,
+      "positives": 0,
+      "tp": 0,
+      "fp": 291,
+      "fn": 0,
+      "tn": 23,
+      "precision": 0.0,
+      "recall": NaN,
+      "f1": 0.0,
+      "fpr": 0.9267515923566879
+    },
+    "watchdog_steps": {
+      "n": 6000,
+      "positives": 0,
+      "tp": 0,
+      "fp": 28,
+      "fn": 0,
+      "tn": 5972,
+      "precision": 0.0,
+      "recall": NaN,
+      "f1": 0.0,
+      "fpr": 0.004666666666666667
+    },
+    "watchdog_median_delay": NaN,
+    "rule_median_delay": NaN
+  },
+  "recall_by_layer_depth": {
+    "0": {
+      "n": 100,
+      "watchdog": 1.0,
+      "rule": 1.0
+    },
+    "1": {
+      "n": 100,
+      "watchdog": 1.0,
+      "rule": 1.0
+    },
+    "2": {
+      "n": 100,
+      "watchdog": 1.0,
+      "rule": 1.0
+    },
+    "3": {
+      "n": 100,
+      "watchdog": 1.0,
+      "rule": 1.0
+    }
+  },
+  "layer_pnl": {
+    "reactive_mean": -15000.85816666667,
+    "reactive_ci95": 4362.07138648769,
+    "blind_mean": -14033.597333333319,
+    "blind_ci95": 2885.955249360046,
+    "gain_mean": -967.2608333333543,
+    "gain_ci95": 3693.96236716733
+  },
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "episodes": 30,
+  "runtime_s": 78.9
+}

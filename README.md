@@ -760,6 +760,23 @@ DRIP-ATK showed the round-1 Watchdog caught the act only soon after an order was
 - **Hardest legitimate case is the boundary.** 21 of the 24 false positives are REVERT orders (FPR 0.015), whose opposite trades come right after the cancel.
 - **Context:** REVERSAL-ATK loses money on four of five stocks (+$258 per episode on INTC only), so this tests detection of the structure, not of profitable manipulation.
 
+## Post-hoc re-scoring of the CP-7 Watchdog (all earlier evaluations)
+
+Every attacker here was inspected before CP-7, so these numbers describe the round-2 Watchdog (`cov`, 3 seeds); they are not tests. Each pre-registered verdict stands on the model it was registered with. Sources: `results/posthoc_rescore.md` (replay data on disk, `python watchdog/posthoc_rescore.py`) and `results/posthoc_summary.md` (synthetic market, layering, PnL suppression; `python watchdog/posthoc_summary.py` after the runs it lists).
+
+| Measure | Original `main` | CP-7 `cov` (3 seeds) | Rule |
+|---|---|---|---|
+| Recall, SCRIPTED / LATEBURST / DRIP / REVERSAL (replay) | 0.26 / 0.22 / 0.07 / 0.14 | 0.99 / 0.98 / 0.99 / 0.98 | 0.94 / 0.89 / 0.74 / 0.96 |
+| Legitimate-order FPR (replay test split) | 0.031 | 0.002 | 0.820 |
+| Synthetic market, all manipulators: F1 / legitimate FPR | 0.62 / 0.11 | 0.980 ± 0.011 / 0.030 | 0.74 / 0.92 |
+| LAYER-ATK recall / pooled F1 (synthetic) | 0.30 / 0.44 | 0.990 / 0.984 | 1.00 / 0.73 |
+| PnL suppression, SPOOFER-04 INTC (3 seeds each) | 88% ± 19 | **101% ± 1** | 55% |
+| PnL suppression, SPOOFER-02 MSFT (3 seeds each) | 243% ± 23 | 242% ± 3 | 96% |
+| Wrongful interventions per episode, FLICKER MSFT / INTC | 0.55 / 0.49 | 0.013 / 0.007 | 4.7 / 4.7 |
+
+- **The CP-7 Watchdog was trained on replay data only, and its detection transfers to the synthetic market**, where prices come from order matching.
+- **Caveat on the replay rows.** The round-2 training family (VARIED-SPOOF) was designed after DRIP-ATK was inspected, and SCRIPTED-ATK and LATEBURST-ATK share its single-resting-order structure. Only REVERSAL-ATK is a clean test of the round-2 model.
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
