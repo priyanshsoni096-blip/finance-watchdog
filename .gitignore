@@ -10,3 +10,4 @@ __pycache__/
 .venv/
 logs/
 data/watchdog_ext/
+.DS_Store
