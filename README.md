@@ -777,6 +777,21 @@ Every attacker here was inspected before CP-7, so these numbers describe the rou
 - **The CP-7 Watchdog was trained on replay data only, and its detection transfers to the synthetic market**, where prices come from order matching.
 - **Caveat on the replay rows.** The round-2 training family (VARIED-SPOOF) was designed after DRIP-ATK was inspected, and SCRIPTED-ATK and LATEBURST-ATK share its single-resting-order structure. Only REVERSAL-ATK is a clean test of the round-2 model.
 
+## Explaining individual decisions (CP-6)
+
+`python watchdog/explain_flags.py` → `results/flag_explanations.md`, on the CP-7 Watchdog `cov`. Four decisions are chosen by fixed rules (first match), not by hand. Each is explained by occlusion: one feature, at the decided step or across all earlier steps, is set to its training mean, and the change in flag probability is measured. A counterfactual flips the side of the step's trade.
+
+| Case | Decision | What explains it |
+|---|---|---|
+| A. SPOOFER-03 GOOG (sparse RL Spoofer) | Flag, P = 1.000, on the step it sells against its own resting bid, 7 steps after placement; P = 0.000 on every step before | This step's trade direction: occluding it, or flipping the trade's side, gives −1.000. Book, age and history all ±0.000 |
+| B. REVERSAL-ATK (pre-registered, AAPL) | Flag, P = 1.000, on the sell against its bid 25 steps after placement | Same: trade direction this step −1.000; same trade on the other side −1.000 |
+| C. REVERT (legitimate boundary case) | **False** flag, P = 0.702, 3 steps after placing an ask, with no trade on that step | Memory of a buy made 4 steps earlier, before this order existed (an unwind from the previous cycle). Occluding trade-direction history gives −0.702 |
+| D. ACCUM (same-side trader) | No flag, P = 0.000, on a buy while its own bid rests | Same trade on the other side gives +1.000. The Watchdog uses the side of the trade relative to the resting order |
+
+- **What it learned is the conjunction "trade on the side opposite your own resting large order".** It is read from the current step (A, B), and it is side-specific (D).
+- **The one false-positive mechanism found is temporal.** A recent opposite trade made just *before* an order was placed is remembered by the LSTM and attributed to the new order (C). This matches where most REVERSAL-test false positives fell (REVERT, FPR 0.015).
+- **Scope.** These are four decisions; per-group importance across the whole test split is in `results/feature_ablation.md` (original Watchdog).
+
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.

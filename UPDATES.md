@@ -276,3 +276,13 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
   - Wrongful interventions on FLICKER per episode: 0.55/0.49 (original) → 0.013/0.007 (MSFT/INTC); rule 4.7.
 - Caveats: post-hoc for every attacker here (all inspected earlier). The VARIED-SPOOF training family was designed after DRIP-ATK was inspected, and SCRIPTED/LATEBURST share its structure. Only REVERSAL-ATK is a clean test of the round-2 model. The synthetic and layering rows for `main` are single runs.
 - Checkpoints: CP-7 follow-ups done; CP-5 done.
+
+### U-027 — CP-6: concrete explanations of Watchdog decisions (2026-10-21)
+- Type: result · Paper section: Results (interpretability), Discussion
+- `python watchdog/explain_flags.py` (new) → `results/flag_explanations.md`. Watchdog `cov`. Flag probabilities are read in one batched recurrent pass; a check confirmed `P > 0.5` matches `flag_episode`'s deterministic flags exactly. Occlusion uses the training mean (0 after normalisation), at the decided step or over all earlier steps. A counterfactual flips the trade's side. Cases are picked by fixed rules (first match), not by hand.
+- A, SPOOFER-03 GOOG test: flag P = 1.000 on the opposite trade 7 steps after placement; P = 0.000 on all earlier steps. Trade direction (this step) −1.000; flipped side −1.000; all else ±0.000 (book, age, history).
+- B, REVERSAL-ATK AAPL (pre-registered data): flag P = 1.000 on the opposite trade 25 steps after placement. Trade direction (this step) −1.000; flipped side −1.000.
+- C, REVERT AAPL, false positive: P = 0.702 three steps after placing an ask, no trade that step. Drivers: trade-direction history −0.702, side-imbalance history −0.697, resting size −0.695. Cause: a buy 4 steps earlier, before the order existed (the previous cycle's unwind), carried in LSTM memory.
+- D, ACCUM AAPL: P = 0.000 on a same-side buy while its own bid rests; the same trade flipped to the other side gives P = 1.000.
+- Paper takeaway: the Watchdog's decision is the side-specific conjunction "trade opposite your own resting order", read at the current step. Its one observed failure mode is a recent opposite trade made just before an order is placed. That is a candidate for future work (e.g. order-relative trade timing).
+- Checkpoint: CP-6 done.

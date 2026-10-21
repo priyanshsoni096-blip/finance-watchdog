@@ -100,8 +100,8 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 8
 - Exit criterion: `results/flag_explanations.md` from a committed script: for 2–3 true-positive flags (and one false positive), per-step feature attribution with the order's timeline.
 - Depends on: CP-1
-- Status: not started
-- Fallback: F-14
+- Status: done (2026-10-21) on the CP-7 Watchdog `cov`. Four fixed-rule cases: two true positives, one false positive, one true negative. Evidence: `results/flag_explanations.md`, U-027.
+- Fallback: F-14 (fallback 1, occlusion, used as the primary method; the Watchdog has no attention)
 
 ## CP-7 — Improve detection of unseen (sparse) spoofing
 
