@@ -32,12 +32,14 @@ Every number below comes from a committed file in `results/`, except the no-impa
 - The profit comes from the spoof, but only under the replay impact model; it does not survive a market where the price reacts through order matching.
 - Spoofing is unprofitable on the wide-spread stocks (AAPL, GOOG, AMZN).
 
-**Claim 2: the Watchdog generalises to unseen attacks. Not shown.** Two pre-registered tests, each run once, both went against the Watchdog.
+**Claim 2: the Watchdog generalises to unseen attacks. Not shown for the original Watchdog; supported in simulation for the CP-7 round-2 Watchdog on its pre-registered test.** The first two pre-registered tests, each run once, went against the original Watchdog. After retraining with a causal label, a myopic objective and wider training coverage (all chosen on test splits), the round-2 Watchdog passed the pre-registered REVERSAL-ATK test. An intermediate version only partly passed DRIP-ATK. See the sections on both tests; the full write-up comes in CP-8.
 
 | Pre-registered test | Watchdog recall | Rule recall | Source |
 |---|---|---|---|
 | LATEBURST-ATK (replay market) | 0.24 | 0.89 | `lateburst_test.md` |
 | LAYER-ATK (synthetic market) | 0.30 | 1.00 | `layering_test.md` |
+| DRIP-ATK (replay), CP-7 round-1 Watchdog | 0.26 | 0.74 | `drip_test.md` |
+| REVERSAL-ATK (replay), CP-7 round-2 Watchdog | **0.98** (FPR 0.006 vs rule 0.80) | 0.96 | `reversal_test.md` |
 
 - The Watchdog relies on trading against a resting order. Ablating trade direction drops its F1 from 0.772 to 0.113 (`feature_ablation.md`), so sparse spoofing is missed.
 
@@ -744,7 +746,19 @@ DRIP-ATK showed the round-1 Watchdog caught the act only soon after an order was
   - The test script ran once end to end on throwaway seeds (999,000 base, 1 episode per stock) in a scratch folder, only to check that it completes. Its outputs were deleted without being read.
 - **What a pass would and would not mean.** As for DRIP-ATK: the label is defined by the act the Watchdog detects. A pass shows that a detector learned from rewards alone, never told the rule, transfers to a structurally new attacker and a new legitimate boundary case. It does not show detection of intent on real markets.
 
-**Result:** not yet run.
+**Result (run once after the pre-registration commit ca58bc1; `results/reversal_test.md`): H1, H2 and H3 all supported.**
+
+| Bucket (order level) | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR |
+|---|---|---|
+| REVERSAL-ATK + REVERT + FLICKER | **0.99 / 0.98 / 0.99 / 0.01** | 0.43 / 0.96 / 0.59 / 0.75 |
+| REVERSAL-ATK only | 1.00 / **0.98** / 0.99 | 1.00 / 0.96 / 0.98 |
+| REVERT + FLICKER (legitimate) | FPR **0.006** (24 of 4,052) | FPR 0.80 (3,256 of 4,052) |
+
+- **Recall matches the rule while false positives are about 130× fewer.** On this attacker the size + fast-cancel rule also catches nearly everything (0.96), so the gain is precision, not recall.
+- **Consistent everywhere.** Recall is 0.96–0.99 on all five stocks, MSFT and INTC included (DRIP-ATK: 0.06–0.08). Seeds `_s2`/`_s3` reach recall 0.984 with REVERT FPR 0.034/0.049.
+- **On the same orders** (context): round-1 `causal_g0_1m` recall 0.400; original `main` 0.121.
+- **Hardest legitimate case is the boundary.** 21 of the 24 false positives are REVERT orders (FPR 0.015), whose opposite trades come right after the cancel.
+- **Context:** REVERSAL-ATK loses money on four of five stocks (+$258 per episode on INTC only), so this tests detection of the structure, not of profitable manipulation.
 
 ## Where the three claims stand
 

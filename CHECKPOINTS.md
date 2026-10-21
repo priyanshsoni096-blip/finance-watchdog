@@ -109,7 +109,7 @@ Plan's "five sentences" today: (1) Spoofer discovered spoofing: partly shown. (2
 - Plan phase: 3, 4 (extension; not in the original plan)
 - Exit criterion: a change chosen on test-split evidence only, retrained over 3 seeds, then scored once on a **new** pre-registered attacker committed before any of its data exists. The result is reported whichever way it goes.
 - Depends on: CP-1, CP-3
-- Status: in progress. Iteration 1 done (2026-10-12): causal label + gamma 0 + 1M steps. Test split F1 0.978 ± 0.015. Pre-registered DRIP-ATK: H1 and H2 supported, but attacker recall 0.26 vs rule 0.74, decaying with order age (U-019 to U-022). Next: training-population coverage (F-15 fallback 2), then a new pre-registered attacker.
+- Status: done (2026-10-21). Round 1 (causal label + γ 0) partly passed DRIP-ATK (recall 0.26). Round 2 (training coverage) passed pre-registered REVERSAL-ATK: recall 0.981, legitimate FPR 0.006, F1 0.986 vs rule 0.591 (U-019 to U-025). Follow-ups for CP-8: re-score the round-2 Watchdog on the synthetic market, layering, PnL suppression and the consolidated table (all post-hoc for inspected attackers).
 - Fallback: F-15
 
 ## CP-8 — Write-up

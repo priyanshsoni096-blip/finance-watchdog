@@ -237,3 +237,25 @@ Reconstructed from `README.md` and `HANDOFF.md`. The original dates were not rec
 - Verdict model `cov` (frozen in 44508ca). H1: recall ≥ 0.80 (the recall hypothesis is now stated directly, the lesson from U-022). H2: FPR on REVERT + FLICKER ≤ 0.10. H3: pooled F1 ≥ rule F1.
 - Disclosure: a 3-episode label check on throwaway seeds, and one end-to-end smoke run of the script on throwaway seeds whose outputs were deleted unread.
 - Checkpoint: CP-7 round 2 (pre-registered; not yet run).
+
+### U-025 — REVERSAL-ATK result (run once): all three hypotheses supported (2026-10-21)
+- Type: result · Paper section: Results (Claim 2 — headline), Discussion
+- `python watchdog/reversal_test.py`, run once after pre-registration commit ca58bc1 (pushed). `results/reversal_test.md`:
+  - **H1 supported:** recall on REVERSAL-ATK 0.981 (rule 0.964).
+  - **H2 supported:** FPR on REVERT + FLICKER 0.006, 24 of 4,052 (rule 0.804, 3,256 of 4,052).
+  - **H3 supported:** pooled F1 0.986 (rule 0.591).
+  - Per stock recall 0.96–0.99, MSFT 0.99 and INTC 0.98 included.
+  - Seeds (context): `cov_s2` recall 0.984, REVERT FPR 0.034; `cov_s3` 0.984, 0.049.
+  - Same orders (context): round-1 `causal_g0_1m` recall 0.400; original `main` 0.121, FPR 0.07/0.045.
+  - 21 of the 24 false positives are REVERT orders (the boundary case: opposite trades right after the cancel).
+- What it shows, and what it does not:
+  - The Watchdog's advantage on this unseen attacker is precision. The rule also catches 96%, but flags 80% of legitimate large orders.
+  - The proxy label is defined by the act the Watchdog detects (U-020 caveat). The claim is that a detector learned from rewards alone, never told the rule, transfers to a structurally new attacker and a new legitimate boundary case.
+  - REVERSAL-ATK is unprofitable on 4 of 5 stocks, so this tests detection of the structure, not of profitable manipulation.
+  - Replay market only; synthetic-market and layering behaviour of the round-2 Watchdog are not yet measured.
+- Path to this result, all to be reported:
+  - Original Watchdog: LATEBURST/LAYER failed.
+  - Round 1: causal label + γ 0. DRIP-ATK passed on a pooled metric with recall only 0.26.
+  - Round 2: training coverage. REVERSAL-ATK passed, with recall stated directly.
+  - DRIP-ATK and REVERSAL-ATK are now inspected and no longer clean.
+- Checkpoint: CP-7 done.
