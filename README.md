@@ -141,6 +141,8 @@ What has been checked to reproduce exactly:
 - **`dataset.py`, in that fresh clone**: the full Watchdog dataset was regenerated (131 s). All 32 source files (12 train, 12 test, 8 heldout) matched the original dataset bit for bit.
 - **`evaluate_watchdog.py`, in that fresh clone** (on the regenerated dataset and the committed Watchdog): all 282 numbers matched `results/watchdog_eval.json`. It had also matched twice in the working copy.
 - **`lateburst_test.py`, in that fresh clone**: all 267 numbers matched `results/lateburst_test.json`.
+- **`multiseed_summary.py`, in that fresh clone**: all 60 numbers matched `results/multiseed.json`.
+- **`pnl_suppression.py`, in that fresh clone**: all 234 numbers matched `results/pnl_suppression.json`.
 - **Everything else** uses fixed seeds but has not been re-run and compared.
 
 ```bash

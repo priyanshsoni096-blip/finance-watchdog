@@ -91,6 +91,8 @@ Retraining (only if you change the environment): each Spoofer is about 15 minute
 | `watchdog/dataset.py` | all 32 source files bit-for-bit |
 | `watchdog/evaluate_watchdog.py` | all 282 numbers matched |
 | `watchdog/lateburst_test.py` | all 267 numbers matched |
+| `watchdog/multiseed_summary.py` | all 60 numbers matched |
+| `watchdog/pnl_suppression.py` | all 234 numbers matched |
 
 The remaining scripts are seeded but have not been re-run and compared (see §8).
 
@@ -166,7 +168,7 @@ Two synthetic-market dead ends: a fixed cancel probability let liquidity grow wi
 
 ## 8. Unfinished work in flight
 
-A background job was verifying that *every* remaining result reproduces from a fresh clone. It completed `lateburst_test` (267 values, 0 differences) and was interrupted during `multiseed_summary`. To resume, run the remaining scripts in a clean clone and compare each `results/*.json` against `git show HEAD:<path>`, ignoring `runtime_s`. Nothing depends on it; it is belt-and-braces evidence for §3.
+A background job is verifying that *every* result reproduces from a fresh clone. So far `lateburst_test`, `multiseed_summary` and `pnl_suppression` have matched exactly (267, 60 and 234 values, 0 differences); the feature ablation, real-case statistics, synthetic calibration, spoof-impact runs, synthetic evaluation and layering test are still to confirm. To resume, run the remaining scripts in a clean clone and compare each `results/*.json` against `git show HEAD:<path>`, ignoring `runtime_s`. Nothing depends on it; it is belt-and-braces evidence for §3.
 
 ---
 
