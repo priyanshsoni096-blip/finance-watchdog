@@ -84,8 +84,8 @@ held-out attack families; and the ceiling it reached is occupied by a rule with 
 
 | | Before | After |
 |---|---|---|
-| Passing | 115 | **184** |
-| Files | 15 | 23 |
+| Passing | 115 | **191** |
+| Files | 15 | 24 |
 
 Added: time-split integrity (4), metric consistency (10), simulator accounting invariants (10), label
 observability (6), causal labels (7), attribution-leakage guards (7), CLI overwrite protection (12). No test was disabled, weakened or
@@ -135,10 +135,35 @@ The experiment had been run single-seed and reported only pooled precision/recal
 3. **No model is calibrated out of distribution** — all three score a worse Brier than the base-rate constant
    (0.110–0.139 against 0.099), despite beating it comfortably in-distribution.
 
+## Follow-through after the gap closure
+
+**P&L suppression re-measured with CP-7** (`results/posthoc/cov/pnl_suppression.md`). The headline card had
+been showing the *original* detector's 83% beside CP-7 detector metrics. Re-run: CP-7 drives SPOOFER-04 from
++$12,625 to **−$133 per episode (101% suppressed)** against the rule's 55%, and intervenes **0.0 times per
+episode** on legitimate FLICKER orders against the rule's 4.7. Suppression above 100% means the attacker ends
+up losing money, so the P&L column is the honest figure, not the percentage. The attackers are frozen and do
+not adapt to being watched.
+
+**Why the per-instrument split exists: still unknown, and now documented as such**
+(`results/detectability_by_instrument.md`, `scripts/detectability_by_instrument.py`). Two mechanical
+explanations were tested against the data and **both refuted**:
+
+- *The spoof is proportionally larger where it is detected.* No — the attacker places 10.00× touch depth on
+  all five stocks by construction.
+- *The spoof moves the book more, or further relative to its noise.* No — the shift in normalised deep
+  imbalance is **smaller** on INTC and MSFT than on AAPL and AMZN, and signal-to-noise correlates −0.06 with
+  detectability, ranking the stocks in a different order entirely.
+
+What remains is a descriptive association with spread width (−0.84) across five instruments, which cannot
+support a mechanism; tick-size regime and spread width coincide here and cannot be separated. Seven tests
+(`tests/test_detectability_by_instrument.py`) fail if either refuted mechanism ever becomes explanatory, so
+the write-up cannot silently go stale.
+
 ## Known not-done
 
 - The attribution-free experiment uses **supervised models only**; no RL detector was retrained on it.
 - Ablations beyond features (recurrent vs feed-forward, reward variants) not run.
-- `results/pnl_suppression.*` and the layering test were **not** re-measured for CP-7; tables say so.
+- The layering test was **not** re-measured for CP-7; tables say so. (P&L suppression now has been — see
+  below.)
 - Non-profitable Spoofers remain single-seed.
 - One trading day, five stocks.

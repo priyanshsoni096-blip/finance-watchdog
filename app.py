@@ -127,6 +127,7 @@ R = {n: load(f"{n}.json") for n in (
     "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes",
     "label_observability", "supervised_baseline", "posthoc_rescore", "baselines_final",
     "anonymised_experiment")}
+R["pnl_suppression_cov"] = load("posthoc/cov/pnl_suppression.json")
 PH = R["posthoc_rescore"].get("summary", {})
 PHRULE = R["posthoc_rescore"].get("rule", {})
 
@@ -242,10 +243,14 @@ if view == "Overview":
             f"Simulated · {intc.get('seeds', 3)} seeds · replay impact model",
             "spoofer_seeds.md", RULE)
     with a[1]:
-        s4 = next((r for r in R["pnl_suppression"].get("rows", []) if r["source"] == "SPOOFER-04"), {})
+        cov_rows = R["pnl_suppression_cov"].get("rows", [])
+        src = "posthoc/cov/pnl_suppression.md · CP-7 · 50 episodes"
+        if not cov_rows:                                   # fall back to the original measurement
+            cov_rows, src = R["pnl_suppression"].get("rows", []), "pnl_suppression.md · 50 episodes"
+        s4 = next((r for r in cov_rows if r["source"] == "SPOOFER-04"), {})
         kpi("Profit removed by surveillance", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
             pct(dig(s4, "rule", "suppression_pct", default=0) / 100, 0),
-            "Higher is better · detector acts inside the episode", "pnl_suppression.md · 50 episodes", GOOD)
+            "Higher is better · +$12.6k/episode driven to a loss", src, GOOD)
     with a[2]:
         anon = dig(R["anonymised_experiment"], "headline", default={})
         kpi("Without participant attribution", num(anon.get("best_step_f1"), 3),
@@ -776,7 +781,7 @@ else:
 
         with st.expander("Reproduction and test status"):
             c = st.columns(3)
-            c[0].metric("Automated tests", "184")
+            c[0].metric("Automated tests", "191")
             c[1].metric("Scripts reproducing exactly", "12 / 12")
             c[2].metric("Values re-checked", "2,178")
             st.markdown('<div class="cap">Every script was re-run in a clean clone of the repository — '

@@ -1,0 +1,62 @@
+{
+  "data": "C:\\Users\\Rahul Soni\\Desktop\\finance-watchdog\\data\\watchdog_v2",
+  "rows": [
+    {
+      "ticker": "AAPL",
+      "median_spread_ticks": 14.999999999997726,
+      "median_touch_depth": 149.6205022728382,
+      "spoof_size_over_depth": 10.010196915598758,
+      "book_imbalance_shift": 0.012561870738863945,
+      "book_imbalance_noise": 0.1793569028377533,
+      "signal_to_noise": 0.07003840131108556,
+      "step_f1": 0.073
+    },
+    {
+      "ticker": "AMZN",
+      "median_spread_ticks": 12.999999999999545,
+      "median_touch_depth": 163.58941348230775,
+      "spoof_size_over_depth": 9.987480377050732,
+      "book_imbalance_shift": 0.02748829312622547,
+      "book_imbalance_noise": 0.16575320065021515,
+      "signal_to_noise": 0.16583868678489855,
+      "step_f1": 0.1307293742526903
+    },
+    {
+      "ticker": "GOOG",
+      "median_spread_ticks": 27.99999999999727,
+      "median_touch_depth": 137.67728311555265,
+      "spoof_size_over_depth": 9.998106039773775,
+      "book_imbalance_shift": 0.0033929385244846344,
+      "book_imbalance_noise": 0.16188226640224457,
+      "signal_to_noise": 0.02095929714780414,
+      "step_f1": 0.12635222847252273
+    },
+    {
+      "ticker": "INTC",
+      "median_spread_ticks": 1.0000000000001563,
+      "median_touch_depth": 13915.041099353723,
+      "spoof_size_over_depth": 10.002842424007495,
+      "book_imbalance_shift": 0.009934522211551666,
+      "book_imbalance_noise": 0.09676887840032578,
+      "signal_to_noise": 0.10266236806479531,
+      "step_f1": 0.585245322979174
+    },
+    {
+      "ticker": "MSFT",
+      "median_spread_ticks": 1.0000000000001563,
+      "median_touch_depth": 13318.297648760634,
+      "spoof_size_over_depth": 9.997143732211013,
+      "book_imbalance_shift": 0.005149632226675749,
+      "book_imbalance_noise": 0.09509623795747757,
+      "signal_to_noise": 0.054151797560892105,
+      "step_f1": 0.6001103143960287
+    }
+  ],
+  "correlations": {
+    "shift": -0.38409918227133116,
+    "snr": -0.05740924221633638,
+    "spread": -0.8417049543733416
+  },
+  "n_instruments": 5,
+  "verdict": "H1 refuted (attack size identical); H2 refuted (shift and SNR do not rank with detectability); no mechanism established at n=5"
+}

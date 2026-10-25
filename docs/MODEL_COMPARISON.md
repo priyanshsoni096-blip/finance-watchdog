@@ -129,6 +129,13 @@ Step-level F1 per source, held-out, seed 0. "Always flag" scores 0.30–0.36 on 
 Those are exactly the stocks where spoofing is profitable, which is coherent — but it means the pooled 0.392
 averages two opposite results and describes neither.
 
+**Why is unresolved.** Two mechanical explanations were tested and both refuted
+(`results/detectability_by_instrument.md`): the attacker places the same 10× touch depth on every stock, and
+the shift it produces in displayed book imbalance is *smaller* on the two detectable stocks, with
+signal-to-noise failing to rank with detectability (correlation −0.06). What remains is a descriptive
+association with spread width across **five** instruments, which cannot support a mechanism. Tick-size regime
+and spread width coincide in this dataset and cannot be separated.
+
 ### Calibration (Brier, lower is better)
 
 A classifier predicting the base rate scores **0.099**.
@@ -143,6 +150,27 @@ A classifier predicting the base rate scores **0.099**.
 better than chance; their probabilities should not be read as probabilities.
 
 ---
+
+## 3b. Does detection actually cost the attacker anything?
+
+Re-measured with the CP-7 detector acting **inside** the episode: on a flag the exchange cancels the
+participant's resting large orders and blocks new ones for 200 market events
+(`results/posthoc/cov/pnl_suppression.md`, 50 episodes, same seeds for every condition).
+
+| Source | No surveillance | CP-7 Watchdog | Suppressed | Rule | Suppressed |
+|---|---|---|---|---|---|
+| SPOOFER-04 (INTC) | +$12,625 ± 1,162 | **−$133 ± 190** | **101%** | +$5,655 ± 657 | 55% |
+| SPOOFER-02 (MSFT) | +$3,186 ± 517 | **−$4,557 ± 1,210** | 243% | +$140 ± 831 | 96% |
+| SCRIPTED-ATK (INTC) | +$748 ± 634 | −$2,458 ± 496 | 429% | −$1,281 ± 613 | 271% |
+| LATEBURST-ATK (MSFT) | +$531 ± 674 | −$2,728 ± 430 | 614% | −$974 ± 757 | 283% |
+
+The earlier measurement used the original Watchdog and left SPOOFER-04 at +$2,165 (83% suppressed). CP-7
+drives it to a loss. Interventions against legitimate FLICKER orders: **0.0 per episode** for CP-7 against the
+rule's 4.7.
+
+Two cautions. Suppression above 100% means the attacker ends up losing money, which flatters the number —
+read the P&L column, not the percentage. And **the attackers are frozen**: they do not adapt to being watched,
+so this measures surveillance against non-adaptive manipulation.
 
 ## 4. The attacker side, where RL is justified
 

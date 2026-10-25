@@ -1,6 +1,6 @@
 # PnL suppression
 
-Watchdog `checkpoints/WATCHDOG/cov/model.zip` and the rule (size ≥ 2× depth, cancelled within 1000 events) each act inside the episode. On a flag the exchange cancels the participant's resting large orders and rejects new ones for 200 market events. 50 episodes per source and condition, identical seeds across conditions. 95% CI is a normal approximation over episodes.
+Watchdog `checkpoints\WATCHDOG\cov\model.zip` and the rule (size ≥ 2× depth, cancelled within 1000 events) each act inside the episode. On a flag the exchange cancels the participant's resting large orders and rejects new ones for 200 market events. 50 episodes per source and condition, identical seeds across conditions. 95% CI is a normal approximation over episodes.
 
 Attackers are frozen and do not adapt to surveillance.
 

@@ -110,7 +110,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-184 tests, about 60 seconds (57 s measured). Tests that need data skip themselves if it isn't downloaded.
+191 tests, about 70 seconds (69 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 
@@ -388,6 +388,7 @@ scripts/label_observability.py    the headline audit finding: a zero-parameter s
 scripts/supervised_baseline.py    logistic regression and gradient boosting in the Watchdog's own buckets
 watchdog/anonymised_experiment.py detection with NO participant attribution: book-only features, leakage audit
 scripts/compare_protocols.py      what the train/test overlap defect cost: three conditions, one table
+scripts/detectability_by_instrument.py   why attribution-free detection splits by stock: two refuted mechanisms
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
 scripts/build_dashboard.py        builds dashboard.html from results/*.json
