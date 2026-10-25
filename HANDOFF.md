@@ -191,4 +191,4 @@ Worth keeping:
 
 ## 11. If you only read one thing
 
-Open `dashboard.html` in a browser, then read "Results at a glance" at the top of `README.md`, then `results/watchdog_eval.md` and `results/synthetic_eval.md`. Between them they hold the honest answer: the Watchdog is far better than a static rule at not crying wolf, and no better — usually worse — at catching manipulation it has not seen.
+Run `streamlit run app.py --server.fileWatcherType none` (or open `dashboard.html`), read `REPORT.md`, then read "Results at a glance" at the top of `README.md`, then `results/watchdog_eval.md` and `results/synthetic_eval.md`. Between them they hold the honest answer: the Watchdog is far better than a static rule at not crying wolf, and no better — usually worse — at catching manipulation it has not seen.

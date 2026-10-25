@@ -332,14 +332,20 @@ scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain v
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
+scripts/build_dashboard.py        builds dashboard.html from results/*.json
+scripts/make_figures.py           report figures -> results/figures/
+
+app.py                            Streamlit dashboard: inputs, backend pipeline, results, evidence
+REPORT.md                         full write-up: method, results, discussion, limitations, references
+dashboard.html                    static one-page results summary (generated)
 
 tests/                            115 unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
-                                  feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval,
-                                  spoofer_seeds,
-                                  layering_test (.md and .json each); real_case_comparison.md
+                                  feature_ablation, real_case_stats, synthetic_spoof_impact,
+                                  synthetic_eval, spoofer_seeds, layering_test (.md and .json each);
+                                  real_case_comparison.md; figures/ (six report figures)
 ```
 
 ### Agent roster
