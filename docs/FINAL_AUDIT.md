@@ -6,7 +6,7 @@ reconciled in commit `5a32de9`. Everything recorded here was executed. Work that
 such in §G and §J rather than assumed to pass.
 
 - **Merge base:** `d9e242b` · **main before merge:** `4c7201c` (tag `pre-merge-main`) · **merged:** `5a32de9`
-- **Test suite:** **153 passing**, 20 test files
+- **Test suite:** **172 passing**, 22 test files
 - **Headline finding:** the detection task is close to a tautology (§C). CP-7 reached the label's ceiling; it did
   not make the problem hard.
 - **Independent verification:** Arnav's CP-7 `cov` result reproduced exactly on a second machine (§D)
@@ -251,7 +251,7 @@ historical prices never react to the agent. One large order per side is permitte
 
 ## G. Test report
 
-**153 passing, 20 test files, ~58 s.** No tests were disabled, weakened or skipped to obtain a pass.
+**172 passing, 22 test files, ~138 s.** No tests were disabled, weakened or skipped to obtain a pass.
 
 | Area | File | Tests |
 |---|---|---|
@@ -316,7 +316,7 @@ pip install -r requirements.txt
 pip install -r requirements-dashboard.txt
 python data/download.py                                      # ~600 MB LOBSTER data
 python scripts/calibrate.py
-python -m pytest tests -q                                    # 153 tests, ~58 s
+python -m pytest tests -q                                    # 172 tests, ~138 s
 python watchdog/dataset.py --episodes 150                    # record surveillance data
 python watchdog/dataset.py --extended                        # CP-7 round-2 training sources
 python watchdog/evaluate_watchdog.py --tag cov               # the CP-7 detector

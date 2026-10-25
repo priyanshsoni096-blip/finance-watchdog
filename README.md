@@ -18,7 +18,7 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 
 Every number below comes from a committed file in `results/`, except the no-impact counterfactual row, which is printed by the committed script named there (`python scripts/pnl_decompose.py SPOOFER-04 main 10 --stochastic`). The sections further down give the detail and caveats.
 
-> **Read this before any detector number.** An audit found the detection task as posed is close to a tautology: the manipulation label is readable from two of the detector's own input features, so a **zero-parameter signature scores order-level F1 0.997 in-distribution and 0.995 on a held-out attacker at FPR 0.000** (`label_observability.md`), and gradient boosting fitted on the train split beats the RL Watchdog on every bucket (`supervised_baseline.md`). The detector results below are a documented negative result, not a working surveillance method. The environment also grants surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real spoofing surveillance, and it is assumed away here. Full write-up: [AUDIT.md](AUDIT.md) §2.
+> **Read this before any detector number.** An audit found the detection task as posed is close to a tautology: the manipulation label is readable from two of the detector's own input features, so a **zero-parameter signature scores order-level F1 0.997 in-distribution and 0.995 on a held-out attacker at FPR 0.000** (`label_observability.md`), and gradient boosting fitted on the train split beats the RL Watchdog on every bucket (`supervised_baseline.md`). The detector results below are a documented negative result, not a working surveillance method. The environment also grants surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real spoofing surveillance, and it is assumed away here. Full write-up: [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) §C.
 
 **Claim 1: RL learns meaningful manipulation. Partly shown.**
 
@@ -110,7 +110,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-153 tests, about 56 seconds (56 s measured). Tests that need data skip themselves if it isn't downloaded.
+172 tests, about 140 seconds (138 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 
@@ -179,15 +179,32 @@ python scripts/label_observability.py
 python scripts/supervised_baseline.py
 ```
 
-What the train/test overlap defect cost, once the clean-protocol run exists (see `AUDIT.md` §7):
+The experiment that removes participant attribution entirely — the honest measure of the detection problem:
+
+```bash
+python watchdog/anonymised_experiment.py --audit    # leakage audit only
+```
+
+```bash
+python watchdog/anonymised_experiment.py
+```
+
+What the train/test overlap defect cost, once the clean-protocol run exists (see `docs/FINAL_AUDIT.md` §B1):
 
 ```bash
 python scripts/compare_protocols.py
 ```
 
 ```bash
-python watchdog/lateburst_test.py
+python watchdog/lateburst_test.py --rerun
 ```
+
+**Single-run tests are overwrite-protected.** `watchdog/lateburst_test.py`, `drip_test.py`,
+`reversal_test.py` and `scripts/real_flow_rule.py` record runs that were meant to happen once, so they refuse
+to start when their result files already exist. Pass `--rerun` if you genuinely intend to replace them. They
+also reject unknown arguments and print usage for `--help` rather than running (`evaluation/cli.py`).
+
+
 
 ```bash
 python watchdog/multiseed_summary.py --tags main main_s2 main_s3
@@ -254,7 +271,7 @@ python watchdog/evaluate_watchdog.py
 Scores the Watchdog and the rule-based baseline on the same recorded orders; writes `results/watchdog_eval.md` and `.json`. Order-level precision, recall, F1 and false-positive rate per bucket, plus how many steps each takes to flag. The rule can only fire on the cancel; the Watchdog can flag while the order still rests.
 
 ```bash
-python watchdog/lateburst_test.py
+python watchdog/lateburst_test.py --rerun
 ```
 The pre-registered clean held-out test: a new attacker defined before any of its data existed. **Run it once**; its procedure and hypothesis are fixed. Output: `results/lateburst_test.md` and `.json`.
 
@@ -369,6 +386,7 @@ scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain v
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/label_observability.py    the headline audit finding: a zero-parameter signature recovers the label
 scripts/supervised_baseline.py    logistic regression and gradient boosting in the Watchdog's own buckets
+watchdog/anonymised_experiment.py detection with NO participant attribution: book-only features, leakage audit
 scripts/compare_protocols.py      what the train/test overlap defect cost: three conditions, one table
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
@@ -377,7 +395,11 @@ scripts/make_figures.py           report figures -> results/figures/
 
 app.py                            Streamlit dashboard: inputs, backend pipeline, results, evidence
 REPORT.md                         full write-up: method, results, discussion, limitations, references
-AUDIT.md                          audit report: defects found, metric reconciliation, test report, open limitations
+docs/FINAL_AUDIT.md               audit report (A-J): bugs, research design, model comparison, verdict
+docs/EXPERIMENT_PROTOCOL.md       hypotheses, splits, seeds, metrics and leakage controls
+docs/MODEL_COMPARISON.md          every detector on comparable data, with experiment identifiers
+docs/DEMO_GUIDE.md                the 10-minute presentation run sheet
+docs/CHANGELOG.md                 what changed in this audit cycle and why
 dashboard.html                    static one-page results summary (generated)
 
 tests/                            139 unit and real-data tests (data, normalization, impact, env, detector, rollout,
@@ -904,6 +926,34 @@ Every attacker here was inspected before CP-7, so these numbers describe the rou
 - **A linear model cannot do it.** Logistic regression fails (recall 0.20–0.47): detection needs the interaction between the trade's side and the resting order's side.
 - **What drove the gains:** the causal label, the myopic (γ = 0) objective, and training coverage of act timing (CP-7). With γ = 0, the Watchdog's RL training is cost-weighted classification by policy gradient. RL would matter where feedback is delayed or partial (for example, investigations confirming manipulation later); that is not tested here.
 - **What the comparison with the size + fast-cancel rule still shows:** a detector that sees the participant's own trades separates manipulation from legitimate large orders far better than a size-and-cancel rule. That holds whether the detector is learned by RL, learned by supervision, or written by hand from the label's definition.
+
+## Detection without participant attribution
+
+Every detector above is handed the monitored participant's own trade direction and the side of its resting
+orders — together, the label's definition. `python watchdog/anonymised_experiment.py` removes that attribution
+entirely and detects from the **displayed order book alone**, as an external surveillance system on an
+anonymised feed would (`results/anonymised_experiment.md`).
+
+**Leakage audit of what remains.** Withheld pair (features 44 + 45) step F1 **0.948**; best single retained
+feature rule **0.490** (`total displayed depth`); largest retained correlation with the label **0.381**
+(`book L1 bid size`); retained features correlating above 0.5: **0**. The removal is real — the label is not
+reachable by another column.
+
+| Held-out, step level | Precision | Recall | F1 | FPR |
+|---|---|---|---|---|
+| constant: always flag | 0.122 | 1.000 | 0.218 | 1.000 |
+| book-imbalance rule | 0.120 | 0.085 | 0.099 | 0.086 |
+| **logistic regression** | 0.409 | 0.376 | **0.392** | 0.075 |
+| gradient boosting | 0.533 | 0.125 | 0.202 | 0.015 |
+
+- **Step level is a real result**: 0.392 beats the best constant classifier's 0.218.
+- **Episode level is not.** The held-out set is 62.5% positive, so flagging every window scores F1 0.769 and
+  beats every model (best was 0.753). Do not quote episode-level F1 for this experiment; gradient boosting is
+  the only model that separates anything usefully there, at precision 0.981 and FPR 0.013.
+- **This bounds the whole project.** 0.392 attribution-free against 0.948 for the two withheld features and
+  0.99+ for every attributed detector is the honest size of the detection problem.
+- **And it is an upper bound.** Only one participant acts on top of historical replay here, so any book anomaly
+  is attributable to it by construction. A real anonymised feed mixes many participants.
 
 ## Where the three claims stand
 

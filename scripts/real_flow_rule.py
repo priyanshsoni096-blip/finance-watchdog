@@ -23,6 +23,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from evaluation.cli import guard  # noqa: E402
+
 from env.lobster_data import csv_paths, load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
 from evaluation.baseline_detector import RuleDetector, real_data_flags  # noqa: E402
@@ -32,6 +34,7 @@ RULES = {"M=200 (basic_eval)": RuleDetector(2, 200), "M=1000 (train split)": Rul
 
 
 def main() -> int:
+    guard(__doc__, protected=tuple(ROOT / "results" / f for f in ("real_flow_rule.json", "real_flow_rule.md")))
     rows = {}
     for tk, levels in STOCKS:
         if not all(p.exists() for p in csv_paths(tk, levels)):

@@ -110,7 +110,8 @@ def load(name: str, folder: str = "results") -> dict:
 R = {n: load(f"{n}.json") for n in (
     "basic_eval", "watchdog_eval", "multiseed", "lateburst_test", "layering_test", "pnl_suppression",
     "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes",
-    "label_observability", "supervised_baseline", "posthoc_rescore", "baselines_final")}
+    "label_observability", "supervised_baseline", "posthoc_rescore", "baselines_final",
+    "anonymised_experiment")}
 PH = R["posthoc_rescore"].get("summary", {})
 PHRULE = R["posthoc_rescore"].get("rule", {})
 
@@ -531,6 +532,38 @@ else:
                         'construction, not a competitor. A supervised LSTM reaches it in minutes '
                         '(<span class="mono">baselines_final.md</span>).</div>', unsafe_allow_html=True)
 
+        anon = R["anonymised_experiment"]
+        if anon.get("models"):
+            st.write("")
+            st.markdown("#### And with participant attribution removed entirely")
+            h, aud = anon.get("headline", {}), anon.get("audit", {})
+            held = h.get("held_out_set", "held-out")
+            arows = []
+            for mname, m in anon["models"].items():
+                c = dig(m, "sets", held, "step", default={})
+                if not c:
+                    continue
+                arows.append({"Model (book features only)": mname, "Precision": num(c.get("precision"), 3),
+                              "Recall": num(c.get("recall"), 3), "F1": num(c.get("f1"), 3),
+                              "FPR": num(c.get("fpr"), 3)})
+            if arows:
+                st.dataframe(pd.DataFrame(arows), hide_index=True, use_container_width=True)
+                st.markdown(
+                    '<div class="cap">Step level, held-out split. The whole participant block is withheld and '
+                    'only the displayed order book is used. Leakage audit of what remains: the withheld pair '
+                    f'scores step F1 {num(aud.get("withheld_pair_step_f1"), 3)}, while the best single retained '
+                    f'feature rule reaches only {num(aud.get("best_single_feature_rule_f1"), 3)} and no retained '
+                    'feature correlates above 0.5 with the label '
+                    '(<span class="mono">anonymised_experiment.md</span>).</div>', unsafe_allow_html=True)
+                if not h.get("beats_constant_episode", True):
+                    st.markdown(
+                        '<div class="warnbar"><b>Do not quote episode-level F1 here.</b> That held-out set is '
+                        'positive-heavy, so a constant "always flag" classifier scores '
+                        f'{num(h.get("best_constant_episode_f1"), 3)} and beats every model '
+                        f'(best {num(h.get("best_episode_f1"), 3)}). Step level is the real result: '
+                        f'{num(h.get("best_step_f1"), 3)} against the constant\'s '
+                        f'{num(h.get("best_constant_step_f1"), 3)}.</div>', unsafe_allow_html=True)
+
         st.markdown('<div class="warnbar"><b>What this means.</b> The learned detector is not discovering '
                     'manipulation — it recovers a definition handed to it in its own input. Its failure on held-out attackers is therefore a property of the learner, '
                     'not evidence that unseen manipulation is hard to spot here: the zero-parameter signature '
@@ -696,7 +729,7 @@ else:
 
         with st.expander("Reproduction and test status"):
             c = st.columns(3)
-            c[0].metric("Automated tests", "153")
+            c[0].metric("Automated tests", "172")
             c[1].metric("Scripts reproducing exactly", "12 / 12")
             c[2].metric("Values re-checked", "2,178")
             st.markdown('<div class="cap">Every script was re-run in a clean clone of the repository — '

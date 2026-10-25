@@ -3,7 +3,7 @@
 `watchdog.dataset.causal_labels` turns the hindsight label ("this order was manipulative, so mark every step it
 rested") into one that only becomes positive once the evidence exists ("mark from the first step its owner traded
 on the opposite side"). Training on the hindsight label rewarded predicting which trader would spoof over
-detecting the act; see AUDIT.md section B2.
+detecting the act; see docs/FINAL_AUDIT.md section B2.
 
 These tests pin the properties the fix depends on, including the docstring's claim that every causal positive is
 also a hindsight positive.
@@ -102,4 +102,4 @@ def test_the_gap_between_the_two_labels_is_what_the_diagnostic_reported(sources)
     ratio = causal.sum() / hindsight.sum()
     assert 0.05 < ratio < 0.95, (
         f"causal positives are {ratio:.2f} of hindsight positives; if this approaches 1.0 the two labels have "
-        "converged and AUDIT.md section B2 needs rewriting")
+        "converged and docs/FINAL_AUDIT.md section B2 needs rewriting")

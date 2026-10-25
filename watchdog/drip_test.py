@@ -32,6 +32,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "training"))
 
+from evaluation.cli import guard  # noqa: E402
+
 from evaluation.agents import DripSpoof, Flicker, SameSideTrader  # noqa: E402
 from evaluation.baseline_detector import tune  # noqa: E402
 from watchdog.dataset import DATA_DIR, Source, build_source, load_split, orders_from_array  # noqa: E402
@@ -47,6 +49,7 @@ SOURCES = (("DRIP-ATK", DripSpoof), ("SAMESIDE", SameSideTrader), ("FLICKER", Fl
 
 
 def main() -> int:
+    guard(__doc__, protected=tuple(ROOT / "results" / f for f in ("drip_test.json", "drip_test.md")))
     from sb3_contrib import RecurrentPPO
     from train_spoofer import DECISION_ENV
 

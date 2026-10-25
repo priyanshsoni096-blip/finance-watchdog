@@ -1,0 +1,132 @@
+# Model Comparison
+
+Every detector in the project on comparable data, with the experiment that produced each number. Protocol in
+`docs/EXPERIMENT_PROTOCOL.md`; audit in `docs/FINAL_AUDIT.md`.
+
+**Read §1 before §2.** Section 2's numbers are bounded by section 1's ceiling.
+
+---
+
+## 1. The ceiling: what the label itself is worth
+
+The label is `opposite_trades > 0` — the owner traded the opposite side while the order rested. Observation
+feature 44 is the participant's trade direction, feature 45 the side its resting orders sit on. Comparing
+their signs reproduces the label's definition, with **no parameters and no fitting**.
+
+| Detector | In-distribution order F1 | Held-out scripted order F1 | Legitimate FPR | Experiment |
+|---|---|---|---|---|
+| **Zero-parameter signature** | **0.997** | **0.995** | 0.000 | `results/label_observability.json` |
+| LABEL-RULE (same idea, Arnav) | 0.986 | 0.995 | 0.000 | `results/baselines_final.json` |
+| "A resting order is present" | 0.362 | — | 1.000 | `results/label_observability.json` |
+
+The third row matters: mere presence of a large order does **not** identify manipulation. It is specifically
+the two-feature comparison that carries the label.
+
+---
+
+## 2. Attributed detectors — all given features 44 and 45
+
+### 2a. Order-level recall / legitimate FPR, 3 seeds
+
+Source `results/baselines_final.json`. Same observation, same causal labels, thresholds fitted on train only.
+
+| Dataset | Label ceiling | SUP-LSTM | RL Watchdog `cov` | LOGREG | Size+cancel rule |
+|---|---|---|---|---|---|
+| Original test split | 0.995 / 0.000 | 0.995 / 0.000 | 0.995 / 0.002 | 0.469 / 0.123 | 0.941 / 0.812 |
+| Held-out (SCRIPTED, AMZN) | 0.990 / 0.000 | 0.990 / 0.000 | 0.990 / 0.004 | 0.198 / 0.000 | 0.940 / 0.869 |
+| LATEBURST-ATK | 0.983 / 0.000 | 0.983 / 0.000 | 0.984 / 0.002 | 0.218 / 0.098 | 0.885 / 0.819 |
+| DRIP-ATK | 0.989 / 0.000 | 0.989 / 0.000 | 0.989 / 0.012 | 0.324 / 0.144 | 0.744 / 0.797 |
+| REVERSAL-ATK | 0.984 / 0.000 | 0.984 / 0.001 | 0.983 / 0.012 | 0.218 / 0.099 | 0.964 / 0.804 |
+
+**A supervised LSTM matches the RL detector everywhere and trains in minutes.** Logistic regression fails
+(0.20–0.47), which shows the task needs the *interaction* between trade side and resting side — a two-feature
+interaction, which is §1 restated.
+
+### 2b. Three Watchdog generations
+
+Source `results/posthoc_rescore.json`, order level, 3 seeds, mean ± 95% Student-t CI. Post-hoc except where a
+test was pre-registered for that model.
+
+| Metric | `main` | `causal_g0_1m` | `cov` | Rule |
+|---|---|---|---|---|
+| In-distribution order F1 | 0.753 ± 0.058 | 0.978 ± 0.015 | **0.984 ± 0.001** | 0.352 |
+| Legitimate order FPR | 0.031 ± 0.067 | 0.003 ± 0.012 | **0.002 ± 0.002** | 0.820 |
+| Held-out AMZN legitimate FPR | 0.004 ± 0.018 | 0.001 ± 0.004 | **0.001 ± 0.002** | 0.972 |
+| SCRIPTED-ATK train stocks recall | 0.257 ± 0.199 | 0.504 ± 0.024 | **0.991 ± 0.001** | 0.938 |
+| LATEBURST-ATK recall | 0.217 ± 0.156 | 0.484 ± 0.022 | **0.984 ± 0.001** | 0.885 |
+| DRIP-ATK recall | 0.067 ± 0.115 | 0.387 ± 0.273 | **0.989 ± 0.002** | 0.744 |
+| REVERSAL-ATK recall | 0.139 ± 0.129 | 0.451 ± 0.110 | **0.983 ± 0.005** | 0.964 |
+
+The jump from `main` to `causal_g0_1m` is the **causal label** and γ = 0; from there to `cov` is **training
+coverage of varied act timing**. Neither is a hyperparameter search.
+
+### 2c. Independent cross-platform verification
+
+`cov` was trained on macOS. Re-scored on Windows from the committed checkpoint: in-distribution F1 **0.984**,
+legitimate FPR **0.001**, SCRIPTED train-stocks recall **0.991**, SCRIPTED AMZN recall **0.983** — matching the
+committed values to three decimals. The DRIP and REVERSAL datasets were rebuilt from scratch and their
+pre-registered tests re-run: 1,164 and 1,615 numeric values, **0 real differences** (five per-stock P&L figures
+differ at relative ~1e-15).
+
+---
+
+## 3. Detection WITHOUT attribution
+
+Source `results/anonymised_experiment.json`. The whole participant block is withheld; only the displayed order
+book and aggregates derived from it are used. Temporal splits; thresholds fitted on train only.
+
+**Leakage audit of what remains:** withheld pair step F1 0.948 · best retained single-feature rule 0.490
+(`total displayed depth`) · largest retained correlation 0.381 (`book L1 bid size`) · retained features with
+correlation > 0.5: **0**. The removal is real.
+
+### Step level — is manipulation happening now?
+
+| Model | Held-out precision | Recall | F1 | FPR |
+|---|---|---|---|---|
+| constant: never flag | n/a | 0.000 | 0.000 | 0.000 |
+| constant: always flag | 0.122 | 1.000 | 0.218 | 1.000 |
+| book-imbalance rule | 0.120 | 0.085 | 0.099 | 0.086 |
+| **logistic regression** | 0.409 | 0.376 | **0.392** | 0.075 |
+| gradient boosting | 0.533 | 0.125 | 0.202 | 0.015 |
+
+**Logistic regression wins against the constant (0.392 vs 0.218).** This is a real, if modest, result.
+
+### Episode level — does this window contain manipulation?
+
+| Model | Held-out precision | Recall | F1 | FPR |
+|---|---|---|---|---|
+| constant: always flag | 0.625 | 1.000 | **0.769** | 1.000 |
+| logistic regression | 0.685 | 0.836 | 0.753 | 0.640 |
+| gradient boosting | 0.981 | 0.416 | 0.584 | **0.013** |
+
+**Episode-level F1 is not a result.** The held-out set is 62.5% positive, so flagging everything beats every
+model. Do not quote it. Gradient boosting is the only model that separates anything usefully here, and it does
+so by being conservative — precision 0.981 at FPR 0.013 — not by winning on F1.
+
+---
+
+## 4. The attacker side, where RL is justified
+
+| Agent | Stock | P&L / episode (replay) | Impact off | Synthetic market |
+|---|---|---|---|---|
+| SPOOFER-04 | INTC | **+$14,368 ± 1,135** (3 seeds) | −$8,279 | −$3,270 ± 688 |
+| SPOOFER-02 | MSFT | **+$11,431 ± 16,844** (3 seeds) | −$7,037 | −$2,930 ± 686 |
+| SPOOFER-01/03/05 | AAPL/GOOG/AMZN | ~0, never learned to spoof | — | — |
+
+The impact-off column is the control: the same trading loses money without the impact model, so the profit is
+the manipulation. MSFT's interval spans +$3,628 to +$15,886 across seeds and is reported, not smoothed.
+Profitability **does not survive** a change of market mechanism.
+
+Here there is no label to supervise against and the agent must find the strategy from profit alone. **This is
+where RL earns its place in the project; the detector is not.**
+
+---
+
+## 5. Recommendation
+
+| Use | Model | Why |
+|---|---|---|
+| Detection, task as posed | **SUP-LSTM or gradient boosting** | matches the RL detector, trains in minutes, far simpler |
+| Detection, attribution-free | **logistic regression** (step level) | the only model that beats a constant; GB if low FPR matters more |
+| Attack discovery | **PPO** | no labels exist to supervise against |
+| Reported as a contribution | the **causal-label diagnosis** and the attacker side | the 0.98 recall is a ceiling effect |

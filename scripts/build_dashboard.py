@@ -221,7 +221,7 @@ def main() -> int:
   train split beats the RL Watchdog on every bucket. The detection task as posed is close to a tautology, so the detector
   figures below are a documented negative result rather than a working surveillance method. The environment also grants
   surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real
-  spoofing surveillance, and it is assumed away. Full write-up in <code>AUDIT.md</code> §2.
+  spoofing surveillance, and it is assumed away. Full write-up in <code>docs/FINAL_AUDIT.md</code> §2.
 </div>
 
 <h2>The three claims</h2>
@@ -334,7 +334,7 @@ the Watchdog is precise and quiet but misses manipulation it has not seen.</p>
 
 <h2>Evidence quality</h2>
 <div class="cards">
-  <div class="card"><h3>Tests</h3><div class="big">153</div><p class="vs">passing, on real market data</p></div>
+  <div class="card"><h3>Tests</h3><div class="big">172</div><p class="vs">passing, on real market data</p></div>
   <div class="card"><h3>Pre-registered tests</h3><div class="big">2</div><p class="vs">attacker, procedure and hypothesis committed before any data existed; each run once</p></div>
   <div class="card"><h3>Training seeds</h3><div class="big">3 + 3</div><p class="vs">Watchdog seeds and seeds per profitable Spoofer, with confidence intervals</p></div>
 </div>

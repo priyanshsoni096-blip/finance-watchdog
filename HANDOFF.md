@@ -82,7 +82,7 @@ What this does and does not change:
   would make the detector half of this project a real experiment, and it is the first item in future work.
 
 Locked down by `tests/test_label_observability.py` so a future change to the label or features cannot quietly
-invalidate this. Full write-up: `AUDIT.md` §C and `REPORT.md` §6.1.
+invalidate this. Full write-up: `docs/FINAL_AUDIT.md` §C and `REPORT.md` §6.1.
 
 Arnav reached the same conclusion independently, from the other direction: he built **LABEL-RULE**, the label's
 definition written as a rule, and recorded it as *"the ceiling, perfect by construction, not a competitor."*
@@ -127,7 +127,7 @@ python data/download.py
 ```bash
 python -m pytest tests -q
 ```
-153 tests, about 56 seconds. Tests needing data skip themselves if it is absent.
+172 tests, about 140 seconds. Tests needing data skip themselves if it is absent.
 
 ```bash
 python scripts/calibrate.py
@@ -163,7 +163,7 @@ watchdog/       dataset recorder, Watchdog env/training, evaluation vs baseline,
 synthetic/      agent-based market: order book, background traders, calibration, spoof impact,
                 env adapter, robustness evaluation, layering attacker + pre-registered test
 scripts/        calibration, PnL decomposition, feature-signal diagnostic, real-case statistics
-tests/          153 tests
+tests/          172 tests
 results/        every reported number (.md to read, .json for exact values)
 app.py          SPOOFWATCH CONSOLE: three views — overview, recorded demonstration, evidence
                 (run: streamlit run app.py --server.fileWatcherType none — the flag is
@@ -271,7 +271,7 @@ Worth keeping:
 
 ## 11. If you only read one thing
 
-Read `AUDIT.md` §C, then §2b and §2c above. The detector half of this project does not pose a hard problem: the label
+Read `docs/FINAL_AUDIT.md` §C, then §2b and §2c above. The detector half of this project does not pose a hard problem: the label
 is readable from two of the detector's own input features, a zero-parameter signature scores 0.997, and
 gradient boosting beats the RL detector everywhere. Present the detector work as a documented negative result.
 

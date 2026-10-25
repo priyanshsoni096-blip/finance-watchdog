@@ -76,11 +76,29 @@ def decompose(agent: str, tag: str, episodes: int = 5, impact_lambda=None, deter
     return tot
 
 
+USAGE = "usage: python scripts/pnl_decompose.py <AGENT> <TAG> [EPISODES] [--stochastic]"
+
+
 def main() -> int:
     flags = [a for a in sys.argv[1:] if a.startswith("--")]
     pos = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if "--help" in flags or "-h" in flags:
+        print((__doc__ or "").strip())
+        print(f"\n{USAGE}")
+        return 0
+    unknown = [f for f in flags if f not in ("--stochastic",)]
+    if unknown:
+        print(f"unrecognised argument(s): {' '.join(unknown)}\n{USAGE}", file=sys.stderr)
+        return 2
+    if len(pos) < 2:
+        print(f"expected at least AGENT and TAG\n{USAGE}", file=sys.stderr)
+        return 2
     agent, tag = pos[0], pos[1]
-    episodes = int(pos[2]) if len(pos) > 2 else 5
+    try:
+        episodes = int(pos[2]) if len(pos) > 2 else 5
+    except ValueError:
+        print(f"EPISODES must be an integer, got {pos[2]!r}\n{USAGE}", file=sys.stderr)
+        return 2
     deterministic = "--stochastic" not in flags
     mode = "argmax actions" if deterministic else "sampled actions"
     for label, lam in (("calibrated impact", None), ("impact_lambda=0 (counterfactual)", 0.0)):
