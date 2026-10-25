@@ -7,7 +7,7 @@ executed; items not executed are listed as such in §10 rather than assumed to p
 - **Test suite:** **145 passing**, 19 test files (115 before the audit, +30 added)
 - **Headline finding:** the detection task as posed is close to a tautology (§2). This is the most important
   result in the audit and it limits what the project can claim.
-- **In flight:** clean-protocol retrain and paired evaluation (§7)
+- **Completed:** clean-protocol retrain and paired evaluation (§7) — the split defect cost 0.031 F1, below seed noise
 
 ---
 
@@ -20,6 +20,7 @@ executed; items not executed are listed as such in §10 rather than assumed to p
 | Market simulator accounting | **No defects found** across randomised rollouts on two stocks |
 | Train/test separation | **Defect found and fixed** — splits shared market data (§3) |
 | Problem formulation | **Serious limitation found** — the label is readable from two observation features (§2) |
+| Split-overlap cost | **Measured** — the defect inflated in-distribution F1 by 0.031, below seed noise (§7) |
 | Reproducibility | **Verified** — 12/12 scripts reproduce exactly from a clean clone, 2,178 values, 0 differences |
 | Research claims | Conservative, and now narrower than before this audit |
 
@@ -100,6 +101,7 @@ One implementation defect was confirmed — reproduced, measured, and affecting 
 | **Reproduction** | Replay the dataset builder's seeding and record `env.t` after each `reset`; compare train and test intervals (episode span 2,000 events) |
 | **Measured impact** | **33 of 50 test episodes overlapped a training episode**, mean overlap **980 of 2,000 events**; training episodes covered 38.2% of the day. The test split was unseen *episodes* but not unseen *market data*, so in-distribution scores are likely optimistic. |
 | **Fix** | `EnvConfig.start_min` / `start_max` with validation; `watchdog/dataset.py --time-split` giving train 0–60%, test 60–80%, held-out 80–100% of the usable day |
+| **Measured cost of the defect** | The same model scores 0.772 under the original protocol and **0.741** on disjoint-window data — a drop of **0.031**, smaller than the ±0.058 spread across training seeds. Held-out buckets were not inflated at all (§7). |
 | **Regression tests** | `tests/test_time_split.py` — windows disjoint and ordered, starts inside window, train and held-out episodes cannot overlap, impossible window rejected |
 | **Compatibility** | Default behaviour unchanged, so committed baseline results remain reproducible; the clean protocol is opt-in and evaluated separately |
 
@@ -203,13 +205,32 @@ synthetic market's realism (a modelling question, not a correctness one).
 only; then **both** the new model and the original baseline model evaluated on identical clean data. This
 separates the protocol effect from the model effect. Held-out attackers remain untouched by model selection.
 
-**Status:** running. Results will be written to `results/temporal_split/` and
-`results/temporal_split_baseline_model/`, leaving all baseline artifacts intact.
+**Expectation, recorded before the run:** in-distribution scores may *fall*, because the previous test split
+shared market data with training. A lower clean number would be the more defensible one.
 
-**Expectation, recorded before seeing results:** in-distribution scores may *fall*, because the previous test
-split shared market data with training. A lower clean number would be the more defensible one. In light of §2,
-this experiment now settles a narrower question than it was designed for: whichever way it lands, the detector
-is being compared against a 0.997 zero-parameter signature.
+**Result** (`scripts/compare_protocols.py` → `results/temporal_split/comparison.md`), order-level F1:
+
+| Bucket | Original protocol, main model | Clean protocol, main model | Clean protocol, retrained model | Rule |
+|---|---|---|---|---|
+| In-distribution (test split) | 0.772 | **0.741** | 0.769 | 0.352 |
+| Scripted attacker, train stocks | 0.378 | 0.443 | 0.446 | 0.660 |
+| Scripted attacker, AMZN | 0.256 | 0.393 | 0.025 | 0.653 |
+| Held-out RL / legitimate only | 0.000 | 0.000 | 0.000 | 0.000 |
+
+- **Protocol effect: −0.031.** The expectation was correct in direction and small in size — smaller than the
+  ±0.058 seed spread, so the published figure was optimistic but no conclusion turns on it.
+- **Model effect:** retraining on the clean training split recovers the loss (0.769) by flagging less often:
+  precision rises to 0.813 and the false-positive rate falls to 0.045, while recall drops to 0.729.
+- **Held-out buckets were not inflated.** They score equal or slightly higher under the clean protocol, as
+  expected since those attackers were absent from training under either protocol. The generalisation failure
+  is a property of the detector, not of the split.
+
+**The §2 finding is not an artefact of the overlap either.** Re-measured on the clean temporal-split data
+(`python scripts/label_observability.py --data data/watchdog_v2`), the zero-parameter signature scores
+in-distribution order F1 **0.995** (P 1.000, R 0.990) against 0.997 on the original data — unchanged.
+
+Baseline artifacts are untouched; the original protocol remains the default so published numbers stay
+reproducible.
 
 ---
 
@@ -228,6 +249,7 @@ python -m pytest tests -q                                    # 145 tests, ~46 s
 python evaluation/basic_eval.py --episodes 20                # agents vs controls
 python watchdog/dataset.py --episodes 150                    # record surveillance data
 python watchdog/evaluate_watchdog.py                         # detector vs rule
+python scripts/compare_protocols.py                          # what the split defect cost (section 7)
 python scripts/label_observability.py                        # the headline finding (section 2)
 python scripts/supervised_baseline.py                        # is RL necessary? (section 2)
 streamlit run app.py --server.fileWatcherType none           # console (flag required)
@@ -262,8 +284,9 @@ Preserved and verified during the audit:
    formulation recovers it worse than a two-feature comparison does.
 2. **Reinforcement learning is not justified for the detector.** Gradient boosting dominates it on every
    bucket measured.
-3. **In-distribution metrics are measured under the flawed protocol** until the running experiment completes
-   (§7). The corrected figures may be lower.
+3. **In-distribution metrics were measured under the flawed protocol**, which cost 0.031 F1 (§7). The
+   published figures are retained because they remain reproducible and the difference is below seed noise;
+   the clean-protocol numbers are committed alongside them.
 4. **Profitability does not transfer** to the synthetic market; which impact model is closer to reality is
    unresolved.
 5. **Ablations beyond features** (recurrent vs non-recurrent, reward variants, attack diversity) not run.

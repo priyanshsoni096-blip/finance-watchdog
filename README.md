@@ -175,6 +175,12 @@ python scripts/label_observability.py
 python scripts/supervised_baseline.py
 ```
 
+What the train/test overlap defect cost, once the clean-protocol run exists (see `AUDIT.md` §7):
+
+```bash
+python scripts/compare_protocols.py
+```
+
 ```bash
 python watchdog/lateburst_test.py
 ```
@@ -359,6 +365,7 @@ scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain v
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/label_observability.py    the headline audit finding: a zero-parameter signature recovers the label
 scripts/supervised_baseline.py    logistic regression and gradient boosting in the Watchdog's own buckets
+scripts/compare_protocols.py      what the train/test overlap defect cost: three conditions, one table
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
 scripts/build_dashboard.py        builds dashboard.html from results/*.json

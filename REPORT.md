@@ -317,6 +317,10 @@ clean test, and both pre-registered replacements went against the hypothesis.
 
 ## 10. Limitations
 
+- The train/test splits originally drew episodes from the whole trading day, so 33 of 50 test episodes
+  overlapped a training episode. Fixed (disjoint windows per split); the measured cost was 0.031 order F1
+  in-distribution, below the ±0.058 seed spread, and nothing on the held-out buckets
+  (`results/temporal_split/comparison.md`).
 - **The detection task is close to a tautology (§6.1).** The label is readable from two observation features, a
   zero-parameter signature scores 0.997 in-distribution and 0.995 on a held-out attacker, and gradient boosting
   beats the RL detector everywhere. No claim that this system "detects spoofing" in a meaningful sense is

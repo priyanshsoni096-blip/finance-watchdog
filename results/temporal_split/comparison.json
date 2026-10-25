@@ -1,0 +1,398 @@
+{
+  "Original protocol, main model": {
+    "In-distribution (test split)": {
+      "watchdog": {
+        "n": 7243,
+        "positives": 1543,
+        "tp": 1230,
+        "fp": 414,
+        "fn": 313,
+        "tn": 5286,
+        "precision": 0.7481751824817519,
+        "recall": 0.7971484121840571,
+        "f1": 0.7718857860056481,
+        "fpr": 0.07263157894736842
+      },
+      "rule": {
+        "n": 7243,
+        "positives": 1543,
+        "tp": 1452,
+        "fp": 5244,
+        "fn": 91,
+        "tn": 456,
+        "precision": 0.2168458781362007,
+        "recall": 0.9410239792611795,
+        "f1": 0.35246995994659547,
+        "fpr": 0.92
+      }
+    },
+    "Held-out RL: SPOOFER-05 + AMZN controls": {
+      "watchdog": {
+        "n": 2920,
+        "positives": 0,
+        "tp": 0,
+        "fp": 37,
+        "fn": 0,
+        "tn": 2883,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.012671232876712329
+      },
+      "rule": {
+        "n": 2920,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2837,
+        "fn": 0,
+        "tn": 83,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9715753424657534
+      }
+    },
+    "Scripted attacker, train stocks + FLICKER": {
+      "watchdog": {
+        "n": 4226,
+        "positives": 1942,
+        "tp": 476,
+        "fp": 98,
+        "fn": 1466,
+        "tn": 2186,
+        "precision": 0.8292682926829268,
+        "recall": 0.2451081359423275,
+        "f1": 0.37837837837837834,
+        "fpr": 0.042907180385288964
+      },
+      "rule": {
+        "n": 4226,
+        "positives": 1942,
+        "tp": 1821,
+        "fp": 1754,
+        "fn": 121,
+        "tn": 530,
+        "precision": 0.5093706293706294,
+        "recall": 0.9376930998970134,
+        "f1": 0.660141381185427,
+        "fpr": 0.7679509632224168
+      }
+    },
+    "Scripted attacker, AMZN + AMZN controls": {
+      "watchdog": {
+        "n": 1042,
+        "positives": 478,
+        "tp": 74,
+        "fp": 27,
+        "fn": 404,
+        "tn": 537,
+        "precision": 0.7326732673267327,
+        "recall": 0.15481171548117154,
+        "f1": 0.2556131260794473,
+        "fpr": 0.047872340425531915
+      },
+      "rule": {
+        "n": 1042,
+        "positives": 478,
+        "tp": 454,
+        "fp": 458,
+        "fn": 24,
+        "tn": 106,
+        "precision": 0.49780701754385964,
+        "recall": 0.9497907949790795,
+        "f1": 0.6532374100719424,
+        "fpr": 0.8120567375886525
+      }
+    },
+    "Legitimate only (HONEST + FLICKER)": {
+      "watchdog": {
+        "n": 2688,
+        "positives": 0,
+        "tp": 0,
+        "fp": 120,
+        "fn": 0,
+        "tn": 2568,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.044642857142857144
+      },
+      "rule": {
+        "n": 2688,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2212,
+        "fn": 0,
+        "tn": 476,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.8229166666666666
+      }
+    }
+  },
+  "Clean protocol, main model": {
+    "In-distribution (test split)": {
+      "watchdog": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1175,
+        "fp": 465,
+        "fn": 358,
+        "tn": 5236,
+        "precision": 0.7164634146341463,
+        "recall": 0.766470971950424,
+        "f1": 0.7406240151276394,
+        "fpr": 0.08156463778284512
+      },
+      "rule": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1438,
+        "fp": 5304,
+        "fn": 95,
+        "tn": 397,
+        "precision": 0.2132898249777514,
+        "recall": 0.9380300065231572,
+        "f1": 0.3475528700906344,
+        "fpr": 0.9303630941940011
+      }
+    },
+    "Held-out RL: SPOOFER-05 + AMZN controls": {
+      "watchdog": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 74,
+        "fn": 0,
+        "tn": 2547,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.02823349866463182
+      },
+      "rule": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2508,
+        "fn": 0,
+        "tn": 113,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9568866844715758
+      }
+    },
+    "Scripted attacker, train stocks + FLICKER": {
+      "watchdog": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 563,
+        "fp": 128,
+        "fn": 1286,
+        "tn": 2147,
+        "precision": 0.8147612156295224,
+        "recall": 0.3044889129259059,
+        "f1": 0.4433070866141732,
+        "fpr": 0.056263736263736264
+      },
+      "rule": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 1721,
+        "fp": 1775,
+        "fn": 128,
+        "tn": 500,
+        "precision": 0.49227688787185353,
+        "recall": 0.9307733910221742,
+        "f1": 0.6439663236669785,
+        "fpr": 0.7802197802197802
+      }
+    },
+    "Scripted attacker, AMZN + AMZN controls": {
+      "watchdog": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 130,
+        "fp": 55,
+        "fn": 347,
+        "tn": 510,
+        "precision": 0.7027027027027027,
+        "recall": 0.27253668763102723,
+        "f1": 0.39274924471299094,
+        "fpr": 0.09734513274336283
+      },
+      "rule": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 442,
+        "fp": 443,
+        "fn": 35,
+        "tn": 122,
+        "precision": 0.4994350282485876,
+        "recall": 0.9266247379454927,
+        "f1": 0.6490455212922174,
+        "fpr": 0.784070796460177
+      }
+    },
+    "Legitimate only (HONEST + FLICKER)": {
+      "watchdog": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 168,
+        "fn": 0,
+        "tn": 2499,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.06299212598425197
+      },
+      "rule": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2218,
+        "fn": 0,
+        "tn": 449,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.8316460442444694
+      }
+    }
+  },
+  "Clean protocol, retrained model": {
+    "In-distribution (test split)": {
+      "watchdog": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1118,
+        "fp": 257,
+        "fn": 415,
+        "tn": 5444,
+        "precision": 0.8130909090909091,
+        "recall": 0.7292889758643183,
+        "f1": 0.7689133425034388,
+        "fpr": 0.04507981055955096
+      },
+      "rule": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1438,
+        "fp": 5304,
+        "fn": 95,
+        "tn": 397,
+        "precision": 0.2132898249777514,
+        "recall": 0.9380300065231572,
+        "f1": 0.3475528700906344,
+        "fpr": 0.9303630941940011
+      }
+    },
+    "Held-out RL: SPOOFER-05 + AMZN controls": {
+      "watchdog": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2615,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.002289202594429607
+      },
+      "rule": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2508,
+        "fn": 0,
+        "tn": 113,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9568866844715758
+      }
+    },
+    "Scripted attacker, train stocks + FLICKER": {
+      "watchdog": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 559,
+        "fp": 100,
+        "fn": 1290,
+        "tn": 2175,
+        "precision": 0.8482549317147192,
+        "recall": 0.3023255813953488,
+        "f1": 0.4457735247208932,
+        "fpr": 0.04395604395604396
+      },
+      "rule": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 1721,
+        "fp": 1775,
+        "fn": 128,
+        "tn": 500,
+        "precision": 0.49227688787185353,
+        "recall": 0.9307733910221742,
+        "f1": 0.6439663236669785,
+        "fpr": 0.7802197802197802
+      }
+    },
+    "Scripted attacker, AMZN + AMZN controls": {
+      "watchdog": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 6,
+        "fp": 6,
+        "fn": 471,
+        "tn": 559,
+        "precision": 0.5,
+        "recall": 0.012578616352201259,
+        "f1": 0.024539877300613498,
+        "fpr": 0.010619469026548672
+      },
+      "rule": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 442,
+        "fp": 443,
+        "fn": 35,
+        "tn": 122,
+        "precision": 0.4994350282485876,
+        "recall": 0.9266247379454927,
+        "f1": 0.6490455212922174,
+        "fpr": 0.784070796460177
+      }
+    },
+    "Legitimate only (HONEST + FLICKER)": {
+      "watchdog": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 93,
+        "fn": 0,
+        "tn": 2574,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.03487064116985377
+      },
+      "rule": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2218,
+        "fn": 0,
+        "tn": 449,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.8316460442444694
+      }
+    }
+  }
+}

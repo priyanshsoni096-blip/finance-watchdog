@@ -164,6 +164,7 @@ checkpoints/    trained models (committed; other tags are local only)
 | `spoofer_seeds.md` | Does the Spoofer result depend on the training seed? | 3/3 seeds spoofed on both stocks; INTC stable, MSFT varies widely |
 | `label_observability.md` | **How hard is the detection task really?** | **Not hard: a zero-parameter two-feature signature scores order F1 0.997 / 0.995 held-out. Read this before quoting any detector number.** |
 | `supervised_baseline.md` | Is RL necessary for the detector? | No: gradient boosting beats it on every bucket (0.96 vs 0.77 in-distribution) |
+| `temporal_split/comparison.md` | Did the train/test overlap inflate the results? | By 0.031 F1 in-distribution, below the ±0.058 seed spread; held-out buckets not inflated at all |
 
 ---
 
@@ -205,6 +206,12 @@ Two synthetic-market dead ends: a fixed cancel probability let liquidity grow wi
 
 Complete. Every script was re-run in a clean clone and every output matched the committed results exactly
 (2,178 numeric values, 0 differences; the Watchdog dataset matched bit-for-bit). Nothing is outstanding here.
+
+One protocol defect was found by audit afterwards and fixed: episode starts were drawn from the whole trading
+day for every split, so 33 of 50 test episodes overlapped a training episode. Splits now get disjoint windows
+(`watchdog/dataset.py --time-split`). Its measured cost was **0.031 order F1 in-distribution** — below the
+±0.058 seed spread — and **nothing on the held-out buckets**, so the published numbers stand and remain the
+default. `results/temporal_split/comparison.md` has the three-condition table.
 
 ## 9. Working rules that kept this honest
 
