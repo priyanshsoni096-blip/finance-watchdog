@@ -104,7 +104,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-115 tests, about 30 seconds (29 s measured). Tests that need data skip themselves if it isn't downloaded.
+139 tests, about 45 seconds (46 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 
@@ -352,10 +352,12 @@ scripts/make_figures.py           report figures -> results/figures/
 
 app.py                            Streamlit dashboard: inputs, backend pipeline, results, evidence
 REPORT.md                         full write-up: method, results, discussion, limitations, references
+AUDIT.md                          audit report: defects found, metric reconciliation, test report, open limitations
 dashboard.html                    static one-page results summary (generated)
 
-tests/                            115 unit and real-data tests (data, normalization, impact, env, detector, rollout,
-                                  Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
+tests/                            139 unit and real-data tests (data, normalization, impact, env, detector, rollout,
+                                  Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market,
+                                  time-split, metric consistency, simulator accounting invariants)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
                                   feature_ablation, real_case_stats, synthetic_spoof_impact,

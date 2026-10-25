@@ -284,7 +284,7 @@ clean test, and both pre-registered replacements went against the hypothesis.
 
 All code, trained models, results and figures are committed. From a clean clone with the data downloaded, every
 evaluation reproduces exactly: **2,178 numeric values compared across 12 scripts, 0 differences**, plus all 32
-recorded dataset files bit-for-bit. The test suite is 115 tests against real market data. `HANDOFF.md`
+recorded dataset files bit-for-bit. The test suite is 139 tests against real market data. `HANDOFF.md`
 documents the full procedure; `dashboard.html` presents the results interactively.
 
 ## References
