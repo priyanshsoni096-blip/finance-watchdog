@@ -13,3 +13,7 @@ run_temporal.sh
 temporal_run.log
 temporal_run.log.err
 data/watchdog_v2/
+.venv/
+logs/
+data/watchdog_ext/
+.DS_Store

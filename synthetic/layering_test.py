@@ -20,6 +20,7 @@ Writes results/layering_test.md and results/layering_test.json.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import sys
@@ -70,12 +71,17 @@ def as_source(eps) -> dict:
 
 
 def main() -> int:
+    p = argparse.ArgumentParser()
+    # The pre-registered verdict is the single run on `main`; other tags are post-hoc re-scoring (CP-7 follow-up)
+    p.add_argument("--tag", default="main")
+    p.add_argument("--out", default=str(ROOT / "results"))
+    args = p.parse_args()
     from sb3_contrib import RecurrentPPO
     from train_spoofer import DECISION_ENV
 
     t0 = time.time()
     params = load_params()
-    wd_path = ROOT / "checkpoints" / "WATCHDOG" / "main" / "model.zip"
+    wd_path = ROOT / "checkpoints" / "WATCHDOG" / args.tag / "model.zip"
     model = RecurrentPPO.load(wd_path, device="cpu")
     obs_norm = load_obs_norm(wd_path.parent)
     train = load_split("train")
@@ -125,8 +131,8 @@ def main() -> int:
         "rule": {"n_mult": det.n_mult, "m_events": det.m_events}, "episodes": EPISODES,
         "runtime_s": round(time.time() - t0, 1),
     }
-    out = ROOT / "results"
-    out.mkdir(exist_ok=True)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
     (out / "layering_test.json").write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
     (out / "layering_test.md").write_text(render(payload), encoding="utf-8")
     print(f"verdict: {verdict} (Watchdog F1 {w_f1:.3f}, rule F1 {r_f1:.3f})")

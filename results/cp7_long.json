@@ -1,0 +1,97 @@
+{
+  "split": "test",
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "per_tag": {
+    "causal_g0_1m": {
+      "order F1": 0.9816896884034694,
+      "order precision": 0.9732484076433121,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.0009254974548819991,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0
+    },
+    "causal_g0_1m_s2": {
+      "order F1": 0.9713922441195169,
+      "order precision": 0.9532127261384903,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.006941230911614993,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0
+    },
+    "causal_g0_1m_s3": {
+      "order F1": 0.9823207971713276,
+      "order precision": 0.9744897959183674,
+      "order recall": 0.9902786779001944,
+      "legitimate order FPR": 0.00046274872744099955,
+      "SPOOFER-02_MSFT order recall": 0.9938650306748467,
+      "SPOOFER-02_MSFT flag rate on the act": 1.0,
+      "SPOOFER-03_GOOG order recall": 0.9972527472527473,
+      "SPOOFER-03_GOOG flag rate on the act": 1.0,
+      "SPOOFER-04_INTC order recall": 0.9955882352941177,
+      "SPOOFER-04_INTC flag rate on the act": 1.0
+    }
+  },
+  "groups": {
+    "causal_g0_1m": [
+      "causal_g0_1m",
+      "causal_g0_1m_s2",
+      "causal_g0_1m_s3"
+    ]
+  },
+  "summary": {
+    "causal_g0_1m": {
+      "order F1": {
+        "mean": 0.9784675765647712,
+        "ci95": 0.015242750455151536
+      },
+      "order precision": {
+        "mean": 0.9669836432333899,
+        "ci95": 0.029668228530583485
+      },
+      "order recall": {
+        "mean": 0.9902786779001943,
+        "ci95": 3.378053924858142e-16
+      },
+      "legitimate order FPR": {
+        "mean": 0.002776492364645997,
+        "ci95": 0.008978853163533971
+      },
+      "SPOOFER-02_MSFT order recall": {
+        "mean": 0.9938650306748467,
+        "ci95": 0.0
+      },
+      "SPOOFER-02_MSFT flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG order recall": {
+        "mean": 0.9972527472527473,
+        "ci95": 0.0
+      },
+      "SPOOFER-03_GOOG flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC order recall": {
+        "mean": 0.9955882352941177,
+        "ci95": 0.0
+      },
+      "SPOOFER-04_INTC flag rate on the act": {
+        "mean": 1.0,
+        "ci95": 0.0
+      }
+    }
+  },
+  "runtime_s": 34.3
+}

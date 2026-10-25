@@ -1,0 +1,368 @@
+{
+  "post_hoc": true,
+  "registered_with": {
+    "LATEBURST-ATK": "main",
+    "DRIP-ATK": "causal_g0_1m",
+    "REVERSAL-ATK": "cov"
+  },
+  "per_tag": {
+    "main": {
+      "in-distribution order F1": 0.7718857860056481,
+      "legitimate order FPR": 0.04487179487179487,
+      "held-out AMZN legitimate FPR": 0.012671232876712329,
+      "SCRIPTED-ATK train stocks recall": 0.2451081359423275,
+      "SCRIPTED-ATK AMZN recall": 0.15481171548117154,
+      "LATEBURST-ATK recall": 0.2393992932862191,
+      "LATEBURST-ATK legitimate FPR": 0.044947994056463596,
+      "LATEBURST-ATK pooled F1": 0.35126377187297475,
+      "DRIP-ATK recall": 0.08374384236453201,
+      "DRIP-ATK legitimate FPR": 0.05428432327166505,
+      "DRIP-ATK pooled F1": 0.13212435233160622,
+      "REVERSAL-ATK recall": 0.12060702875399361,
+      "REVERSAL-ATK legitimate FPR": 0.05404738400789733,
+      "REVERSAL-ATK pooled F1": 0.1984231274638633
+    },
+    "main_s2": {
+      "in-distribution order F1": 0.7613155323998697,
+      "legitimate order FPR": 0.048773690078037904,
+      "held-out AMZN legitimate FPR": 0.00034246575342465754,
+      "SCRIPTED-ATK train stocks recall": 0.3419155509783728,
+      "SCRIPTED-ATK AMZN recall": 0.0,
+      "LATEBURST-ATK recall": 0.2659010600706714,
+      "LATEBURST-ATK legitimate FPR": 0.048662704309063894,
+      "LATEBURST-ATK pooled F1": 0.3795712484237075,
+      "DRIP-ATK recall": 0.10262725779967159,
+      "DRIP-ATK legitimate FPR": 0.06085686465433301,
+      "DRIP-ATK pooled F1": 0.15625,
+      "REVERSAL-ATK recall": 0.19808306709265175,
+      "REVERSAL-ATK legitimate FPR": 0.065893385982231,
+      "REVERSAL-ATK pooled F1": 0.29996976111279106
+    },
+    "main_s3": {
+      "in-distribution order F1": 0.7269092363054778,
+      "legitimate order FPR": 0.0,
+      "held-out AMZN legitimate FPR": 0.0,
+      "SCRIPTED-ATK train stocks recall": 0.18280123583934088,
+      "SCRIPTED-ATK AMZN recall": 0.0,
+      "LATEBURST-ATK recall": 0.14664310954063603,
+      "LATEBURST-ATK legitimate FPR": 0.0,
+      "LATEBURST-ATK pooled F1": 0.2557781201848998,
+      "DRIP-ATK recall": 0.014778325123152709,
+      "DRIP-ATK legitimate FPR": 0.0007302823758519961,
+      "DRIP-ATK pooled F1": 0.029055690072639223,
+      "REVERSAL-ATK recall": 0.09904153354632587,
+      "REVERSAL-ATK legitimate FPR": 0.00024679170779861795,
+      "REVERSAL-ATK pooled F1": 0.1801670904467853
+    },
+    "causal_g0_1m": {
+      "in-distribution order F1": 0.9816896884034694,
+      "legitimate order FPR": 0.0008361204013377926,
+      "held-out AMZN legitimate FPR": 0.00034246575342465754,
+      "SCRIPTED-ATK train stocks recall": 0.4938208032955716,
+      "SCRIPTED-ATK AMZN recall": 0.48326359832635984,
+      "LATEBURST-ATK recall": 0.4920494699646643,
+      "LATEBURST-ATK legitimate FPR": 0.0007429420505200594,
+      "LATEBURST-ATK pooled F1": 0.6587817859254879,
+      "DRIP-ATK recall": 0.26108374384236455,
+      "DRIP-ATK legitimate FPR": 0.0046251217137293086,
+      "DRIP-ATK pooled F1": 0.4090032154340836,
+      "REVERSAL-ATK recall": 0.4001597444089457,
+      "REVERSAL-ATK legitimate FPR": 0.0022211253701875616,
+      "REVERSAL-ATK pooled F1": 0.5699658703071673
+    },
+    "causal_g0_1m_s2": {
+      "in-distribution order F1": 0.9713922441195169,
+      "legitimate order FPR": 0.008732813080639168,
+      "held-out AMZN legitimate FPR": 0.003424657534246575,
+      "SCRIPTED-ATK train stocks recall": 0.505664263645726,
+      "SCRIPTED-ATK AMZN recall": 0.502092050209205,
+      "LATEBURST-ATK recall": 0.4743816254416961,
+      "LATEBURST-ATK legitimate FPR": 0.008543833580980683,
+      "LATEBURST-ATK pooled F1": 0.6313932980599647,
+      "DRIP-ATK recall": 0.4376026272577997,
+      "DRIP-ATK legitimate FPR": 0.045764362220058426,
+      "DRIP-ATK pooled F1": 0.5494845360824742,
+      "REVERSAL-ATK recall": 0.47084664536741216,
+      "REVERSAL-ATK legitimate FPR": 0.016288252714708785,
+      "REVERSAL-ATK pooled F1": 0.6281299946723494
+    },
+    "causal_g0_1m_s3": {
+      "in-distribution order F1": 0.9823207971713276,
+      "legitimate order FPR": 0.00046451133407655144,
+      "held-out AMZN legitimate FPR": 0.00034246575342465754,
+      "SCRIPTED-ATK train stocks recall": 0.5133882595262615,
+      "SCRIPTED-ATK AMZN recall": 0.50418410041841,
+      "LATEBURST-ATK recall": 0.4840989399293286,
+      "LATEBURST-ATK legitimate FPR": 0.0003714710252600297,
+      "LATEBURST-ATK pooled F1": 0.6504451038575668,
+      "DRIP-ATK recall": 0.46223316912972084,
+      "DRIP-ATK legitimate FPR": 0.03456669912366115,
+      "DRIP-ATK pooled F1": 0.5855434217368695,
+      "REVERSAL-ATK recall": 0.4812300319488818,
+      "REVERSAL-ATK legitimate FPR": 0.0027147087857847976,
+      "REVERSAL-ATK pooled F1": 0.6476753560870734
+    },
+    "cov": {
+      "in-distribution order F1": 0.9842898364860533,
+      "legitimate order FPR": 0.0011148272017837235,
+      "held-out AMZN legitimate FPR": 0.0,
+      "SCRIPTED-ATK train stocks recall": 0.9907312049433573,
+      "SCRIPTED-ATK AMZN recall": 0.9832635983263598,
+      "LATEBURST-ATK recall": 0.9832155477031802,
+      "LATEBURST-ATK legitimate FPR": 0.001114413075780089,
+      "LATEBURST-ATK pooled F1": 0.9888938249666815,
+      "DRIP-ATK recall": 0.9876847290640394,
+      "DRIP-ATK legitimate FPR": 0.005355404089581304,
+      "DRIP-ATK pooled F1": 0.9848546868604174,
+      "REVERSAL-ATK recall": 0.9808306709265175,
+      "REVERSAL-ATK legitimate FPR": 0.005923000987166831,
+      "REVERSAL-ATK pooled F1": 0.9855537720706261
+    },
+    "cov_s2": {
+      "in-distribution order F1": 0.9836695485110472,
+      "legitimate order FPR": 0.002601263470828688,
+      "held-out AMZN legitimate FPR": 0.00034246575342465754,
+      "SCRIPTED-ATK train stocks recall": 0.990216271884655,
+      "SCRIPTED-ATK AMZN recall": 0.9895397489539749,
+      "LATEBURST-ATK recall": 0.9840989399293286,
+      "LATEBURST-ATK legitimate FPR": 0.002600297176820208,
+      "LATEBURST-ATK pooled F1": 0.9862771137671535,
+      "DRIP-ATK recall": 0.9893267651888341,
+      "DRIP-ATK legitimate FPR": 0.015335929892891918,
+      "DRIP-ATK pooled F1": 0.9686495176848875,
+      "REVERSAL-ATK recall": 0.9840255591054313,
+      "REVERSAL-ATK legitimate FPR": 0.013079960513326752,
+      "REVERSAL-ATK pooled F1": 0.9810869998009157
+    },
+    "cov_s3": {
+      "in-distribution order F1": 0.9846153846153847,
+      "legitimate order FPR": 0.002879970271274619,
+      "held-out AMZN legitimate FPR": 0.0017123287671232876,
+      "SCRIPTED-ATK train stocks recall": 0.9907312049433573,
+      "SCRIPTED-ATK AMZN recall": 0.9916317991631799,
+      "LATEBURST-ATK recall": 0.9832155477031802,
+      "LATEBURST-ATK legitimate FPR": 0.0029717682020802376,
+      "LATEBURST-ATK pooled F1": 0.9871396895787139,
+      "DRIP-ATK recall": 0.9893267651888341,
+      "DRIP-ATK legitimate FPR": 0.01679649464459591,
+      "DRIP-ATK pooled F1": 0.9667067789811473,
+      "REVERSAL-ATK recall": 0.9844249201277955,
+      "REVERSAL-ATK legitimate FPR": 0.01826258637709773,
+      "REVERSAL-ATK pooled F1": 0.9773988897700238
+    }
+  },
+  "groups": {
+    "main": [
+      "main",
+      "main_s2",
+      "main_s3"
+    ],
+    "causal_g0_1m": [
+      "causal_g0_1m",
+      "causal_g0_1m_s2",
+      "causal_g0_1m_s3"
+    ],
+    "cov": [
+      "cov",
+      "cov_s2",
+      "cov_s3"
+    ]
+  },
+  "summary": {
+    "main": {
+      "in-distribution order F1": {
+        "mean": 0.7533701849036651,
+        "ci95": 0.058425218327626836
+      },
+      "legitimate order FPR": {
+        "mean": 0.031215161649944256,
+        "ci95": 0.06733408747765819
+      },
+      "held-out AMZN legitimate FPR": {
+        "mean": 0.0043378995433789955,
+        "ci95": 0.017934212635151582
+      },
+      "SCRIPTED-ATK train stocks recall": {
+        "mean": 0.25660830758668035,
+        "ci95": 0.1991895802289451
+      },
+      "SCRIPTED-ATK AMZN recall": {
+        "mean": 0.05160390516039051,
+        "ci95": 0.22205160390516038
+      },
+      "LATEBURST-ATK recall": {
+        "mean": 0.21731448763250882,
+        "ci95": 0.15557231880462527
+      },
+      "LATEBURST-ATK legitimate FPR": {
+        "mean": 0.031203566121842496,
+        "ci95": 0.06729286104939147
+      },
+      "LATEBURST-ATK pooled F1": {
+        "mean": 0.32887104682719404,
+        "ci95": 0.16114261511796282
+      },
+      "DRIP-ATK recall": {
+        "mean": 0.06704980842911877,
+        "ci95": 0.11488222486079165
+      },
+      "DRIP-ATK legitimate FPR": {
+        "mean": 0.03862382343395002,
+        "ci95": 0.08193571569028545
+      },
+      "DRIP-ATK pooled F1": {
+        "mean": 0.10581001413474848,
+        "ci95": 0.16783412682270774
+      },
+      "REVERSAL-ATK recall": {
+        "mean": 0.13924387646432376,
+        "ci95": 0.12939575836505546
+      },
+      "REVERSAL-ATK legitimate FPR": {
+        "mean": 0.04006252056597565,
+        "ci95": 0.08691815517551166
+      },
+      "REVERSAL-ATK pooled F1": {
+        "mean": 0.2261866596744799,
+        "ci95": 0.16035590585992746
+      }
+    },
+    "causal_g0_1m": {
+      "in-distribution order F1": {
+        "mean": 0.9784675765647712,
+        "ci95": 0.015242750455151536
+      },
+      "legitimate order FPR": {
+        "mean": 0.0033444816053511705,
+        "ci95": 0.011602181379056878
+      },
+      "held-out AMZN legitimate FPR": {
+        "mean": 0.00136986301369863,
+        "ci95": 0.004420890410958904
+      },
+      "SCRIPTED-ATK train stocks recall": {
+        "mean": 0.5042911088225197,
+        "ci95": 0.02448497765418499
+      },
+      "SCRIPTED-ATK AMZN recall": {
+        "mean": 0.49651324965132493,
+        "ci95": 0.028624828338194613
+      },
+      "LATEBURST-ATK recall": {
+        "mean": 0.48351001177856306,
+        "ci95": 0.021982997590747316
+      },
+      "LATEBURST-ATK legitimate FPR": {
+        "mean": 0.0032194155522535903,
+        "ci95": 0.01146477487706527
+      },
+      "LATEBURST-ATK pooled F1": {
+        "mean": 0.6468733959476731,
+        "ci95": 0.034878209744351754
+      },
+      "DRIP-ATK recall": {
+        "mean": 0.38697318007662834,
+        "ci95": 0.27257366451635984
+      },
+      "DRIP-ATK legitimate FPR": {
+        "mean": 0.028318727685816295,
+        "ci95": 0.05284036914852162
+      },
+      "DRIP-ATK pooled F1": {
+        "mean": 0.5146770577511424,
+        "ci95": 0.23172739076532425
+      },
+      "REVERSAL-ATK recall": {
+        "mean": 0.4507454739084132,
+        "ci95": 0.10959679056475953
+      },
+      "REVERSAL-ATK legitimate FPR": {
+        "mean": 0.007074695623560382,
+        "ci95": 0.01983244746434968
+      },
+      "REVERSAL-ATK pooled F1": {
+        "mean": 0.6152570736888634,
+        "ci95": 0.10042305704561096
+      }
+    },
+    "cov": {
+      "in-distribution order F1": {
+        "mean": 0.9841915898708283,
+        "ci95": 0.0011937517359965695
+      },
+      "legitimate order FPR": {
+        "mean": 0.0021986869812956767,
+        "ci95": 0.0023574830073622454
+      },
+      "held-out AMZN legitimate FPR": {
+        "mean": 0.000684931506849315,
+        "ci95": 0.00225100721636929
+      },
+      "SCRIPTED-ATK train stocks recall": {
+        "mean": 0.9905595605904565,
+        "ci95": 0.0007385856505320218
+      },
+      "SCRIPTED-ATK AMZN recall": {
+        "mean": 0.9881450488145048,
+        "ci95": 0.010819168157825385
+      },
+      "LATEBURST-ATK recall": {
+        "mean": 0.983510011778563,
+        "ci95": 0.0012670789163722117
+      },
+      "LATEBURST-ATK legitimate FPR": {
+        "mean": 0.002228826151560178,
+        "ci95": 0.0024416571589146834
+      },
+      "LATEBURST-ATK pooled F1": {
+        "mean": 0.9874368761041831,
+        "ci95": 0.0033126898709348253
+      },
+      "DRIP-ATK recall": {
+        "mean": 0.9887794198139025,
+        "ci95": 0.0023552271483305936
+      },
+      "DRIP-ATK legitimate FPR": {
+        "mean": 0.012495942875689711,
+        "ci95": 0.015469625718324607
+      },
+      "DRIP-ATK pooled F1": {
+        "mean": 0.973403661175484,
+        "ci95": 0.024754787928666484
+      },
+      "REVERSAL-ATK recall": {
+        "mean": 0.9830937167199147,
+        "ci95": 0.0048941491102371375
+      },
+      "REVERSAL-ATK legitimate FPR": {
+        "mean": 0.012421849292530438,
+        "ci95": 0.015393111638186695
+      },
+      "REVERSAL-ATK pooled F1": {
+        "mean": 0.9813465538805218,
+        "ci95": 0.010145123694672463
+      }
+    }
+  },
+  "rule": {
+    "in-distribution order F1": 0.35246995994659547,
+    "legitimate order FPR": 0.8200483091787439,
+    "held-out AMZN legitimate FPR": 0.9715753424657534,
+    "SCRIPTED-ATK train stocks recall": 0.9376930998970134,
+    "SCRIPTED-ATK AMZN recall": 0.9497907949790795,
+    "LATEBURST-ATK recall": 0.8851590106007067,
+    "LATEBURST-ATK legitimate FPR": 0.8190936106983655,
+    "LATEBURST-ATK pooled F1": 0.4618575708688638,
+    "DRIP-ATK recall": 0.7438423645320197,
+    "DRIP-ATK legitimate FPR": 0.7967380720545277,
+    "DRIP-ATK pooled F1": 0.33574207893274044,
+    "REVERSAL-ATK recall": 0.9644568690095847,
+    "REVERSAL-ATK legitimate FPR": 0.8035538005923001,
+    "REVERSAL-ATK pooled F1": 0.5906089508437271
+  },
+  "rule_params": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "runtime_s": 501.1
+}

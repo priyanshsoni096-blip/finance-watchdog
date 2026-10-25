@@ -1,0 +1,1487 @@
+{
+  "hypotheses": {
+    "H1": "Watchdog order-level F1 on DRIP-ATK + SAMESIDE + FLICKER >= rule F1",
+    "H2": "Watchdog order-level FPR on SAMESIDE <= 0.1"
+  },
+  "verdict_model": "causal_g0_1m",
+  "H1": {
+    "watchdog_f1": 0.4090032154340836,
+    "rule_f1": 0.33574207893274044,
+    "verdict": "supported"
+  },
+  "H2": {
+    "watchdog_sameside_fpr": 0.012005649717514125,
+    "verdict": "supported"
+  },
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "per_model": {
+    "causal_g0_1m": {
+      "pooled": {
+        "watchdog_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 318,
+          "fp": 19,
+          "fn": 900,
+          "tn": 4176,
+          "precision": 0.9436201780415431,
+          "recall": 0.26108374384236455,
+          "f1": 0.4090032154340836,
+          "fpr": 0.004529201430274136
+        },
+        "rule_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 3273,
+          "fn": 312,
+          "tn": 922,
+          "precision": 0.21679827709978464,
+          "recall": 0.7438423645320197,
+          "f1": 0.33574207893274044,
+          "fpr": 0.7802145411203814
+        },
+        "watchdog_steps": {
+          "n": 150000,
+          "positives": 28585,
+          "tp": 1170,
+          "fp": 106,
+          "fn": 27415,
+          "tn": 121309,
+          "precision": 0.9169278996865203,
+          "recall": 0.04093055798495714,
+          "f1": 0.0783630822812364,
+          "fpr": 0.0008730387513898613
+        },
+        "watchdog_median_delay": 8.0,
+        "rule_median_delay": 25.0
+      },
+      "drip_only": {
+        "watchdog_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 318,
+          "fp": 0,
+          "fn": 900,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.26108374384236455,
+          "f1": 0.4140625,
+          "fpr": 0.0
+        },
+        "rule_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 0,
+          "fn": 312,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.7438423645320197,
+          "f1": 0.8531073446327684,
+          "fpr": 0.0
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 28585,
+          "tp": 1170,
+          "fp": 3,
+          "fn": 27415,
+          "tn": 21412,
+          "precision": 0.9974424552429667,
+          "recall": 0.04093055798495714,
+          "f1": 0.07863431682236709,
+          "fpr": 0.00014008872285780995
+        },
+        "watchdog_median_delay": 8.0,
+        "rule_median_delay": 25.0
+      },
+      "sameside_only": {
+        "watchdog_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 17,
+          "fn": 0,
+          "tn": 1399,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.012005649717514125
+        },
+        "rule_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1068,
+          "fn": 0,
+          "tn": 348,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.7542372881355932
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 61,
+          "fn": 0,
+          "tn": 49939,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.00122
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "flicker_only": {
+        "watchdog_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2,
+          "fn": 0,
+          "tn": 2690,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.0007429420505200594
+        },
+        "rule_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2205,
+          "fn": 0,
+          "tn": 487,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.8190936106983655
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 42,
+          "fn": 0,
+          "tn": 49958,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.00084
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "per_stock": {
+        "AAPL": {
+          "watchdog_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 91,
+            "fp": 8,
+            "fn": 137,
+            "tn": 872,
+            "precision": 0.9191919191919192,
+            "recall": 0.3991228070175439,
+            "f1": 0.5565749235474006,
+            "fpr": 0.00909090909090909
+          },
+          "rule_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 145,
+            "fp": 647,
+            "fn": 83,
+            "tn": 233,
+            "precision": 0.1830808080808081,
+            "recall": 0.6359649122807017,
+            "f1": 0.2843137254901961,
+            "fpr": 0.7352272727272727
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5039,
+            "tp": 326,
+            "fp": 29,
+            "fn": 4713,
+            "tn": 24932,
+            "precision": 0.9183098591549296,
+            "recall": 0.0646953760666799,
+            "f1": 0.12087504634779385,
+            "fpr": 0.0011618124273867234
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 24.0
+        },
+        "MSFT": {
+          "watchdog_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 19,
+            "fp": 2,
+            "fn": 220,
+            "tn": 813,
+            "precision": 0.9047619047619048,
+            "recall": 0.0794979079497908,
+            "f1": 0.14615384615384613,
+            "fpr": 0.00245398773006135
+          },
+          "rule_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 180,
+            "fp": 647,
+            "fn": 59,
+            "tn": 168,
+            "precision": 0.21765417170495768,
+            "recall": 0.7531380753138075,
+            "f1": 0.33771106941838647,
+            "fpr": 0.7938650306748466
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5756,
+            "tp": 106,
+            "fp": 41,
+            "fn": 5650,
+            "tn": 24203,
+            "precision": 0.7210884353741497,
+            "recall": 0.01841556636553162,
+            "f1": 0.035913942063357615,
+            "fpr": 0.0016911400758950668
+          },
+          "watchdog_median_delay": 6.0,
+          "rule_median_delay": 26.0
+        },
+        "GOOG": {
+          "watchdog_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 100,
+            "fp": 1,
+            "fn": 140,
+            "tn": 875,
+            "precision": 0.9900990099009901,
+            "recall": 0.4166666666666667,
+            "f1": 0.5865102639296187,
+            "fpr": 0.001141552511415525
+          },
+          "rule_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 185,
+            "fp": 638,
+            "fn": 55,
+            "tn": 238,
+            "precision": 0.22478736330498178,
+            "recall": 0.7708333333333334,
+            "f1": 0.34807149576669805,
+            "fpr": 0.728310502283105
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5673,
+            "tp": 332,
+            "fp": 3,
+            "fn": 5341,
+            "tn": 24324,
+            "precision": 0.991044776119403,
+            "recall": 0.05852282742816852,
+            "f1": 0.11051930758988016,
+            "fpr": 0.00012331976815883587
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 26.0
+        },
+        "INTC": {
+          "watchdog_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 15,
+            "fp": 2,
+            "fn": 241,
+            "tn": 803,
+            "precision": 0.8823529411764706,
+            "recall": 0.05859375,
+            "f1": 0.10989010989010989,
+            "fpr": 0.002484472049689441
+          },
+          "rule_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 203,
+            "fp": 669,
+            "fn": 53,
+            "tn": 136,
+            "precision": 0.23279816513761467,
+            "recall": 0.79296875,
+            "f1": 0.35992907801418433,
+            "fpr": 0.831055900621118
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 6128,
+            "tp": 59,
+            "fp": 19,
+            "fn": 6069,
+            "tn": 23853,
+            "precision": 0.7564102564102564,
+            "recall": 0.009627937336814621,
+            "f1": 0.019013857557202706,
+            "fpr": 0.000795911528150134
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 25.0
+        },
+        "AMZN": {
+          "watchdog_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 93,
+            "fp": 6,
+            "fn": 162,
+            "tn": 813,
+            "precision": 0.9393939393939394,
+            "recall": 0.36470588235294116,
+            "f1": 0.5254237288135593,
+            "fpr": 0.007326007326007326
+          },
+          "rule_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 193,
+            "fp": 672,
+            "fn": 62,
+            "tn": 147,
+            "precision": 0.223121387283237,
+            "recall": 0.7568627450980392,
+            "f1": 0.3446428571428572,
+            "fpr": 0.8205128205128205
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5989,
+            "tp": 347,
+            "fp": 14,
+            "fn": 5642,
+            "tn": 23997,
+            "precision": 0.961218836565097,
+            "recall": 0.05793955585239606,
+            "f1": 0.10929133858267717,
+            "fpr": 0.0005830660947065929
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 26.0
+        }
+      }
+    },
+    "causal_g0_1m_s2": {
+      "pooled": {
+        "watchdog_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 533,
+          "fp": 189,
+          "fn": 685,
+          "tn": 4006,
+          "precision": 0.7382271468144044,
+          "recall": 0.4376026272577997,
+          "f1": 0.5494845360824742,
+          "fpr": 0.04505363528009535
+        },
+        "rule_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 3273,
+          "fn": 312,
+          "tn": 922,
+          "precision": 0.21679827709978464,
+          "recall": 0.7438423645320197,
+          "f1": 0.33574207893274044,
+          "fpr": 0.7802145411203814
+        },
+        "watchdog_steps": {
+          "n": 150000,
+          "positives": 28585,
+          "tp": 4921,
+          "fp": 693,
+          "fn": 23664,
+          "tn": 120722,
+          "precision": 0.8765586034912718,
+          "recall": 0.17215322721707188,
+          "f1": 0.2877861925787304,
+          "fpr": 0.005707696742577112
+        },
+        "watchdog_median_delay": 7.0,
+        "rule_median_delay": 25.0
+      },
+      "drip_only": {
+        "watchdog_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 533,
+          "fp": 1,
+          "fn": 685,
+          "tn": 86,
+          "precision": 0.99812734082397,
+          "recall": 0.4376026272577997,
+          "f1": 0.608447488584475,
+          "fpr": 0.011494252873563218
+        },
+        "rule_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 0,
+          "fn": 312,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.7438423645320197,
+          "f1": 0.8531073446327684,
+          "fpr": 0.0
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 28585,
+          "tp": 4921,
+          "fp": 24,
+          "fn": 23664,
+          "tn": 21391,
+          "precision": 0.9951466127401416,
+          "recall": 0.17215322721707188,
+          "f1": 0.2935281837160752,
+          "fpr": 0.0011207097828624796
+        },
+        "watchdog_median_delay": 7.0,
+        "rule_median_delay": 25.0
+      },
+      "sameside_only": {
+        "watchdog_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 165,
+          "fn": 0,
+          "tn": 1251,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.11652542372881355
+        },
+        "rule_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1068,
+          "fn": 0,
+          "tn": 348,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.7542372881355932
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 538,
+          "fn": 0,
+          "tn": 49462,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.01076
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "flicker_only": {
+        "watchdog_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 23,
+          "fn": 0,
+          "tn": 2669,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.008543833580980683
+        },
+        "rule_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2205,
+          "fn": 0,
+          "tn": 487,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.8190936106983655
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 131,
+          "fn": 0,
+          "tn": 49869,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.00262
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "per_stock": {
+        "AAPL": {
+          "watchdog_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 118,
+            "fp": 69,
+            "fn": 110,
+            "tn": 811,
+            "precision": 0.6310160427807486,
+            "recall": 0.5175438596491229,
+            "f1": 0.5686746987951808,
+            "fpr": 0.07840909090909091
+          },
+          "rule_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 145,
+            "fp": 647,
+            "fn": 83,
+            "tn": 233,
+            "precision": 0.1830808080808081,
+            "recall": 0.6359649122807017,
+            "f1": 0.2843137254901961,
+            "fpr": 0.7352272727272727
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5039,
+            "tp": 1034,
+            "fp": 247,
+            "fn": 4005,
+            "tn": 24714,
+            "precision": 0.8071818891491023,
+            "recall": 0.2051994443341933,
+            "f1": 0.3272151898734177,
+            "fpr": 0.009895436881535194
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 24.0
+        },
+        "MSFT": {
+          "watchdog_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 84,
+            "fp": 1,
+            "fn": 155,
+            "tn": 814,
+            "precision": 0.9882352941176471,
+            "recall": 0.3514644351464435,
+            "f1": 0.5185185185185185,
+            "fpr": 0.001226993865030675
+          },
+          "rule_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 180,
+            "fp": 647,
+            "fn": 59,
+            "tn": 168,
+            "precision": 0.21765417170495768,
+            "recall": 0.7531380753138075,
+            "f1": 0.33771106941838647,
+            "fpr": 0.7938650306748466
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5756,
+            "tp": 437,
+            "fp": 1,
+            "fn": 5319,
+            "tn": 24243,
+            "precision": 0.997716894977169,
+            "recall": 0.07592077831827658,
+            "f1": 0.1411042944785276,
+            "fpr": 4.124731892426992e-05
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 26.0
+        },
+        "GOOG": {
+          "watchdog_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 131,
+            "fp": 57,
+            "fn": 109,
+            "tn": 819,
+            "precision": 0.6968085106382979,
+            "recall": 0.5458333333333333,
+            "f1": 0.6121495327102804,
+            "fpr": 0.06506849315068493
+          },
+          "rule_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 185,
+            "fp": 638,
+            "fn": 55,
+            "tn": 238,
+            "precision": 0.22478736330498178,
+            "recall": 0.7708333333333334,
+            "f1": 0.34807149576669805,
+            "fpr": 0.728310502283105
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5673,
+            "tp": 1521,
+            "fp": 165,
+            "fn": 4152,
+            "tn": 24162,
+            "precision": 0.902135231316726,
+            "recall": 0.2681121099947118,
+            "f1": 0.4133713819812475,
+            "fpr": 0.0067825872487359724
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 26.0
+        },
+        "INTC": {
+          "watchdog_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 74,
+            "fp": 0,
+            "fn": 182,
+            "tn": 805,
+            "precision": 1.0,
+            "recall": 0.2890625,
+            "f1": 0.4484848484848485,
+            "fpr": 0.0
+          },
+          "rule_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 203,
+            "fp": 669,
+            "fn": 53,
+            "tn": 136,
+            "precision": 0.23279816513761467,
+            "recall": 0.79296875,
+            "f1": 0.35992907801418433,
+            "fpr": 0.831055900621118
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 6128,
+            "tp": 430,
+            "fp": 0,
+            "fn": 5698,
+            "tn": 23872,
+            "precision": 1.0,
+            "recall": 0.07016971279373369,
+            "f1": 0.13113754193351632,
+            "fpr": 0.0
+          },
+          "watchdog_median_delay": 6.5,
+          "rule_median_delay": 25.0
+        },
+        "AMZN": {
+          "watchdog_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 126,
+            "fp": 62,
+            "fn": 129,
+            "tn": 757,
+            "precision": 0.6702127659574468,
+            "recall": 0.49411764705882355,
+            "f1": 0.5688487584650113,
+            "fpr": 0.0757020757020757
+          },
+          "rule_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 193,
+            "fp": 672,
+            "fn": 62,
+            "tn": 147,
+            "precision": 0.223121387283237,
+            "recall": 0.7568627450980392,
+            "f1": 0.3446428571428572,
+            "fpr": 0.8205128205128205
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5989,
+            "tp": 1499,
+            "fp": 280,
+            "fn": 4490,
+            "tn": 23731,
+            "precision": 0.8426082068577853,
+            "recall": 0.2502922023710135,
+            "f1": 0.3859423274974253,
+            "fpr": 0.011661321894131856
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 26.0
+        }
+      }
+    },
+    "causal_g0_1m_s3": {
+      "pooled": {
+        "watchdog_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 563,
+          "fp": 142,
+          "fn": 655,
+          "tn": 4053,
+          "precision": 0.798581560283688,
+          "recall": 0.46223316912972084,
+          "f1": 0.5855434217368695,
+          "fpr": 0.03384982121573302
+        },
+        "rule_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 3273,
+          "fn": 312,
+          "tn": 922,
+          "precision": 0.21679827709978464,
+          "recall": 0.7438423645320197,
+          "f1": 0.33574207893274044,
+          "fpr": 0.7802145411203814
+        },
+        "watchdog_steps": {
+          "n": 150000,
+          "positives": 28585,
+          "tp": 3289,
+          "fp": 448,
+          "fn": 25296,
+          "tn": 120967,
+          "precision": 0.8801177415038801,
+          "recall": 0.11506034633549064,
+          "f1": 0.20351463399542105,
+          "fpr": 0.003689824156817527
+        },
+        "watchdog_median_delay": 8.0,
+        "rule_median_delay": 25.0
+      },
+      "drip_only": {
+        "watchdog_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 563,
+          "fp": 0,
+          "fn": 655,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.46223316912972084,
+          "f1": 0.6322290847838293,
+          "fpr": 0.0
+        },
+        "rule_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 0,
+          "fn": 312,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.7438423645320197,
+          "f1": 0.8531073446327684,
+          "fpr": 0.0
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 28585,
+          "tp": 3289,
+          "fp": 42,
+          "fn": 25296,
+          "tn": 21373,
+          "precision": 0.9873911738216752,
+          "recall": 0.11506034633549064,
+          "f1": 0.20610352174457952,
+          "fpr": 0.001961242120009339
+        },
+        "watchdog_median_delay": 8.0,
+        "rule_median_delay": 25.0
+      },
+      "sameside_only": {
+        "watchdog_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 141,
+          "fn": 0,
+          "tn": 1275,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.09957627118644068
+        },
+        "rule_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1068,
+          "fn": 0,
+          "tn": 348,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.7542372881355932
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 405,
+          "fn": 0,
+          "tn": 49595,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.0081
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "flicker_only": {
+        "watchdog_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "tn": 2691,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.0003714710252600297
+        },
+        "rule_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2205,
+          "fn": 0,
+          "tn": 487,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.8190936106983655
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1,
+          "fn": 0,
+          "tn": 49999,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 2e-05
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "per_stock": {
+        "AAPL": {
+          "watchdog_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 113,
+            "fp": 52,
+            "fn": 115,
+            "tn": 828,
+            "precision": 0.6848484848484848,
+            "recall": 0.4956140350877193,
+            "f1": 0.5750636132315521,
+            "fpr": 0.05909090909090909
+          },
+          "rule_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 145,
+            "fp": 647,
+            "fn": 83,
+            "tn": 233,
+            "precision": 0.1830808080808081,
+            "recall": 0.6359649122807017,
+            "f1": 0.2843137254901961,
+            "fpr": 0.7352272727272727
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5039,
+            "tp": 606,
+            "fp": 182,
+            "fn": 4433,
+            "tn": 24779,
+            "precision": 0.7690355329949239,
+            "recall": 0.12026195673744791,
+            "f1": 0.20799725416166123,
+            "fpr": 0.007291374544289091
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 24.0
+        },
+        "MSFT": {
+          "watchdog_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 104,
+            "fp": 3,
+            "fn": 135,
+            "tn": 812,
+            "precision": 0.9719626168224299,
+            "recall": 0.4351464435146444,
+            "f1": 0.6011560693641619,
+            "fpr": 0.0036809815950920245
+          },
+          "rule_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 180,
+            "fp": 647,
+            "fn": 59,
+            "tn": 168,
+            "precision": 0.21765417170495768,
+            "recall": 0.7531380753138075,
+            "f1": 0.33771106941838647,
+            "fpr": 0.7938650306748466
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5756,
+            "tp": 547,
+            "fp": 4,
+            "fn": 5209,
+            "tn": 24240,
+            "precision": 0.9927404718693285,
+            "recall": 0.09503127171646977,
+            "f1": 0.1734580624702711,
+            "fpr": 0.00016498927569707968
+          },
+          "watchdog_median_delay": 7.5,
+          "rule_median_delay": 26.0
+        },
+        "GOOG": {
+          "watchdog_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 123,
+            "fp": 39,
+            "fn": 117,
+            "tn": 837,
+            "precision": 0.7592592592592593,
+            "recall": 0.5125,
+            "f1": 0.6119402985074627,
+            "fpr": 0.04452054794520548
+          },
+          "rule_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 185,
+            "fp": 638,
+            "fn": 55,
+            "tn": 238,
+            "precision": 0.22478736330498178,
+            "recall": 0.7708333333333334,
+            "f1": 0.34807149576669805,
+            "fpr": 0.728310502283105
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5673,
+            "tp": 763,
+            "fp": 104,
+            "fn": 4910,
+            "tn": 24223,
+            "precision": 0.8800461361014994,
+            "recall": 0.13449673893883307,
+            "f1": 0.23333333333333334,
+            "fpr": 0.004275085296172976
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 26.0
+        },
+        "INTC": {
+          "watchdog_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 99,
+            "fp": 1,
+            "fn": 157,
+            "tn": 804,
+            "precision": 0.99,
+            "recall": 0.38671875,
+            "f1": 0.5561797752808989,
+            "fpr": 0.0012422360248447205
+          },
+          "rule_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 203,
+            "fp": 669,
+            "fn": 53,
+            "tn": 136,
+            "precision": 0.23279816513761467,
+            "recall": 0.79296875,
+            "f1": 0.35992907801418433,
+            "fpr": 0.831055900621118
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 6128,
+            "tp": 533,
+            "fp": 2,
+            "fn": 5595,
+            "tn": 23870,
+            "precision": 0.9962616822429906,
+            "recall": 0.08697780678851175,
+            "f1": 0.15998799339636802,
+            "fpr": 8.378016085790885e-05
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 25.0
+        },
+        "AMZN": {
+          "watchdog_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 124,
+            "fp": 47,
+            "fn": 131,
+            "tn": 772,
+            "precision": 0.7251461988304093,
+            "recall": 0.48627450980392156,
+            "f1": 0.5821596244131455,
+            "fpr": 0.057387057387057384
+          },
+          "rule_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 193,
+            "fp": 672,
+            "fn": 62,
+            "tn": 147,
+            "precision": 0.223121387283237,
+            "recall": 0.7568627450980392,
+            "f1": 0.3446428571428572,
+            "fpr": 0.8205128205128205
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5989,
+            "tp": 840,
+            "fp": 156,
+            "fn": 5149,
+            "tn": 23855,
+            "precision": 0.8433734939759037,
+            "recall": 0.1402571380864919,
+            "f1": 0.24051539012168935,
+            "fpr": 0.006497022198159177
+          },
+          "watchdog_median_delay": 7.0,
+          "rule_median_delay": 26.0
+        }
+      }
+    },
+    "main": {
+      "pooled": {
+        "watchdog_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 102,
+          "fp": 224,
+          "fn": 1116,
+          "tn": 3971,
+          "precision": 0.3128834355828221,
+          "recall": 0.08374384236453201,
+          "f1": 0.13212435233160622,
+          "fpr": 0.0533969010727056
+        },
+        "rule_orders": {
+          "n": 5413,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 3273,
+          "fn": 312,
+          "tn": 922,
+          "precision": 0.21679827709978464,
+          "recall": 0.7438423645320197,
+          "f1": 0.33574207893274044,
+          "fpr": 0.7802145411203814
+        },
+        "watchdog_steps": {
+          "n": 150000,
+          "positives": 28585,
+          "tp": 364,
+          "fp": 786,
+          "fn": 28221,
+          "tn": 120629,
+          "precision": 0.3165217391304348,
+          "recall": 0.012733951373097779,
+          "f1": 0.024482932571044225,
+          "fpr": 0.006473664703702179
+        },
+        "watchdog_median_delay": 5.0,
+        "rule_median_delay": 25.0
+      },
+      "drip_only": {
+        "watchdog_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 102,
+          "fp": 1,
+          "fn": 1116,
+          "tn": 86,
+          "precision": 0.9902912621359223,
+          "recall": 0.08374384236453201,
+          "f1": 0.15442846328538984,
+          "fpr": 0.011494252873563218
+        },
+        "rule_orders": {
+          "n": 1305,
+          "positives": 1218,
+          "tp": 906,
+          "fp": 0,
+          "fn": 312,
+          "tn": 87,
+          "precision": 1.0,
+          "recall": 0.7438423645320197,
+          "f1": 0.8531073446327684,
+          "fpr": 0.0
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 28585,
+          "tp": 364,
+          "fp": 11,
+          "fn": 28221,
+          "tn": 21404,
+          "precision": 0.9706666666666667,
+          "recall": 0.012733951373097779,
+          "f1": 0.025138121546961326,
+          "fpr": 0.0005136586504786365
+        },
+        "watchdog_median_delay": 5.0,
+        "rule_median_delay": 25.0
+      },
+      "sameside_only": {
+        "watchdog_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 102,
+          "fn": 0,
+          "tn": 1314,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.07203389830508475
+        },
+        "rule_orders": {
+          "n": 1416,
+          "positives": 0,
+          "tp": 0,
+          "fp": 1068,
+          "fn": 0,
+          "tn": 348,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.7542372881355932
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 389,
+          "fn": 0,
+          "tn": 49611,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.00778
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "flicker_only": {
+        "watchdog_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 121,
+          "fn": 0,
+          "tn": 2571,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.044947994056463596
+        },
+        "rule_orders": {
+          "n": 2692,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2205,
+          "fn": 0,
+          "tn": 487,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.8190936106983655
+        },
+        "watchdog_steps": {
+          "n": 50000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 386,
+          "fn": 0,
+          "tn": 49614,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.00772
+        },
+        "watchdog_median_delay": NaN,
+        "rule_median_delay": NaN
+      },
+      "per_stock": {
+        "AAPL": {
+          "watchdog_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 31,
+            "fp": 63,
+            "fn": 197,
+            "tn": 817,
+            "precision": 0.32978723404255317,
+            "recall": 0.13596491228070176,
+            "f1": 0.19254658385093168,
+            "fpr": 0.0715909090909091
+          },
+          "rule_orders": {
+            "n": 1108,
+            "positives": 228,
+            "tp": 145,
+            "fp": 647,
+            "fn": 83,
+            "tn": 233,
+            "precision": 0.1830808080808081,
+            "recall": 0.6359649122807017,
+            "f1": 0.2843137254901961,
+            "fpr": 0.7352272727272727
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5039,
+            "tp": 107,
+            "fp": 205,
+            "fn": 4932,
+            "tn": 24756,
+            "precision": 0.34294871794871795,
+            "recall": 0.021234371899186345,
+            "f1": 0.03999252476172677,
+            "fpr": 0.00821281198669925
+          },
+          "watchdog_median_delay": 6.0,
+          "rule_median_delay": 24.0
+        },
+        "MSFT": {
+          "watchdog_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 21,
+            "fp": 43,
+            "fn": 218,
+            "tn": 772,
+            "precision": 0.328125,
+            "recall": 0.08786610878661087,
+            "f1": 0.1386138613861386,
+            "fpr": 0.05276073619631902
+          },
+          "rule_orders": {
+            "n": 1054,
+            "positives": 239,
+            "tp": 180,
+            "fp": 647,
+            "fn": 59,
+            "tn": 168,
+            "precision": 0.21765417170495768,
+            "recall": 0.7531380753138075,
+            "f1": 0.33771106941838647,
+            "fpr": 0.7938650306748466
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5756,
+            "tp": 65,
+            "fp": 127,
+            "fn": 5691,
+            "tn": 24117,
+            "precision": 0.3385416666666667,
+            "recall": 0.011292564280750522,
+            "f1": 0.021856086079354405,
+            "fpr": 0.00523840950338228
+          },
+          "watchdog_median_delay": 0.0,
+          "rule_median_delay": 26.0
+        },
+        "GOOG": {
+          "watchdog_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 16,
+            "fp": 25,
+            "fn": 224,
+            "tn": 851,
+            "precision": 0.3902439024390244,
+            "recall": 0.06666666666666667,
+            "f1": 0.11387900355871886,
+            "fpr": 0.028538812785388126
+          },
+          "rule_orders": {
+            "n": 1116,
+            "positives": 240,
+            "tp": 185,
+            "fp": 638,
+            "fn": 55,
+            "tn": 238,
+            "precision": 0.22478736330498178,
+            "recall": 0.7708333333333334,
+            "f1": 0.34807149576669805,
+            "fpr": 0.728310502283105
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5673,
+            "tp": 36,
+            "fp": 77,
+            "fn": 5637,
+            "tn": 24250,
+            "precision": 0.3185840707964602,
+            "recall": 0.006345848757271285,
+            "f1": 0.01244382993432423,
+            "fpr": 0.003165207382743454
+          },
+          "watchdog_median_delay": 8.0,
+          "rule_median_delay": 26.0
+        },
+        "INTC": {
+          "watchdog_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 15,
+            "fp": 37,
+            "fn": 241,
+            "tn": 768,
+            "precision": 0.28846153846153844,
+            "recall": 0.05859375,
+            "f1": 0.09740259740259741,
+            "fpr": 0.04596273291925466
+          },
+          "rule_orders": {
+            "n": 1061,
+            "positives": 256,
+            "tp": 203,
+            "fp": 669,
+            "fn": 53,
+            "tn": 136,
+            "precision": 0.23279816513761467,
+            "recall": 0.79296875,
+            "f1": 0.35992907801418433,
+            "fpr": 0.831055900621118
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 6128,
+            "tp": 70,
+            "fp": 138,
+            "fn": 6058,
+            "tn": 23734,
+            "precision": 0.33653846153846156,
+            "recall": 0.011422976501305483,
+            "f1": 0.022095959595959596,
+            "fpr": 0.005780831099195711
+          },
+          "watchdog_median_delay": 0.0,
+          "rule_median_delay": 25.0
+        },
+        "AMZN": {
+          "watchdog_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 19,
+            "fp": 56,
+            "fn": 236,
+            "tn": 763,
+            "precision": 0.25333333333333335,
+            "recall": 0.07450980392156863,
+            "f1": 0.11515151515151516,
+            "fpr": 0.06837606837606838
+          },
+          "rule_orders": {
+            "n": 1074,
+            "positives": 255,
+            "tp": 193,
+            "fp": 672,
+            "fn": 62,
+            "tn": 147,
+            "precision": 0.223121387283237,
+            "recall": 0.7568627450980392,
+            "f1": 0.3446428571428572,
+            "fpr": 0.8205128205128205
+          },
+          "watchdog_steps": {
+            "n": 30000,
+            "positives": 5989,
+            "tp": 86,
+            "fp": 239,
+            "fn": 5903,
+            "tn": 23772,
+            "precision": 0.26461538461538464,
+            "recall": 0.01435965937552179,
+            "f1": 0.02724105163129553,
+            "fpr": 0.009953771188205406
+          },
+          "watchdog_median_delay": 9.0,
+          "rule_median_delay": 26.0
+        }
+      }
+    }
+  },
+  "attacker_pnl_per_episode": {
+    "AAPL": -547.551855461498,
+    "MSFT": -3470.055920973071,
+    "GOOG": -767.9246266461421,
+    "INTC": -2389.375747000464,
+    "AMZN": -307.03730050591184
+  },
+  "episodes_per_stock": 50,
+  "runtime_s": 62.6
+}

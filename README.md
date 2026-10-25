@@ -36,12 +36,16 @@ Every number below comes from a committed file in `results/`, except the no-impa
 - The profit comes from the spoof, but only under the replay impact model; it does not survive a market where the price reacts through order matching.
 - Spoofing is unprofitable on the wide-spread stocks (AAPL, GOOG, AMZN).
 
-**Claim 2: the Watchdog generalises to unseen attacks. Not shown — and the test was not a fair one.** Two pre-registered tests, each run once, both went against the Watchdog. The zero-parameter signature above generalises to the held-out scripted attacker at order F1 0.995, so the failure is the learner's rather than evidence that unseen manipulation is hard to spot in this setup.
+**Claim 2: the Watchdog generalises to unseen attacks. Not shown for the original Watchdog; supported in simulation for the CP-7 round-2 Watchdog on its pre-registered test.** The first two pre-registered tests, each run once, went against the original Watchdog. After retraining with a causal label, a myopic objective and wider training coverage (all chosen on test splits), the round-2 Watchdog passed the pre-registered REVERSAL-ATK test. An intermediate version only partly passed DRIP-ATK. See the sections on both tests.
+
+Read both of these alongside the task-difficulty caveat above: the label-definition rule (LABEL-RULE) scores 0.99 on every one of these datasets by construction, so a detector matching it has recovered the label's definition rather than proven that unseen manipulation is hard to spot. `results/baselines_final.md` reports every detector against that ceiling.
 
 | Pre-registered test | Watchdog recall | Rule recall | Source |
 |---|---|---|---|
 | LATEBURST-ATK (replay market) | 0.24 | 0.89 | `lateburst_test.md` |
 | LAYER-ATK (synthetic market) | 0.30 | 1.00 | `layering_test.md` |
+| DRIP-ATK (replay), CP-7 round-1 Watchdog | 0.26 | 0.74 | `drip_test.md` |
+| REVERSAL-ATK (replay), CP-7 round-2 Watchdog | **0.98** (FPR 0.006 vs rule 0.80) | 0.96 | `reversal_test.md` |
 
 - The Watchdog relies on trading against a resting order. Ablating trade direction drops its F1 from 0.772 to 0.113 (`feature_ablation.md`), so sparse spoofing is missed.
 
@@ -794,6 +798,112 @@ The replay environment allows one large order per side, so layering (Open issue 
 - **Watchdog.** It catches 30%, the same sparse-spoofing weakness as before, while flagging 8% of legitimate large orders against the rule's 93%.
 - **Recall by layer is not informative.** Recall is 0.30 at every layer only because all layers rest over the same interval and share the same flag window by construction. It cannot show whether depth in the book matters.
 - **Layering does not pay in this market.** −$15,001 ± 4,362 per episode; manipulation gain −$967 ± 3,694.
+
+## Pre-registered test: DRIP-ATK (CP-7)
+
+The CP-7 Watchdog was retrained with a causal label and a myopic objective (`--label causal --gamma 0`, 1M steps), with every choice made on the test split only (`UPDATES.md` U-017 to U-020). Its models were frozen in git (commit ef76cb4) before this test was written. The test was committed and pushed **before** any of its data was generated or scored.
+
+- **Attacker** (`DripSpoof` in `evaluation/agents.py`). Spoof one side, then 2–4 single-lot trades on the other side, each after a fresh 30–90 market-event wait. In each wait, with probability 0.5, one same-side trade as camouflage. Hold 0–50 events, cancel, unwind.
+- **Legitimate control** (`SameSideTrader`). A large order on one side, 1–5 trades on the same side while it rests, cancelled after 100–300 events. Busy, large and cancelling, but never trading against its own order.
+- **Evaluation** (`python watchdog/drip_test.py`, run once). 50 episodes per stock (AAPL, MSFT, GOOG, INTC, AMZN) each of DRIP-ATK, SAMESIDE and FLICKER, on test-split seeds. The verdict model is `checkpoints/WATCHDOG/causal_g0_1m`; the baseline is the rule tuned on the train split.
+- **H1.** The Watchdog's order-level F1 on DRIP-ATK + SAMESIDE + FLICKER (all five stocks pooled) is at least the rule's. Supported if Watchdog F1 ≥ rule F1.
+- **H2.** The Watchdog's order-level false-positive rate on SAMESIDE orders is at most 0.10.
+- **Context only.** Seeds `_s2` and `_s3`, the original `main` Watchdog, per-stock rows and attacker PnL.
+- **Disclosure.** Before this commit, `DripSpoof` and `SameSideTrader` were run for 3 GOOG episodes on throwaway seeds (999–1001) only to check that the labels come out as intended (all DRIP-ATK orders manipulative, no SAMESIDE order manipulative). No detector scored them.
+- **What a pass would and would not mean.** The proxy label is defined by the act the Watchdog now detects, so a hand-written rule with the label's own definition would score perfectly by construction. A pass shows that a detector learned from rewards alone, never told the rule, transfers to an unseen attacker with camouflage and to an unseen legitimate style. It does not show detection of intent on real markets.
+
+**Result (run once after the pre-registration commit 8688d51; `results/drip_test.md`): H1 supported, H2 supported, but recall on the attacker is low.**
+
+| Bucket (order level) | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR |
+|---|---|---|
+| DRIP-ATK + SAMESIDE + FLICKER | **0.94** / 0.26 / **0.41** / **0.00** | 0.22 / **0.74** / 0.34 / 0.78 |
+| DRIP-ATK only | 1.00 / 0.26 / 0.41 | 1.00 / **0.74** / **0.85** |
+| SAMESIDE only (unseen legitimate style) | FPR **0.012** | FPR 0.75 |
+
+- **H1 passed only because the rule's false positives lower its pooled F1.** On DRIP-ATK orders alone the rule is far ahead (F1 0.85 vs 0.41). Wording H1 as a pooled F1 let a weak recall pass; future tests should state a recall hypothesis directly.
+- **Precision transfers.** 19 false positives among 4,108 legitimate orders, against the rule's 3,273.
+- **Better than the original Watchdog on the same orders** (context): pooled F1 0.41 vs 0.13, DRIP-ATK recall 0.26 vs 0.08. Seeds `_s2`/`_s3` reach recall 0.44/0.46 but with SAMESIDE FPR 0.117/0.100.
+- **Post-hoc (`scripts/drip_posthoc.py`, after the verdict):** the Watchdog's flag rate on the act falls with the order's age: 0.24 at 5–9 steps, 0.19 at 10–19, 0.045 at 20+. Almost every act in training occurs within 1–4 steps of placement. MSFT/INTC acts are flagged at 4–5% at any age, against 24–29% on the wide-spread stocks. Camouflage is a minor factor (0.15 with vs 0.22 without). The CP-7 Watchdog learned the act, but only in the narrow timing the training Spoofers use.
+
+## Pre-registered test: REVERSAL-ATK (CP-7 round 2)
+
+DRIP-ATK showed the round-1 Watchdog caught the act only soon after an order was placed. Round 2 added training-only sources with varied act timing (VARIED-SPOOF, and ACCUM as the legitimate counterpart; `UPDATES.md` U-023). Every choice was made on test splits only. The round-2 models were frozen in git (commit 44508ca) before this test was written. The test was committed and pushed **before** any of its data was generated or scored.
+
+- **Attacker** (`ReversalSpoof` in `evaluation/agents.py`). Coscia-style reversal: spoof one side, wait a log-uniform 20–300 events, trade 1–3 lots on the other side on consecutive steps, cancel, and on the very next step spoof the *other* side, carrying the position. 2–4 legs per cycle, then unwind. Every training source and earlier attacker is flat when it places a spoof and works one side per cycle; this attacker is neither.
+- **Legitimate control** (`CancelThenTrade`, REVERT). A large order rests a log-uniform 50–500 events with no trading, is cancelled, and 0–2 steps later the trader makes 1–3 opposite-side trades. Legitimate under the label, because the order is gone. It is a boundary case for flags that are merely close in time to an opposite trade.
+- **Evaluation** (`python watchdog/reversal_test.py`, run once). 50 episodes per stock (AAPL, MSFT, GOOG, INTC, AMZN) each of REVERSAL-ATK, REVERT and FLICKER, on test-split seeds. The verdict model is `checkpoints/WATCHDOG/cov`; the baseline is the rule tuned on the original train split.
+- **H1 (recall, stated directly).** The Watchdog's order-level recall on REVERSAL-ATK is at least **0.80**.
+- **H2.** The Watchdog's order-level false-positive rate on REVERT + FLICKER is at most **0.10**.
+- **H3.** The Watchdog's order-level F1 on REVERSAL-ATK + REVERT + FLICKER (pooled) is at least the rule's.
+- **Context only.** Seeds `cov_s2`/`cov_s3`, the round-1 `causal_g0_1m`, the original `main`, per-stock rows and attacker PnL.
+- **Disclosure.** Before this commit:
+  - `ReversalSpoof` and `CancelThenTrade` ran 3 GOOG episodes on throwaway seeds (999–1001) to check the labels. No detector scored them.
+  - The test script ran once end to end on throwaway seeds (999,000 base, 1 episode per stock) in a scratch folder, only to check that it completes. Its outputs were deleted without being read.
+- **What a pass would and would not mean.** As for DRIP-ATK: the label is defined by the act the Watchdog detects. A pass shows that a detector learned from rewards alone, never told the rule, transfers to a structurally new attacker and a new legitimate boundary case. It does not show detection of intent on real markets.
+
+**Result (run once after the pre-registration commit ca58bc1; `results/reversal_test.md`): H1, H2 and H3 all supported.**
+
+| Bucket (order level) | Watchdog P / R / F1 / FPR | Rule P / R / F1 / FPR |
+|---|---|---|
+| REVERSAL-ATK + REVERT + FLICKER | **0.99 / 0.98 / 0.99 / 0.01** | 0.43 / 0.96 / 0.59 / 0.75 |
+| REVERSAL-ATK only | 1.00 / **0.98** / 0.99 | 1.00 / 0.96 / 0.98 |
+| REVERT + FLICKER (legitimate) | FPR **0.006** (24 of 4,052) | FPR 0.80 (3,256 of 4,052) |
+
+- **Recall matches the rule while false positives are about 130× fewer.** On this attacker the size + fast-cancel rule also catches nearly everything (0.96), so the gain is precision, not recall.
+- **Consistent everywhere.** Recall is 0.96–0.99 on all five stocks, MSFT and INTC included (DRIP-ATK: 0.06–0.08). Seeds `_s2`/`_s3` reach recall 0.984 with REVERT FPR 0.034/0.049.
+- **On the same orders** (context): round-1 `causal_g0_1m` recall 0.400; original `main` 0.121.
+- **Hardest legitimate case is the boundary.** 21 of the 24 false positives are REVERT orders (FPR 0.015), whose opposite trades come right after the cancel.
+- **Context:** REVERSAL-ATK loses money on four of five stocks (+$258 per episode on INTC only), so this tests detection of the structure, not of profitable manipulation.
+
+## Post-hoc re-scoring of the CP-7 Watchdog (all earlier evaluations)
+
+Every attacker here was inspected before CP-7, so these numbers describe the round-2 Watchdog (`cov`, 3 seeds); they are not tests. Each pre-registered verdict stands on the model it was registered with. Sources: `results/posthoc_rescore.md` (replay data on disk, `python watchdog/posthoc_rescore.py`) and `results/posthoc_summary.md` (synthetic market, layering, PnL suppression; `python watchdog/posthoc_summary.py` after the runs it lists).
+
+| Measure | Original `main` | CP-7 `cov` (3 seeds) | Rule |
+|---|---|---|---|
+| Recall, SCRIPTED / LATEBURST / DRIP / REVERSAL (replay) | 0.26 / 0.22 / 0.07 / 0.14 | 0.99 / 0.98 / 0.99 / 0.98 | 0.94 / 0.89 / 0.74 / 0.96 |
+| Legitimate-order FPR (replay test split) | 0.031 | 0.002 | 0.820 |
+| Synthetic market, all manipulators: F1 / legitimate FPR | 0.62 / 0.11 | 0.980 ± 0.011 / 0.030 | 0.74 / 0.92 |
+| LAYER-ATK recall / pooled F1 (synthetic) | 0.30 / 0.44 | 0.990 / 0.984 | 1.00 / 0.73 |
+| PnL suppression, SPOOFER-04 INTC (3 seeds each) | 88% ± 19 | **101% ± 1** | 55% |
+| PnL suppression, SPOOFER-02 MSFT (3 seeds each) | 243% ± 23 | 242% ± 3 | 96% |
+| Wrongful interventions per episode, FLICKER MSFT / INTC | 0.55 / 0.49 | 0.013 / 0.007 | 4.7 / 4.7 |
+
+- **The CP-7 Watchdog was trained on replay data only, and its detection transfers to the synthetic market**, where prices come from order matching.
+- **Caveat on the replay rows.** The round-2 training family (VARIED-SPOOF) was designed after DRIP-ATK was inspected, and SCRIPTED-ATK and LATEBURST-ATK share its single-resting-order structure. Only REVERSAL-ATK is a clean test of the round-2 model.
+
+## Explaining individual decisions (CP-6)
+
+`python watchdog/explain_flags.py` → `results/flag_explanations.md`, on the CP-7 Watchdog `cov`. Four decisions are chosen by fixed rules (first match), not by hand. Each is explained by occlusion: one feature, at the decided step or across all earlier steps, is set to its training mean, and the change in flag probability is measured. A counterfactual flips the side of the step's trade.
+
+| Case | Decision | What explains it |
+|---|---|---|
+| A. SPOOFER-03 GOOG (sparse RL Spoofer) | Flag, P = 1.000, on the step it sells against its own resting bid, 7 steps after placement; P = 0.000 on every step before | This step's trade direction: occluding it, or flipping the trade's side, gives −1.000. Book, age and history all ±0.000 |
+| B. REVERSAL-ATK (pre-registered, AAPL) | Flag, P = 1.000, on the sell against its bid 25 steps after placement | Same: trade direction this step −1.000; same trade on the other side −1.000 |
+| C. REVERT (legitimate boundary case) | **False** flag, P = 0.702, 3 steps after placing an ask, with no trade on that step | Memory of a buy made 4 steps earlier, before this order existed (an unwind from the previous cycle). Occluding trade-direction history gives −0.702 |
+| D. ACCUM (same-side trader) | No flag, P = 0.000, on a buy while its own bid rests | Same trade on the other side gives +1.000. The Watchdog uses the side of the trade relative to the resting order |
+
+- **What it learned is the conjunction "trade on the side opposite your own resting large order".** It is read from the current step (A, B), and it is side-specific (D).
+- **The one false-positive mechanism found is temporal.** A recent opposite trade made just *before* an order was placed is remembered by the LSTM and attributed to the new order (C). This matches where most REVERSAL-test false positives fell (REVERT, FPR 0.015).
+- **Scope.** These are four decisions; per-group importance across the whole test split is in `results/feature_ablation.md` (original Watchdog).
+
+## Baselines: is RL needed? (label-definition rule and supervised classifiers)
+
+`python watchdog/supervised_baselines.py train` fits the supervised baselines; their test-split results were committed (e3115bc) before `... final` scored them once on every held-out dataset (`results/baselines_final.md`). Same data, features, causal labels and threshold logic as the CP-7 Watchdog; 3 seeds each.
+
+| Recall / legitimate FPR | Label-definition rule (ceiling) | Supervised LSTM | RL Watchdog `cov` | Logistic regression | Size + fast-cancel rule |
+|---|---|---|---|---|---|
+| Original test split | 0.995 / 0.000 | 0.995 / 0.000 | 0.995 / 0.002 | 0.469 / 0.123 | 0.941 / 0.812 |
+| Held-out split (SCRIPTED-ATK, AMZN) | 0.990 / 0.000 | 0.990 / 0.000 | 0.990 / 0.004 | 0.198 / 0.000 | 0.940 / 0.869 |
+| LATEBURST-ATK | 0.983 / 0.000 | 0.983 / 0.000 | 0.984 / 0.002 | 0.218 / 0.098 | 0.885 / 0.819 |
+| DRIP-ATK | 0.989 / 0.000 | 0.989 / 0.000 | 0.989 / 0.012 | 0.324 / 0.144 | 0.744 / 0.797 |
+| REVERSAL-ATK | 0.984 / 0.000 | 0.984 / 0.001 | 0.983 / 0.012 | 0.218 / 0.099 | 0.964 / 0.804 |
+
+- **The RL Watchdog has reached the ceiling.** It matches the rule that defines the label, with the same median detection delay. Recall below 1.0 is the same for all three: those orders' only opposite trade falls on the removal step, outside the resting window.
+- **RL is not what makes it work.** A supervised LSTM with the same labels matches the ceiling everywhere, with slightly fewer false positives, and trains in minutes.
+- **A linear model cannot do it.** Logistic regression fails (recall 0.20–0.47): detection needs the interaction between the trade's side and the resting order's side.
+- **What drove the gains:** the causal label, the myopic (γ = 0) objective, and training coverage of act timing (CP-7). With γ = 0, the Watchdog's RL training is cost-weighted classification by policy gradient. RL would matter where feedback is delayed or partial (for example, investigations confirming manipulation later); that is not tested here.
+- **What the comparison with the size + fast-cancel rule still shows:** a detector that sees the participant's own trades separates manipulation from legitimate large orders far better than a size-and-cancel rule. That holds whether the detector is learned by RL, learned by supervision, or written by hand from the label's definition.
 
 ## Where the three claims stand
 

@@ -1,0 +1,624 @@
+{
+  "mode": "final",
+  "seeds": [
+    7,
+    11,
+    23
+  ],
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "results": {
+    "original test split": {
+      "LABEL-RULE": {
+        "recall": {
+          "mean": 0.9954633830200907,
+          "ci95": NaN
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": NaN
+        },
+        "pooled F1": {
+          "mean": 0.9855630413859482,
+          "ci95": NaN
+        },
+        "rule recall": {
+          "mean": 0.9410239792611795,
+          "ci95": NaN
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8116612679315132,
+          "ci95": NaN
+        },
+        "rule pooled F1": {
+          "mean": 0.35246995994659547,
+          "ci95": NaN
+        },
+        "median delay (steps)": {
+          "mean": 1.0,
+          "ci95": NaN
+        }
+      },
+      "LOGREG": {
+        "recall": {
+          "mean": 0.46899978397062,
+          "ci95": 0.0009295744221213724
+        },
+        "legitimate FPR": {
+          "mean": 0.12262841277186488,
+          "ci95": 0.0
+        },
+        "pooled F1": {
+          "mean": 0.5283523832112347,
+          "ci95": 0.0009400348567614083
+        },
+        "rule recall": {
+          "mean": 0.9410239792611795,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.811661267931513,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.35246995994659547,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 1.0,
+          "ci95": 0.0
+        }
+      },
+      "SUP-LSTM": {
+        "recall": {
+          "mean": 0.9954633830200907,
+          "ci95": 0.0
+        },
+        "legitimate FPR": {
+          "mean": 0.00015424957581366652,
+          "ci95": 0.0006637359247262071
+        },
+        "pooled F1": {
+          "mean": 0.985773902113673,
+          "ci95": 0.00045366685569983676
+        },
+        "rule recall": {
+          "mean": 0.9410239792611795,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.811661267931513,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.35246995994659547,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 1.0,
+          "ci95": 0.0
+        }
+      },
+      "RL WATCHDOG (cov)": {
+        "recall": {
+          "mean": 0.995247353640095,
+          "ci95": 0.0009295744221214522
+        },
+        "legitimate FPR": {
+          "mean": 0.0016967453339503315,
+          "ci95": 0.002393133909967846
+        },
+        "pooled F1": {
+          "mean": 0.9841915898708283,
+          "ci95": 0.0011937517359965695
+        },
+        "rule recall": {
+          "mean": 0.9410239792611795,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.811661267931513,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.35246995994659547,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 1.0,
+          "ci95": 0.0
+        }
+      }
+    },
+    "held-out split (SCRIPTED-ATK, AMZN)": {
+      "LABEL-RULE": {
+        "recall": {
+          "mean": 0.9900826446280991,
+          "ci95": NaN
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": NaN
+        },
+        "pooled F1": {
+          "mean": 0.9950166112956811,
+          "ci95": NaN
+        },
+        "rule recall": {
+          "mean": 0.9400826446280992,
+          "ci95": NaN
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8690702087286527,
+          "ci95": NaN
+        },
+        "rule pooled F1": {
+          "mean": 0.604089219330855,
+          "ci95": NaN
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": NaN
+        }
+      },
+      "LOGREG": {
+        "recall": {
+          "mean": 0.19807162534435263,
+          "ci95": 0.0005926997245179282
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "pooled F1": {
+          "mean": 0.32894882966754607,
+          "ci95": 0.0008223391109264759
+        },
+        "rule recall": {
+          "mean": 0.9400826446280992,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8690702087286527,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.604089219330855,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 8.0,
+          "ci95": 0.0
+        }
+      },
+      "SUP-LSTM": {
+        "recall": {
+          "mean": 0.9900826446280991,
+          "ci95": 0.0
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "pooled F1": {
+          "mean": 0.995016611295681,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule recall": {
+          "mean": 0.9400826446280992,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8690702087286527,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.604089219330855,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      },
+      "RL WATCHDOG (cov)": {
+        "recall": {
+          "mean": 0.9900826446280991,
+          "ci95": 0.0020531720729942576
+        },
+        "legitimate FPR": {
+          "mean": 0.003795066413662239,
+          "ci95": 0.012472373950281453
+        },
+        "pooled F1": {
+          "mean": 0.9939852443908728,
+          "ci95": 0.0015242529684511511
+        },
+        "rule recall": {
+          "mean": 0.9400826446280992,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8690702087286527,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.604089219330855,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      }
+    },
+    "LATEBURST-ATK": {
+      "LABEL-RULE": {
+        "recall": {
+          "mean": 0.9832155477031802,
+          "ci95": NaN
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": NaN
+        },
+        "pooled F1": {
+          "mean": 0.9915367483296215,
+          "ci95": NaN
+        },
+        "rule recall": {
+          "mean": 0.8851590106007067,
+          "ci95": NaN
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8190936106983655,
+          "ci95": NaN
+        },
+        "rule pooled F1": {
+          "mean": 0.4618575708688638,
+          "ci95": NaN
+        },
+        "median delay (steps)": {
+          "mean": 16.0,
+          "ci95": NaN
+        }
+      },
+      "LOGREG": {
+        "recall": {
+          "mean": 0.21819787985865724,
+          "ci95": 0.00438929012071194
+        },
+        "legitimate FPR": {
+          "mean": 0.09843982169390787,
+          "ci95": 0.0
+        },
+        "pooled F1": {
+          "mean": 0.29957383272806876,
+          "ci95": 0.0051236346936339066
+        },
+        "rule recall": {
+          "mean": 0.8851590106007067,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8190936106983656,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.46185757086886375,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 13.333333333333334,
+          "ci95": 1.4343333333333332
+        }
+      },
+      "SUP-LSTM": {
+        "recall": {
+          "mean": 0.9832155477031802,
+          "ci95": 0.0
+        },
+        "legitimate FPR": {
+          "mean": 0.00012382367508667657,
+          "ci95": 0.0005328132738979692
+        },
+        "pooled F1": {
+          "mean": 0.991389592385969,
+          "ci95": 0.0006332120255363069
+        },
+        "rule recall": {
+          "mean": 0.8851590106007067,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8190936106983656,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.46185757086886375,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 16.0,
+          "ci95": 0.0
+        }
+      },
+      "RL WATCHDOG (cov)": {
+        "recall": {
+          "mean": 0.983510011778563,
+          "ci95": 0.0012670789163722117
+        },
+        "legitimate FPR": {
+          "mean": 0.002228826151560178,
+          "ci95": 0.0024416571589146834
+        },
+        "pooled F1": {
+          "mean": 0.9874368761041831,
+          "ci95": 0.0033126898709348253
+        },
+        "rule recall": {
+          "mean": 0.8851590106007067,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8190936106983656,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule pooled F1": {
+          "mean": 0.46185757086886375,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 16.0,
+          "ci95": 0.0
+        }
+      }
+    },
+    "DRIP-ATK": {
+      "LABEL-RULE": {
+        "recall": {
+          "mean": 0.9885057471264368,
+          "ci95": NaN
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": NaN
+        },
+        "pooled F1": {
+          "mean": 0.9942196531791908,
+          "ci95": NaN
+        },
+        "rule recall": {
+          "mean": 0.7438423645320197,
+          "ci95": NaN
+        },
+        "rule legitimate FPR": {
+          "mean": 0.7967380720545277,
+          "ci95": NaN
+        },
+        "rule pooled F1": {
+          "mean": 0.33574207893274044,
+          "ci95": NaN
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": NaN
+        }
+      },
+      "LOGREG": {
+        "recall": {
+          "mean": 0.3240284619594964,
+          "ci95": 0.0011776135741652968
+        },
+        "legitimate FPR": {
+          "mean": 0.14427134047387213,
+          "ci95": 0.0006983122362869511
+        },
+        "pooled F1": {
+          "mean": 0.3579201251426203,
+          "ci95": 0.0009278046898113796
+        },
+        "rule recall": {
+          "mean": 0.7438423645320197,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.7967380720545277,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.3357420789327404,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 10.0,
+          "ci95": 0.0
+        }
+      },
+      "SUP-LSTM": {
+        "recall": {
+          "mean": 0.9885057471264368,
+          "ci95": 0.0
+        },
+        "legitimate FPR": {
+          "mean": 8.114248620577734e-05,
+          "ci95": 0.00034915611814345996
+        },
+        "pooled F1": {
+          "mean": 0.9940828778795376,
+          "ci95": 0.0005885441144077456
+        },
+        "rule recall": {
+          "mean": 0.7438423645320197,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.7967380720545277,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.3357420789327404,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      },
+      "RL WATCHDOG (cov)": {
+        "recall": {
+          "mean": 0.9887794198139025,
+          "ci95": 0.0023552271483305936
+        },
+        "legitimate FPR": {
+          "mean": 0.012495942875689711,
+          "ci95": 0.015469625718324607
+        },
+        "pooled F1": {
+          "mean": 0.973403661175484,
+          "ci95": 0.024754787928666484
+        },
+        "rule recall": {
+          "mean": 0.7438423645320197,
+          "ci95": 0.0
+        },
+        "rule legitimate FPR": {
+          "mean": 0.7967380720545277,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.3357420789327404,
+          "ci95": 1.689026962429071e-16
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      }
+    },
+    "REVERSAL-ATK": {
+      "LABEL-RULE": {
+        "recall": {
+          "mean": 0.9844249201277955,
+          "ci95": NaN
+        },
+        "legitimate FPR": {
+          "mean": 0.0,
+          "ci95": NaN
+        },
+        "pooled F1": {
+          "mean": 0.9921513382974442,
+          "ci95": NaN
+        },
+        "rule recall": {
+          "mean": 0.9644568690095847,
+          "ci95": NaN
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8035538005923001,
+          "ci95": NaN
+        },
+        "rule pooled F1": {
+          "mean": 0.5906089508437271,
+          "ci95": NaN
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": NaN
+        }
+      },
+      "LOGREG": {
+        "recall": {
+          "mean": 0.21805111821086265,
+          "ci95": 0.0026249764663731417
+        },
+        "legitimate FPR": {
+          "mean": 0.09945705824284305,
+          "ci95": 4.2225674060726777e-17
+        },
+        "pooled F1": {
+          "mean": 0.31418364616517264,
+          "ci95": 0.0031466911981303074
+        },
+        "rule recall": {
+          "mean": 0.9644568690095848,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8035538005923001,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.5906089508437271,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 5.0,
+          "ci95": 0.0
+        }
+      },
+      "SUP-LSTM": {
+        "recall": {
+          "mean": 0.9844249201277955,
+          "ci95": 0.0
+        },
+        "legitimate FPR": {
+          "mean": 0.0009871668311944718,
+          "ci95": 0.001061944718657453
+        },
+        "pooled F1": {
+          "mean": 0.9913533880503703,
+          "ci95": 0.000857963320349952
+        },
+        "rule recall": {
+          "mean": 0.9644568690095848,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8035538005923001,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.5906089508437271,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      },
+      "RL WATCHDOG (cov)": {
+        "recall": {
+          "mean": 0.9830937167199147,
+          "ci95": 0.0048941491102371375
+        },
+        "legitimate FPR": {
+          "mean": 0.012421849292530438,
+          "ci95": 0.015393111638186695
+        },
+        "pooled F1": {
+          "mean": 0.9813465538805218,
+          "ci95": 0.010145123694672463
+        },
+        "rule recall": {
+          "mean": 0.9644568690095848,
+          "ci95": 3.378053924858142e-16
+        },
+        "rule legitimate FPR": {
+          "mean": 0.8035538005923001,
+          "ci95": 0.0
+        },
+        "rule pooled F1": {
+          "mean": 0.5906089508437271,
+          "ci95": 0.0
+        },
+        "median delay (steps)": {
+          "mean": 7.0,
+          "ci95": 0.0
+        }
+      }
+    }
+  }
+}

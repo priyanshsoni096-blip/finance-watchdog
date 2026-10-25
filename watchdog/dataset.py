@@ -32,7 +32,7 @@ sys.path.insert(0, str(ROOT / "training"))
 from env.lob_env import EnvConfig, LimitOrderBookEnv  # noqa: E402
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
-from evaluation.agents import Flicker, Honest, ModelPolicy, ScriptedSpoof  # noqa: E402
+from evaluation.agents import Accumulator, Flicker, Honest, ModelPolicy, ScriptedSpoof, VariedSpoof  # noqa: E402
 from evaluation.baseline_detector import OrderRecord  # noqa: E402
 from evaluation.rollout import OBS_DIM, record_episode  # noqa: E402
 
@@ -40,6 +40,10 @@ DATA_DIR = ROOT / "data" / "watchdog"
 # Disjoint stretches of the trading day per split, as fractions of the usable range (after the warmup).
 # Without this the splits shared market data: 33 of 50 test episodes overlapped a training episode.
 TIME_SPLIT = {"train": (0.0, 0.60), "test": (0.60, 0.80), "heldout": (0.80, 1.0)}
+# CP-7 round 2: training-only scripted sources kept apart, so the original splits and every result built on them
+# are unchanged (python watchdog/dataset.py --extended)
+EXT_DATA_DIR = ROOT / "data" / "watchdog_ext"
+TRAIN_TICKERS = ["AAPL", "MSFT", "GOOG", "INTC"]
 TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
 HELD_OUT = "AMZN"
 SEED_BASE = {"train": 100_000, "test": 200_000, "heldout": 300_000}
@@ -76,6 +80,14 @@ def sources(tag: str = "main") -> dict[str, list[Source]]:
         bucket.append(Source("FLICKER", tk, Flicker, DECISION_ENV))
         heldout.append(Source("SCRIPTED-ATK", tk, ScriptedSpoof, DECISION_ENV))
     return {"train": train, "test": train, "heldout": heldout}
+
+
+def extended_sources() -> dict[str, list[Source]]:
+    """VARIED-SPOOF and ACCUM on the four training stocks (never AMZN), train and test splits only."""
+    from train_spoofer import DECISION_ENV
+    srcs = [Source(name, tk, make, DECISION_ENV) for tk in TRAIN_TICKERS
+            for name, make in (("VARIED-SPOOF", VariedSpoof), ("ACCUM", Accumulator))]
+    return {"train": srcs, "test": srcs}
 
 
 def _orders_to_array(orders_by_ep: list[list[OrderRecord]]) -> np.ndarray:
@@ -129,6 +141,31 @@ def build_source(src: Source, split: str, episodes: int, cache: dict, time_split
     }
 
 
+TRADE_COL = 40 + 4  # participant feature "trade direction this step" (evaluation/rollout.py)
+
+
+def causal_labels(src: dict) -> np.ndarray:
+    """Per-step labels that only become positive once the evidence exists: from the first step on which the owner
+    traded on the side opposite a resting manipulative order, until that order is removed.
+
+    The recorded label `y` is set with hindsight over the order's whole resting window, including steps before any
+    opposite trade. Training on it rewarded predicting which trader will spoof (the Watchdog flagged 99% of
+    SPOOFER-04's orders before any opposite trade) rather than detecting the act (it flagged 13.7% of SPOOFER-03's
+    opposite-trade steps); see scripts/flag_timing_diagnostic.py. Every causal positive is also a hindsight positive.
+    """
+    y = np.zeros(len(src["y"]), dtype=bool)
+    off = src["ep_offsets"]
+    for ep, o in orders_from_array(src["orders"]):
+        if not o.manipulative:
+            continue
+        a = off[ep]
+        trades = src["X"][a + o.placed_step:a + o.removed_step, TRADE_COL]
+        hit = np.flatnonzero(trades == -o.side)
+        if hit.size:
+            y[a + o.placed_step + hit[0]:a + o.removed_step] = True
+    return y
+
+
 def load_split(split: str, data_dir: Path = DATA_DIR) -> dict[str, dict]:
     """-> {"SOURCE_TICKER": {"X", "y", "ep_offsets", "orders", "pnl"}}"""
     out = {}
@@ -146,13 +183,18 @@ def main() -> int:
     p.add_argument("--eval-episodes", type=int, default=None, help="override test/heldout episodes per source")
     p.add_argument("--tag", default="main")
     p.add_argument("--splits", nargs="*", default=["train", "test", "heldout"])
-    p.add_argument("--out", default=str(DATA_DIR))
+    p.add_argument("--out", default=None)
+    p.add_argument("--extended", action="store_true", help="build the CP-7 round-2 training-only sources instead")
     p.add_argument("--time-split", action="store_true",
                    help="give train / test / heldout disjoint stretches of the trading day")
     args = p.parse_args()
+    if args.out is None:
+        args.out = str(EXT_DATA_DIR if args.extended else DATA_DIR)
+    if args.extended:
+        args.splits = [s for s in args.splits if s != "heldout"]
 
     t0, cache = time.time(), {}
-    by_split = sources(args.tag)
+    by_split = extended_sources() if args.extended else sources(args.tag)
     for split in args.splits:
         if split == "train":
             n = args.episodes

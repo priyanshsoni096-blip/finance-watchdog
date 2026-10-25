@@ -1,0 +1,136 @@
+{
+  "episodes": 20,
+  "seed": 950000,
+  "figures": [
+    "spoofer_training_pnl.png",
+    "spoofer_training_behaviour.png",
+    "spoofer_failed_runs.png"
+  ],
+  "agents": {
+    "SPOOFER-01": {
+      "ticker": "AAPL",
+      "episodes": 20,
+      "pnl_mean": 41.881473811404796,
+      "large_orders_per_episode": 53.25,
+      "manipulative_share": 0.004694835680751174,
+      "spoof_size_depth_multiple_median": 9.985770226213756,
+      "rest_events_median": 10.0,
+      "rest_events_p90": 30.0,
+      "cancelled_share": 0.9887323943661972,
+      "run_over_share": 0.003755868544600939,
+      "episode_end_share": 0.007511737089201878,
+      "wait_to_first_opposite_trade_events_median": 10.0,
+      "trades_against_own_spoof_per_episode": 0.25,
+      "late_training": {
+        "ep_pnl_mean": -61.63098320556681,
+        "frac_buy": 0.0007333333333333336,
+        "frac_sell": 0.0003333333333333334,
+        "frac_spoof_buy": 0.20198333333333332,
+        "frac_spoof_sell": 0.12638333333333335,
+        "frac_cancel": 0.5504333333333332,
+        "manip_trades_per_1k": 0.55,
+        "run_overs_per_1k": 1.85
+      }
+    },
+    "SPOOFER-02": {
+      "ticker": "MSFT",
+      "episodes": 20,
+      "pnl_mean": 3121.7624638381576,
+      "large_orders_per_episode": 15.0,
+      "manipulative_share": 0.71,
+      "spoof_size_depth_multiple_median": 10.017274570029759,
+      "rest_events_median": 40.0,
+      "rest_events_p90": 150.0,
+      "cancelled_share": 0.9733333333333334,
+      "run_over_share": 0.0,
+      "episode_end_share": 0.02666666666666667,
+      "wait_to_first_opposite_trade_events_median": 10.0,
+      "trades_against_own_spoof_per_episode": 61.2,
+      "late_training": {
+        "ep_pnl_mean": 2660.4569251682915,
+        "frac_buy": 0.19751666666666667,
+        "frac_sell": 0.2866666666666667,
+        "frac_spoof_buy": 0.12810000000000002,
+        "frac_spoof_sell": 0.011600000000000003,
+        "frac_cancel": 0.12526666666666667,
+        "manip_trades_per_1k": 286.48333333333335,
+        "run_overs_per_1k": 0.6166666666666667
+      }
+    },
+    "SPOOFER-03": {
+      "ticker": "GOOG",
+      "episodes": 20,
+      "pnl_mean": -12.413949464374673,
+      "large_orders_per_episode": 22.75,
+      "manipulative_share": 0.2923076923076923,
+      "spoof_size_depth_multiple_median": 10.019173445339154,
+      "rest_events_median": 20.0,
+      "rest_events_p90": 70.0,
+      "cancelled_share": 0.9692307692307692,
+      "run_over_share": 0.015384615384615385,
+      "episode_end_share": 0.015384615384615385,
+      "wait_to_first_opposite_trade_events_median": 10.0,
+      "trades_against_own_spoof_per_episode": 14.45,
+      "late_training": {
+        "ep_pnl_mean": 30.796097474505107,
+        "frac_buy": 0.00045000000000000004,
+        "frac_sell": 0.053899999999999997,
+        "frac_spoof_buy": 0.11034999999999999,
+        "frac_spoof_sell": 0.28478333333333333,
+        "frac_cancel": 0.27555,
+        "manip_trades_per_1k": 53.13333333333333,
+        "run_overs_per_1k": 0.9166666666666666
+      }
+    },
+    "SPOOFER-04": {
+      "ticker": "INTC",
+      "episodes": 20,
+      "pnl_mean": 15311.29344738949,
+      "large_orders_per_episode": 13.7,
+      "manipulative_share": 0.9525547445255474,
+      "spoof_size_depth_multiple_median": 9.953921081462795,
+      "rest_events_median": 130.0,
+      "rest_events_p90": 247.00000000000017,
+      "cancelled_share": 0.9233576642335767,
+      "run_over_share": 0.0072992700729927005,
+      "episode_end_share": 0.06934306569343066,
+      "wait_to_first_opposite_trade_events_median": 10.0,
+      "trades_against_own_spoof_per_episode": 171.4,
+      "late_training": {
+        "ep_pnl_mean": 14401.617125307532,
+        "frac_buy": 0.42418333333333336,
+        "frac_sell": 0.41464999999999996,
+        "frac_spoof_buy": 0.04061666666666666,
+        "frac_spoof_sell": 0.04098333333333333,
+        "frac_cancel": 0.07606666666666667,
+        "manip_trades_per_1k": 836.3833333333333,
+        "run_overs_per_1k": 0.7333333333333333
+      }
+    },
+    "SPOOFER-05": {
+      "ticker": "AMZN",
+      "episodes": 20,
+      "pnl_mean": -81.17152762908336,
+      "large_orders_per_episode": 49.1,
+      "manipulative_share": 0.0,
+      "spoof_size_depth_multiple_median": 9.970804520606292,
+      "rest_events_median": 10.0,
+      "rest_events_p90": 20.0,
+      "cancelled_share": 0.9938900203665988,
+      "run_over_share": 0.0010183299389002036,
+      "episode_end_share": 0.0050916496945010185,
+      "wait_to_first_opposite_trade_events_median": NaN,
+      "trades_against_own_spoof_per_episode": 0.0,
+      "late_training": {
+        "ep_pnl_mean": -8.950864119714971,
+        "frac_buy": 0.00038333333333333345,
+        "frac_sell": 0.0004,
+        "frac_spoof_buy": 0.15813333333333332,
+        "frac_spoof_sell": 0.08165,
+        "frac_cancel": 0.6402499999999999,
+        "manip_trades_per_1k": 0.08333333333333333,
+        "run_overs_per_1k": 0.26666666666666666
+      }
+    }
+  }
+}

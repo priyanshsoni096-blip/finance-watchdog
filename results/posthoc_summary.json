@@ -1,0 +1,320 @@
+{
+  "post_hoc": true,
+  "groups": {
+    "main": [
+      "main",
+      "main_s2",
+      "main_s3"
+    ],
+    "cov": [
+      "cov",
+      "cov_s2",
+      "cov_s3"
+    ]
+  },
+  "per_seed": {
+    "main": {
+      "synthetic: all manipulators precision": 0.8758064516129033,
+      "synthetic: all manipulators recall": 0.4826666666666667,
+      "synthetic: all manipulators f1": 0.6223495702005731,
+      "synthetic: legitimate FPR": 0.11258278145695365,
+      "synthetic: SPOOFER-02 F1": 0.7185185185185186,
+      "synthetic: SPOOFER-04 F1": 0.5498547918683446,
+      "synthetic: SCRIPTED-ATK F1": 0.5609756097560975,
+      "synthetic: LATEBURST-ATK F1": 0.34545454545454546,
+      "LAYER-ATK recall": 0.3,
+      "LAYER-ATK pooled F1": 0.4411764705882353,
+      "LAYER-ATK FLICKER FPR": 0.07643312101910828,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 243.13256345451143,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4560.468163379859,
+      "PnL suppression: SPOOFER-04 INTC (%)": 82.84791033544106,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": 2165.4377584282893,
+      "interventions/episode on legitimate: FLICKER MSFT": 0.32,
+      "interventions/episode on legitimate: FLICKER INTC": 0.42
+    },
+    "main_s2": {
+      "PnL suppression: SPOOFER-02 MSFT (%)": 252.42770940389718,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4856.628702624496,
+      "PnL suppression: SPOOFER-04 INTC (%)": 96.37299270740905,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": 457.9068029069278,
+      "interventions/episode on legitimate: FLICKER MSFT": 1.34,
+      "interventions/episode on legitimate: FLICKER INTC": 1.04
+    },
+    "main_s3": {
+      "PnL suppression: SPOOFER-02 MSFT (%)": 234.18427171816697,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4275.359040792305,
+      "PnL suppression: SPOOFER-04 INTC (%)": 83.33615319299413,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": 2103.7974837034476,
+      "interventions/episode on legitimate: FLICKER MSFT": 0.0,
+      "interventions/episode on legitimate: FLICKER INTC": 0.0
+    },
+    "cov": {
+      "synthetic: all manipulators precision": 0.9611734253666955,
+      "synthetic: all manipulators recall": 0.9902222222222222,
+      "synthetic: all manipulators f1": 0.9754816112084064,
+      "synthetic: legitimate FPR": 0.07947019867549669,
+      "synthetic: SPOOFER-02 F1": 0.9357495881383854,
+      "synthetic: SPOOFER-04 F1": 0.9718706047819973,
+      "synthetic: SCRIPTED-ATK F1": 0.8677248677248678,
+      "synthetic: LATEBURST-ATK F1": 0.8260869565217391,
+      "LAYER-ATK recall": 0.99,
+      "LAYER-ATK pooled F1": 0.9682151589242053,
+      "LAYER-ATK FLICKER FPR": 0.07006369426751592,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 243.02398534306826,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4557.008663958386,
+      "PnL suppression: SPOOFER-04 INTC (%)": 101.0529181398838,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": -132.93008264465956,
+      "interventions/episode on legitimate: FLICKER MSFT": 0.04,
+      "interventions/episode on legitimate: FLICKER INTC": 0.02
+    },
+    "cov_s2": {
+      "synthetic: all manipulators precision": 0.9822695035460993,
+      "synthetic: all manipulators recall": 0.9848888888888889,
+      "synthetic: all manipulators f1": 0.9835774522858411,
+      "synthetic: legitimate FPR": 0.009933774834437087,
+      "synthetic: SPOOFER-02 F1": 0.9643463497453311,
+      "synthetic: SPOOFER-04 F1": 0.9870317002881844,
+      "synthetic: SCRIPTED-ATK F1": 0.9761904761904762,
+      "synthetic: LATEBURST-ATK F1": 0.9743589743589743,
+      "LAYER-ATK recall": 1.0,
+      "LAYER-ATK pooled F1": 0.9950248756218906,
+      "LAYER-ATK FLICKER FPR": 0.012738853503184714,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 241.02656448260228,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4493.367141560018,
+      "PnL suppression: SPOOFER-04 INTC (%)": 101.43344958110096,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": -180.9718762217695,
+      "interventions/episode on legitimate: FLICKER MSFT": 0.0,
+      "interventions/episode on legitimate: FLICKER INTC": 0.0
+    },
+    "cov_s3": {
+      "synthetic: all manipulators precision": 0.9848078641644326,
+      "synthetic: all manipulators recall": 0.9795555555555555,
+      "synthetic: all manipulators f1": 0.982174688057041,
+      "synthetic: legitimate FPR": 0.0,
+      "synthetic: SPOOFER-02 F1": 0.9726027397260273,
+      "synthetic: SPOOFER-04 F1": 0.9840810419681619,
+      "synthetic: SCRIPTED-ATK F1": 0.9878048780487805,
+      "synthetic: LATEBURST-ATK F1": 1.0,
+      "LAYER-ATK recall": 0.98,
+      "LAYER-ATK pooled F1": 0.9886506935687264,
+      "LAYER-ATK FLICKER FPR": 0.0031847133757961785,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 241.6769956491498,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": -4514.091081353445,
+      "PnL suppression: SPOOFER-04 INTC (%)": 101.74569492405692,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": -220.3926038854831,
+      "interventions/episode on legitimate: FLICKER MSFT": 0.0,
+      "interventions/episode on legitimate: FLICKER INTC": 0.0
+    }
+  },
+  "summary": {
+    "main": {
+      "synthetic: all manipulators precision": {
+        "mean": 0.8758064516129033,
+        "ci95": NaN
+      },
+      "synthetic: all manipulators recall": {
+        "mean": 0.4826666666666667,
+        "ci95": NaN
+      },
+      "synthetic: all manipulators f1": {
+        "mean": 0.6223495702005731,
+        "ci95": NaN
+      },
+      "synthetic: legitimate FPR": {
+        "mean": 0.11258278145695365,
+        "ci95": NaN
+      },
+      "synthetic: SPOOFER-02 F1": {
+        "mean": 0.7185185185185186,
+        "ci95": NaN
+      },
+      "synthetic: SPOOFER-04 F1": {
+        "mean": 0.5498547918683446,
+        "ci95": NaN
+      },
+      "synthetic: SCRIPTED-ATK F1": {
+        "mean": 0.5609756097560975,
+        "ci95": NaN
+      },
+      "synthetic: LATEBURST-ATK F1": {
+        "mean": 0.34545454545454546,
+        "ci95": NaN
+      },
+      "LAYER-ATK recall": {
+        "mean": 0.3,
+        "ci95": NaN
+      },
+      "LAYER-ATK pooled F1": {
+        "mean": 0.4411764705882353,
+        "ci95": NaN
+      },
+      "LAYER-ATK FLICKER FPR": {
+        "mean": 0.07643312101910828,
+        "ci95": NaN
+      },
+      "PnL suppression: SPOOFER-02 MSFT (%)": {
+        "mean": 243.24818152552518,
+        "ci95": 22.662799870114
+      },
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": {
+        "mean": -4564.1519689322195,
+        "ci95": 722.078713650319
+      },
+      "PnL suppression: SPOOFER-04 INTC (%)": {
+        "mean": 87.51901874528141,
+        "ci95": 19.058976898032874
+      },
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": {
+        "mean": 1575.7140150128882,
+        "ci95": 2406.180763926998
+      },
+      "interventions/episode on legitimate: FLICKER MSFT": {
+        "mean": 0.5533333333333333,
+        "ci95": 1.7385634741488285
+      },
+      "interventions/episode on legitimate: FLICKER INTC": {
+        "mean": 0.48666666666666664,
+        "ci95": 1.2997941012500576
+      }
+    },
+    "cov": {
+      "synthetic: all manipulators precision": {
+        "mean": 0.976083597692409,
+        "ci95": 0.03223382132269724
+      },
+      "synthetic: all manipulators recall": {
+        "mean": 0.9848888888888888,
+        "ci95": 0.013249803777722509
+      },
+      "synthetic: all manipulators f1": {
+        "mean": 0.9804112505170961,
+        "ci95": 0.01074830045663284
+      },
+      "synthetic: legitimate FPR": {
+        "mean": 0.029801324503311258,
+        "ci95": 0.10757264097672198
+      },
+      "synthetic: SPOOFER-02 F1": {
+        "mean": 0.9575662258699146,
+        "ci95": 0.04804585846256251
+      },
+      "synthetic: SPOOFER-04 F1": {
+        "mean": 0.9809944490127812,
+        "ci95": 0.019969195867773164
+      },
+      "synthetic: SCRIPTED-ATK F1": {
+        "mean": 0.943906740654708,
+        "ci95": 0.16453901374659707
+      },
+      "synthetic: LATEBURST-ATK F1": {
+        "mean": 0.9334819769602379,
+        "ci95": 0.2332452698361845
+      },
+      "LAYER-ATK recall": {
+        "mean": 0.9899999999999999,
+        "ci95": 0.024843382083229622
+      },
+      "LAYER-ATK pooled F1": {
+        "mean": 0.9839635760382741,
+        "ci95": 0.03479555176159962
+      },
+      "LAYER-ATK FLICKER FPR": {
+        "mean": 0.028662420382165602,
+        "ci95": 0.08986196805755257
+      },
+      "PnL suppression: SPOOFER-02 MSFT (%)": {
+        "mean": 241.9091818249401,
+        "ci95": 2.530924153983592
+      },
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": {
+        "mean": -4521.488962290617,
+        "ci95": 80.63992392506601
+      },
+      "PnL suppression: SPOOFER-04 INTC (%)": {
+        "mean": 101.41068754834721,
+        "ci95": 0.8619382709888549
+      },
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": {
+        "mean": -178.0981875839707,
+        "ci95": 108.81902519961311
+      },
+      "interventions/episode on legitimate: FLICKER MSFT": {
+        "mean": 0.013333333333333334,
+        "ci95": 0.05737333333333334
+      },
+      "interventions/episode on legitimate: FLICKER INTC": {
+        "mean": 0.006666666666666667,
+        "ci95": 0.02868666666666667
+      }
+    }
+  },
+  "seed_counts": {
+    "main": {
+      "synthetic: all manipulators precision": 1,
+      "synthetic: all manipulators recall": 1,
+      "synthetic: all manipulators f1": 1,
+      "synthetic: legitimate FPR": 1,
+      "synthetic: SPOOFER-02 F1": 1,
+      "synthetic: SPOOFER-04 F1": 1,
+      "synthetic: SCRIPTED-ATK F1": 1,
+      "synthetic: LATEBURST-ATK F1": 1,
+      "LAYER-ATK recall": 1,
+      "LAYER-ATK pooled F1": 1,
+      "LAYER-ATK FLICKER FPR": 1,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 3,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": 3,
+      "PnL suppression: SPOOFER-04 INTC (%)": 3,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": 3,
+      "interventions/episode on legitimate: FLICKER MSFT": 3,
+      "interventions/episode on legitimate: FLICKER INTC": 3
+    },
+    "cov": {
+      "synthetic: all manipulators precision": 3,
+      "synthetic: all manipulators recall": 3,
+      "synthetic: all manipulators f1": 3,
+      "synthetic: legitimate FPR": 3,
+      "synthetic: SPOOFER-02 F1": 3,
+      "synthetic: SPOOFER-04 F1": 3,
+      "synthetic: SCRIPTED-ATK F1": 3,
+      "synthetic: LATEBURST-ATK F1": 3,
+      "LAYER-ATK recall": 3,
+      "LAYER-ATK pooled F1": 3,
+      "LAYER-ATK FLICKER FPR": 3,
+      "PnL suppression: SPOOFER-02 MSFT (%)": 3,
+      "PnL with Watchdog: SPOOFER-02 MSFT ($)": 3,
+      "PnL suppression: SPOOFER-04 INTC (%)": 3,
+      "PnL with Watchdog: SPOOFER-04 INTC ($)": 3,
+      "interventions/episode on legitimate: FLICKER MSFT": 3,
+      "interventions/episode on legitimate: FLICKER INTC": 3
+    }
+  },
+  "rule": {
+    "synthetic: all manipulators precision": 0.5948464912280702,
+    "synthetic: all manipulators recall": 0.9644444444444444,
+    "synthetic: all manipulators f1": 0.7358426585283148,
+    "synthetic: legitimate FPR": 0.9172185430463576,
+    "synthetic: SPOOFER-02 F1": 0.575,
+    "synthetic: SPOOFER-04 F1": 0.6737160120845922,
+    "synthetic: SCRIPTED-ATK F1": 0.3747178329571106,
+    "synthetic: LATEBURST-ATK F1": 0.2915601023017903,
+    "LAYER-ATK recall": 1.0,
+    "LAYER-ATK pooled F1": 0.7332722273143905,
+    "LAYER-ATK FLICKER FPR": 0.9267515923566879,
+    "PnL suppression: SPOOFER-02 MSFT (%)": 95.60627306693893,
+    "PnL with Watchdog: SPOOFER-02 MSFT ($)": 139.9922653043078,
+    "PnL suppression: SPOOFER-04 INTC (%)": 55.204799828111916,
+    "PnL with Watchdog: SPOOFER-04 INTC ($)": 5655.358603272216,
+    "interventions/episode on legitimate: FLICKER MSFT": 4.72,
+    "interventions/episode on legitimate: FLICKER INTC": 4.74
+  },
+  "pnl_no_surveillance": {
+    "SPOOFER-02 MSFT": [
+      3186.184927673156,
+      516.8601541099421
+    ],
+    "SPOOFER-04 INTC": [
+      12624.920932536255,
+      1162.4095251267368
+    ]
+  }
+}
