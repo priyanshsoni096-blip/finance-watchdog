@@ -1,0 +1,405 @@
+{
+  "data": "C:\\Users\\Rahul Soni\\Desktop\\finance-watchdog\\data\\watchdog",
+  "features": {
+    "trade_direction": 44,
+    "resting_imbalance": 45
+  },
+  "signatures": {
+    "opposite-side signature": {
+      "train (fitted by nothing)": {
+        "orders": {
+          "n": 21716,
+          "positives": 4630,
+          "tp": 4583,
+          "fp": 0,
+          "fn": 47,
+          "tn": 17086,
+          "precision": 1.0,
+          "recall": 0.9898488120950324,
+          "f1": 0.9948985129708021,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 360000,
+          "positives": 47072,
+          "tp": 36726,
+          "fp": 0,
+          "fn": 10346,
+          "tn": 312928,
+          "precision": 1.0,
+          "recall": 0.7802090414683889,
+          "f1": 0.876536432850426,
+          "fpr": 0.0
+        }
+      },
+      "in-distribution (test split)": {
+        "orders": {
+          "n": 7243,
+          "positives": 1543,
+          "tp": 1534,
+          "fp": 1,
+          "fn": 9,
+          "tn": 5699,
+          "precision": 0.9993485342019544,
+          "recall": 0.9941672067401166,
+          "f1": 0.9967511371020142,
+          "fpr": 0.00017543859649122806
+        },
+        "steps": {
+          "n": 120000,
+          "positives": 15831,
+          "tp": 12362,
+          "fp": 0,
+          "fn": 3469,
+          "tn": 104169,
+          "precision": 1.0,
+          "recall": 0.7808729707535847,
+          "f1": 0.8769552725853936,
+          "fpr": 0.0
+        }
+      },
+      "held-out scripted attacker": {
+        "orders": {
+          "n": 2580,
+          "positives": 2420,
+          "tp": 2396,
+          "fp": 0,
+          "fn": 24,
+          "tn": 160,
+          "precision": 1.0,
+          "recall": 0.9900826446280991,
+          "f1": 0.9950166112956811,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 50000,
+          "positives": 26985,
+          "tp": 6982,
+          "fp": 0,
+          "fn": 20003,
+          "tn": 23015,
+          "precision": 1.0,
+          "recall": 0.25873633500092647,
+          "f1": 0.41110489592840116,
+          "fpr": 0.0
+        }
+      },
+      "held-out RL attacker (AMZN)": {
+        "orders": {
+          "n": 2920,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2920,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 30000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 30000,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        }
+      },
+      "legitimate only (HONEST + FLICKER)": {
+        "orders": {
+          "n": 2688,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2688,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 100000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 100000,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        }
+      }
+    },
+    "any trade while resting": {
+      "train (fitted by nothing)": {
+        "orders": {
+          "n": 21716,
+          "positives": 4630,
+          "tp": 4583,
+          "fp": 9,
+          "fn": 47,
+          "tn": 17077,
+          "precision": 0.9980400696864111,
+          "recall": 0.9898488120950324,
+          "f1": 0.9939275645196269,
+          "fpr": 0.0005267470443638066
+        },
+        "steps": {
+          "n": 360000,
+          "positives": 47072,
+          "tp": 36837,
+          "fp": 8,
+          "fn": 10235,
+          "tn": 312920,
+          "precision": 0.9997828742027413,
+          "recall": 0.782567131203263,
+          "f1": 0.8779389158335023,
+          "fpr": 2.5564986194907453e-05
+        }
+      },
+      "in-distribution (test split)": {
+        "orders": {
+          "n": 7243,
+          "positives": 1543,
+          "tp": 1534,
+          "fp": 5,
+          "fn": 9,
+          "tn": 5695,
+          "precision": 0.9967511371020142,
+          "recall": 0.9941672067401166,
+          "f1": 0.9954574951330304,
+          "fpr": 0.0008771929824561404
+        },
+        "steps": {
+          "n": 120000,
+          "positives": 15831,
+          "tp": 12390,
+          "fp": 4,
+          "fn": 3441,
+          "tn": 104165,
+          "precision": 0.999677263191867,
+          "recall": 0.7826416524540458,
+          "f1": 0.8779450841452612,
+          "fpr": 3.8399139859267155e-05
+        }
+      },
+      "held-out scripted attacker": {
+        "orders": {
+          "n": 2580,
+          "positives": 2420,
+          "tp": 2396,
+          "fp": 0,
+          "fn": 24,
+          "tn": 160,
+          "precision": 1.0,
+          "recall": 0.9900826446280991,
+          "f1": 0.9950166112956811,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 50000,
+          "positives": 26985,
+          "tp": 6982,
+          "fp": 0,
+          "fn": 20003,
+          "tn": 23015,
+          "precision": 1.0,
+          "recall": 0.25873633500092647,
+          "f1": 0.41110489592840116,
+          "fpr": 0.0
+        }
+      },
+      "held-out RL attacker (AMZN)": {
+        "orders": {
+          "n": 2920,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2920,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 30000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 30000,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        }
+      },
+      "legitimate only (HONEST + FLICKER)": {
+        "orders": {
+          "n": 2688,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2688,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        },
+        "steps": {
+          "n": 100000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 0,
+          "fn": 0,
+          "tn": 100000,
+          "precision": NaN,
+          "recall": NaN,
+          "f1": NaN,
+          "fpr": 0.0
+        }
+      }
+    },
+    "resting order present": {
+      "train (fitted by nothing)": {
+        "orders": {
+          "n": 21716,
+          "positives": 4630,
+          "tp": 4620,
+          "fp": 16211,
+          "fn": 10,
+          "tn": 875,
+          "precision": 0.22178483990206904,
+          "recall": 0.9978401727861771,
+          "f1": 0.362907976905856,
+          "fpr": 0.9487884817979633
+        },
+        "steps": {
+          "n": 360000,
+          "positives": 47072,
+          "tp": 46895,
+          "fp": 103369,
+          "fn": 177,
+          "tn": 209559,
+          "precision": 0.3120840653782676,
+          "recall": 0.9962398028552005,
+          "f1": 0.47528073944946697,
+          "fpr": 0.3303283822476736
+        }
+      },
+      "in-distribution (test split)": {
+        "orders": {
+          "n": 7243,
+          "positives": 1543,
+          "tp": 1542,
+          "fp": 5427,
+          "fn": 1,
+          "tn": 273,
+          "precision": 0.2212656048213517,
+          "recall": 0.9993519118600129,
+          "f1": 0.362312030075188,
+          "fpr": 0.9521052631578948
+        },
+        "steps": {
+          "n": 120000,
+          "positives": 15831,
+          "tp": 15778,
+          "fp": 34185,
+          "fn": 53,
+          "tn": 69984,
+          "precision": 0.3157936873286232,
+          "recall": 0.9966521382098414,
+          "f1": 0.47961820226768404,
+          "fpr": 0.3281686490222619
+        }
+      },
+      "held-out scripted attacker": {
+        "orders": {
+          "n": 2580,
+          "positives": 2420,
+          "tp": 2420,
+          "fp": 160,
+          "fn": 0,
+          "tn": 0,
+          "precision": 0.937984496124031,
+          "recall": 1.0,
+          "f1": 0.9680000000000001,
+          "fpr": 1.0
+        },
+        "steps": {
+          "n": 50000,
+          "positives": 26985,
+          "tp": 26985,
+          "fp": 621,
+          "fn": 0,
+          "tn": 22394,
+          "precision": 0.9775048902412519,
+          "recall": 1.0,
+          "f1": 0.9886244985437159,
+          "fpr": 0.026982402780795132
+        }
+      },
+      "held-out RL attacker (AMZN)": {
+        "orders": {
+          "n": 2920,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2862,
+          "fn": 0,
+          "tn": 58,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.9801369863013699
+        },
+        "steps": {
+          "n": 30000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 9910,
+          "fn": 0,
+          "tn": 20090,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.3303333333333333
+        }
+      },
+      "legitimate only (HONEST + FLICKER)": {
+        "orders": {
+          "n": 2688,
+          "positives": 0,
+          "tp": 0,
+          "fp": 2688,
+          "fn": 0,
+          "tn": 0,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 1.0
+        },
+        "steps": {
+          "n": 100000,
+          "positives": 0,
+          "tp": 0,
+          "fp": 36434,
+          "fn": 0,
+          "tn": 63566,
+          "precision": 0.0,
+          "recall": NaN,
+          "f1": 0.0,
+          "fpr": 0.36434
+        }
+      }
+    }
+  }
+}
