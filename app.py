@@ -110,7 +110,15 @@ def load(name: str, folder: str = "results") -> dict:
 R = {n: load(f"{n}.json") for n in (
     "basic_eval", "watchdog_eval", "multiseed", "lateburst_test", "layering_test", "pnl_suppression",
     "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes",
-    "label_observability", "supervised_baseline")}
+    "label_observability", "supervised_baseline", "posthoc_rescore", "baselines_final")}
+PH = R["posthoc_rescore"].get("summary", {})
+PHRULE = R["posthoc_rescore"].get("rule", {})
+
+
+def ph(tag: str, metric: str, key: str = "mean"):
+    """CP-7 post-hoc re-scoring value, or None when absent."""
+    v = PH.get(tag, {}).get(metric, {})
+    return v.get(key) if isinstance(v, dict) else None
 CAL, SYNCAL = load("calibration.json", "configs"), load("synthetic_calibration.json", "configs")
 MS, RU = R["multiseed"].get("summary", {}), R["multiseed"].get("rule", {})
 
@@ -186,21 +194,22 @@ if view == "Overview":
             '<div class="warnbar"><b>Audit finding — read before any detector number.</b> The manipulation '
             'label is readable from two of the detector&rsquo;s own input features, so a zero-parameter '
             f'signature scores order-level F1 {num(lo.get("f1"), 3)} in-distribution and 0.995 on a held-out '
-            'attacker at a false-positive rate of 0.000. The detection task as posed is close to a tautology: '
-            'the figures below are a documented negative result, not a working surveillance method. See '
+            'attacker at a false-positive rate of 0.000, and a supervised LSTM matches the RL Watchdog '
+            'everywhere in minutes. The CP-7 figures below are real and were earned by fixing a labelling '
+            'artefact — but they reach a ceiling a rule with no parameters already occupies. See '
             '<span class="mono">Evidence &amp; limitations &rarr; Is the task hard?</span></div>',
             unsafe_allow_html=True)
         st.write("")
 
     c = st.columns(4, gap="small")
     with c[0]:
-        kpi("False positives · legitimate orders", pct(dig(MS, "legitimate-only order FPR", "mean")),
-            pct(RU.get("legitimate-only order FPR")), "Lower is better · ~26× fewer false accusations",
-            "multiseed.md · order-level · 3 seeds", GOOD)
+        kpi("False positives · legitimate orders", pct(ph("cov", "legitimate order FPR")),
+            pct(PHRULE.get("legitimate order FPR")), "Lower is better · CP-7 Watchdog · 3 seeds",
+            "posthoc_rescore.md · order-level", GOOD)
     with c[1]:
-        kpi("In-distribution F1 · known attacks", num(dig(MS, "in-distribution order F1", "mean"), 3),
-            num(RU.get("in-distribution order F1"), 3), "Higher is better · ±0.058 over 3 seeds",
-            "multiseed.md · order-level · test split", WD)
+        kpi("In-distribution F1 · known attacks", num(ph("cov", "in-distribution order F1"), 3),
+            num(PHRULE.get("in-distribution order F1"), 3), "Higher is better · ±0.001 over 3 seeds",
+            "posthoc_rescore.md · order-level · test split", WD)
     with c[2]:
         s4 = next((r for r in R["pnl_suppression"].get("rows", []) if r["source"] == "SPOOFER-04"), {})
         kpi("Profit removed · SPOOFER-04 INTC", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
@@ -208,9 +217,9 @@ if view == "Overview":
             "Higher is better · detector acts inside the episode",
             "pnl_suppression.md · 50 episodes", GOOD)
     with c[3]:
-        kpi("Held-out attack recall · LATEBURST", num(dig(MS, "LATEBURST-ATK order recall", "mean")),
-            num(RU.get("LATEBURST-ATK order recall")), "Higher is better · the baseline wins decisively",
-            "lateburst_test.md · pre-registered · 3 seeds", BAD)
+        kpi("Held-out attack recall · LATEBURST", num(ph("cov", "LATEBURST-ATK recall")),
+            num(PHRULE.get("LATEBURST-ATK recall")), "Higher is better · CP-7 · original Watchdog scored 0.22",
+            "posthoc_rescore.md · post-hoc · 3 seeds", GOOD)
 
     st.write("")
     g1, g2 = st.columns([3, 2], gap="medium")
@@ -426,8 +435,35 @@ elif view == "Demonstration":
 
 # ─────────────────────────────── VIEW C ───────────────────────────────
 else:
-    t0, t1, t2, t3, t4 = st.tabs(["Is the task hard?", "Headline evidence", "Held-out tests", "Robustness",
-                                  "Technical detail"])
+    t0, tg, t1, t2, t3, t4 = st.tabs(["Is the task hard?", "Detector generations", "Headline evidence",
+                                      "Held-out tests", "Robustness", "Technical detail"])
+
+    with tg:
+        st.markdown('<div class="cap">Three generations of the same detector, re-scored on every saved replay '
+                    'dataset. <b>main</b> is the original Watchdog; <b>causal_g0_1m</b> adds a causal label and a '
+                    'myopic objective; <b>cov</b> adds training coverage of varied act timing. Mean ± 95% '
+                    'Student-t CI over 3 seeds. Post-hoc except where a test was pre-registered for that model '
+                    '(<span class="mono">posthoc_rescore.md</span>).</div>', unsafe_allow_html=True)
+        st.write("")
+        gens = ["main", "causal_g0_1m", "cov"]
+        metrics = ["in-distribution order F1", "legitimate order FPR", "SCRIPTED-ATK train stocks recall",
+                   "LATEBURST-ATK recall", "DRIP-ATK recall", "REVERSAL-ATK recall"]
+        grows = []
+        for m in metrics:
+            row = {"Metric": m}
+            for g in gens:
+                mu, ci = ph(g, m), ph(g, m, "ci95")
+                row[g] = NA if mu is None else (f"{mu:.3f}" + (f" ± {ci:.3f}" if ci == ci and ci is not None else ""))
+            row["Rule"] = num(PHRULE.get(m), 3)
+            grows.append(row)
+        if grows:
+            st.dataframe(pd.DataFrame(grows), hide_index=True, use_container_width=True)
+        st.markdown('<div class="finding">The original Watchdog\'s held-out failure was a labelling artefact, '
+                    'not a learning failure: the hindsight label marked every step an order rested, so training '
+                    'rewarded predicting <b>who would spoof</b> over detecting <b>the act</b>. It flagged 99% of '
+                    'SPOOFER-04\'s orders before any opposite trade, and 13.7% of SPOOFER-03\'s opposite-trade '
+                    'steps. A causal label fixed it across four held-out attack families.</div>',
+                    unsafe_allow_html=True)
 
     with t0:
         lob, sup = R["label_observability"], R["supervised_baseline"]
@@ -472,13 +508,37 @@ else:
         else:
             st.info(NA)
 
+        bf = R["baselines_final"].get("results", {})
+        if bf:
+            st.write("")
+            st.markdown("#### Every detector against the label ceiling")
+            order = ["LABEL-RULE", "SUP-LSTM", "RL WATCHDOG (cov)", "LOGREG"]
+            brows = []
+            for ds, by_det in bf.items():
+                row = {"Dataset": ds}
+                for det in order:
+                    v = by_det.get(det, {})
+                    r = dig(v, "recall", "mean")
+                    f = dig(v, "legitimate FPR", "mean")
+                    row[det] = NA if r is None else f"{r:.3f} / {f:.3f}"
+                rr = dig(next(iter(by_det.values()), {}), "rule recall", "mean")
+                rf = dig(next(iter(by_det.values()), {}), "rule legitimate FPR", "mean")
+                row["Size+cancel rule"] = NA if rr is None else f"{rr:.3f} / {rf:.3f}"
+                brows.append(row)
+            st.dataframe(pd.DataFrame(brows), hide_index=True, use_container_width=True)
+            st.markdown('<div class="cap">Order-level recall / legitimate false-positive rate, 3 seeds. '
+                        'LABEL-RULE is the label\'s definition written as a rule — the ceiling, perfect by '
+                        'construction, not a competitor. A supervised LSTM reaches it in minutes '
+                        '(<span class="mono">baselines_final.md</span>).</div>', unsafe_allow_html=True)
+
         st.markdown('<div class="warnbar"><b>What this means.</b> The learned detector is not discovering '
-                    'manipulation — it recovers, worse than a trivial rule, a definition handed to it in '
-                    'its own input. Its failure on held-out attackers is therefore a property of the learner, '
+                    'manipulation — it recovers a definition handed to it in its own input. Its failure on held-out attackers is therefore a property of the learner, '
                     'not evidence that unseen manipulation is hard to spot here: the zero-parameter signature '
-                    'transfers unchanged. The real simplification is <b>perfect attribution</b> — the '
-                    'environment says which orders and trades belong to the monitored participant. '
-                    'Establishing that is the hard part of real surveillance, and it is assumed away.</div>',
+                    'transfers unchanged. CP-7 closed the gap to that ceiling by fixing the label, which is a '
+                    'real methodological result — but it did not make the problem hard. The simplification '
+                    'that matters is <b>perfect attribution</b>: the environment says which orders and trades '
+                    'belong to the monitored participant. Establishing that is the hard part of real '
+                    'surveillance, and it is assumed away.</div>',
                     unsafe_allow_html=True)
 
     with t1:
@@ -647,7 +707,8 @@ else:
     st.markdown("#### Limitations")
     for group in ([
         ("Task is near-tautological", "The label is readable from two input features; a zero-parameter "
-                                      "signature scores 0.997. RL is not justified for the detector."),
+                                      "signature scores 0.997 and a supervised LSTM matches the RL detector. "
+                                      "RL is not justified for detection."),
         ("Perfect attribution assumed", "Surveillance is told which orders and trades belong to the monitored "
                                         "participant. Establishing that is the real hard part."),
         ("Generalisation unproven", "Both pre-registered held-out attacks favour the static rule."),

@@ -27,15 +27,23 @@ supported for recall**, and **supported for precision and false-positive cost**.
 why: detection rests almost entirely on observing the agent trade against its own resting order, so sparse
 manipulation evades it.
 
-A subsequent audit (§6.1) establishes a stronger and less favourable result. The manipulation label is
+The held-out failure was later diagnosed and fixed. The hindsight label marked every step an order rested,
+including steps before any opposite trade, so training rewarded predicting *who would spoof* over detecting *the
+act*. With a causal label, a myopic objective and training coverage of varied act timing, the CP-7 Watchdog
+reaches order-level recall **0.98–0.99 at a legitimate false-positive rate of 0.001–0.012 across four held-out
+attack families**, including a pre-registered test it was the frozen verdict model for.
+
+A subsequent audit (§6.1) places a bound on what that is worth. The manipulation label is
 `opposite_trades > 0`, and two of the detector's own input features state the participant's trade direction
 and the side of its resting orders, so a **zero-parameter comparison of those two features scores an
 order-level F1 of 0.997 in-distribution and 0.995 on the held-out scripted attacker, at a false-positive rate
 of 0.000** — and gradient boosting fitted on the train split reaches 0.96 and 0.99. The detection task as
 posed is therefore close to a tautology, the learned detector solves it worse than a trivial rule, and the
 genuine difficulty of spoofing surveillance — attributing orders and trades to an account — is assumed away by
-the environment. The detector results below should be read as a documented negative result; the contribution
-that survives is the emergence of profitable manipulation on the attacker side. A further sim-to-sim test found that the Spoofers' profitability does not
+the environment. The CP-7 Watchdog therefore reached a ceiling that a zero-parameter rule
+already occupied, and a supervised LSTM reaches it too, in minutes. The detector arc is a real and instructive
+result about **labelling**, not evidence that reinforcement learning solves manipulation detection; the
+contribution that stands on its own is the emergence of profitable manipulation on the attacker side. A further sim-to-sim test found that the Spoofers' profitability does not
 survive a market where prices emerge from order matching rather than from an impact model, which bounds the
 scope of the first result.
 
@@ -50,8 +58,8 @@ scope of the first result.
 This decomposes into three claims, each requiring evidence rather than assumption:
 
 1. RL learns meaningful manipulation (not a reward-hacking artefact).
-2. The Watchdog generalises to attacks it has not seen. *(Not supported — and §6.1 shows the task was
-   not a hard test of it.)*
+2. The Watchdog generalises to attacks it has not seen. *(Not supported for the original Watchdog; supported
+   in simulation for CP-7 — but §6.1 shows the task was not a hard test of it.)*
 3. It does not simply flag legitimate activity.
 
 **Scope statement, used verbatim throughout:** this project demonstrates the feasibility of an RL-based
@@ -219,6 +227,33 @@ Three things follow, and they bound every detector result in this report:
 
 This was found by audit after the main results were produced, and is reported here rather than reframed.
 
+### 6.1b The fix: a causal label, and what it proves
+
+The original Watchdog's failure was a labelling artefact, not a learning failure. The hindsight label marked
+**every** step an order rested, so the objective rewarded identifying the *actor* rather than the *act*. The
+diagnostic is unambiguous: the original Watchdog flagged 99% of SPOOFER-04's orders before any opposite trade
+occurred, and only 13.7% of SPOOFER-03's opposite-trade steps.
+
+Three changes, all selected on test splits and never on held-out data: a **causal label** (positives begin at
+the first opposite trade), a **myopic γ = 0 objective**, and **training coverage of varied act timing**.
+
+| Attack family | Original Watchdog | CP-7 `cov` | Rule | Label ceiling |
+|---|---|---|---|---|
+| SCRIPTED-ATK (train stocks) | 0.257 ± 0.199 | **0.991 ± 0.001** | 0.938 | ~0.99 |
+| LATEBURST-ATK | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | 0.983 |
+| DRIP-ATK | 0.067 ± 0.115 | **0.989 ± 0.002** | 0.744 | 0.989 |
+| REVERSAL-ATK | 0.139 ± 0.129 | **0.983 ± 0.005** | 0.964 | 0.984 |
+
+Order-level recall, 3 seeds, mean ± 95% Student-t CI. Only LATEBURST (for the original Watchdog) and
+REVERSAL-ATK (for `cov`) were pre-registered verdicts; the others are post-hoc descriptions.
+
+**What this establishes:** a labelling choice can silently redefine a task, and finding that was worth more than
+any hyperparameter search. **What it does not establish:** that RL was required. With γ = 0 the Watchdog's
+training is cost-weighted classification by policy gradient, and a supervised LSTM with the same labels matches
+it on every dataset while training in minutes. Logistic regression fails (recall 0.20–0.47), which shows the
+task needs the interaction between trade side and resting side — a two-feature interaction, which is §6.1's
+point restated.
+
 ### 6.2 Interpretability: what the Watchdog actually learned
 
 A feature-group ablation on the test split isolates the cause. Removing the single feature "did this
@@ -299,8 +334,13 @@ Because the label is recoverable from two of the detector's input features (§6.
 a hard problem, and the right reading of the 0.753-versus-0.352 gap is that two differently handicapped
 detectors sit well below a zero-parameter signature at 0.997. **The honest conclusion on the detector side is
 negative: the RL formulation is not justified for this task, and the task is not a test of the research
-question it was built to answer.** Gradient boosting on the same features, fitted in seconds, dominates the
-recurrent policy on every bucket.
+question it was built to answer.** A supervised LSTM matches the CP-7 Watchdog on every held-out dataset in
+minutes, and on the original labels gradient boosting dominates the original recurrent policy everywhere.
+
+This does not make the detector work valueless — it relocates its value. The diagnosis in §6.1b is a genuine
+methodological result: the project caught a labelling artefact that had quietly turned a detection task into an
+actor-identification task, and demonstrated the fix across four independently pre-registered attack families.
+That is a transferable lesson. The 0.98 recall is not.
 
 The ablation points to why the Watchdog in particular does poorly: it keyed on a single behavioural signature
 because the training population exhibited one dominant style, and because that signature is the label. The

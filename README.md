@@ -908,20 +908,35 @@ Every attacker here was inspected before CP-7, so these numbers describe the rou
 ## Where the three claims stand
 
 1. **RL learns meaningful manipulation — partly shown.** SPOOFER-04 (INTC) and SPOOFER-02 (MSFT) learned profitable spoof-and-trade behaviour. Their PnL comes from spoof gain, and the same trading with impact switched off loses money. On AAPL, GOOG and AMZN the calibrated impact makes spoofing unprofitable or marginal, and those Spoofers barely trade. Getting there required four environment fixes, each caught by breaking down where profit came from. Structurally, the learned behaviour resembles Coscia's documented pattern in the dimensions the agents choose (large orders on one side while trading on the other, fills of 0.4–1.4% vs Coscia's 0.08–0.5%, SPOOFER-04 alternating sides). It differs in speed and cannot reproduce layering (`results/real_case_comparison.md`). **The profit does not survive a change of market mechanism.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, both RL Spoofers lose money, and neither shows a clear manipulation gain (`results/synthetic_eval.md`). Profitable manipulation is therefore shown only under the replay impact model.
-2. **The Watchdog generalises to attacks it hasn't seen — not shown, now on a clean pre-registered test.** On LATEBURST-ATK, defined and committed before any of its data existed, it catches **24%** of manipulative orders against the rule's **89%**. It flags 5% of legitimate large orders against the rule's 76%. The earlier scripted-attacker result (15–25% vs 94–95%) agrees, but it was inspected during analysis and is no longer a clean test. A second pre-registered test, layering in the synthetic market, also went against the Watchdog: recall 0.30 and F1 0.44, against the rule's 1.00 and 0.73. The same weakness appears inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps, but the Watchdog flags only 1.8%. The Watchdog learned the dense MSFT/INTC style (trading against the resting order almost every step) and misses sparser spoofing (a wait, then a few trades). It was not tuned on held-out data to hide this. The held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+2. **The Watchdog generalises to attacks it hasn't seen — not shown for the original Watchdog, shown in simulation for CP-7, and the win is smaller than it looks.**
+
+   *Original Watchdog (`main`).* On LATEBURST-ATK, defined and committed before any of its data existed, it caught **24%** of manipulative orders against the rule's **89%**, and flagged 5% of legitimate large orders against the rule's 76%. A second pre-registered test, layering in the synthetic market, also went against it: recall 0.30, F1 0.44, against the rule's 1.00 and 0.73. The same weakness showed inside training: SPOOFER-03 (GOOG) spoofs on 21% of its test steps and was flagged on 1.8%. It had learned the dense MSFT/INTC style and missed sparse spoofing.
+
+   *Diagnosis.* The hindsight label marked **every** step an order rested, including steps before any opposite trade, so training rewarded predicting **who would spoof** over detecting **the act**: the original Watchdog flagged 99% of SPOOFER-04's orders before any opposite trade, but only 13.7% of SPOOFER-03's opposite-trade steps (`scripts/flag_timing_diagnostic.py`).
+
+   *CP-7 (`cov`).* With a causal label (positives begin at the first opposite trade), a myopic γ = 0 objective and training coverage of varied act timing — all chosen on test splits, never on held-out data — the Watchdog reaches order-level recall **0.98–0.99 with a legitimate false-positive rate of 0.001–0.012 on four held-out attack families**, including the pre-registered REVERSAL-ATK it was the verdict model for (`results/posthoc_rescore.md`, `results/reversal_test.md`).
+
+   *The caveat that matters.* The label-definition rule (LABEL-RULE) scores 0.98–0.99 on exactly the same data **by construction**, and a supervised LSTM matches it in minutes. CP-7 reached a ceiling that a zero-parameter rule already occupied, so this is evidence that the task is recoverable, not that reinforcement learning solved a hard problem. See "Baselines: is RL needed?".
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. Only the rule has been run on real, unlabeled order flow (AAPL, MSFT, GOOG, INTC, AMZN). The Watchdog cannot be, because LOBSTER messages carry no participant identities, so its participant features cannot be built from real data.
 
-Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Student-t CI over 3 training seeds scored on the same data (`results/multiseed.md`):
+Headline comparison across the two Watchdog generations and the rule. Mean ± 95% Student-t CI over 3 training
+seeds scored on the same data (`results/posthoc_rescore.md`, `results/multiseed.md`). The last column is the
+label-definition rule — the ceiling, perfect by construction, not a competitor.
 
-| Measure | Watchdog (3 seeds) | Rule |
-|---|---|---|
-| In-distribution order F1 | **0.753 ± 0.058** | 0.352 |
-| False-positive rate on legitimate orders | **0.031 ± 0.067** | 0.823 |
-| False-positive rate on held-out AMZN legitimate orders | **0.004 ± 0.018** | 0.972 |
-| Recall on the pre-registered unseen attacker | 0.217 ± 0.156 | **0.885** |
-| Precision on the pre-registered unseen attacker | **0.774 ± 0.486** | 0.312 |
-| PnL suppression of SPOOFER-04 INTC (main Watchdog, 50 episodes) | **83%** (+$12,625 → +$2,165) | 55% (→ +$5,655) |
-| Interventions per episode on legitimate FLICKER orders (main Watchdog) | **0.3–0.4** | 4.7 |
+| Measure | Original Watchdog (3 seeds) | CP-7 `cov` (3 seeds) | Size + fast-cancel rule | Label ceiling |
+|---|---|---|---|---|
+| In-distribution order F1 | 0.753 ± 0.058 | **0.984 ± 0.001** | 0.352 | 0.986 |
+| False-positive rate on legitimate orders | 0.031 ± 0.067 | **0.002 ± 0.002** | 0.820 | 0.000 |
+| False-positive rate on held-out AMZN legitimate orders | 0.004 ± 0.018 | **0.001 ± 0.002** | 0.972 | 0.000 |
+| Recall, pre-registered LATEBURST-ATK | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | 0.983 |
+| Recall, pre-registered DRIP-ATK | 0.067 ± 0.115 | **0.989 ± 0.002** | 0.744 | 0.989 |
+| Recall, pre-registered REVERSAL-ATK | 0.139 ± 0.129 | **0.983 ± 0.005** | 0.964 | 0.984 |
+| PnL suppression of SPOOFER-04 INTC (original Watchdog, 50 episodes) | 83% (+$12,625 → +$2,165) | not re-measured | 55% (→ +$5,655) | — |
+| Interventions per episode on legitimate FLICKER orders (original Watchdog) | 0.3–0.4 | not re-measured | 4.7 | — |
+
+Only the LATEBURST row was a pre-registered verdict for the original Watchdog, and only REVERSAL-ATK was one for
+`cov`; the other attack rows are post-hoc descriptions of models on data that has since been inspected, and decide
+nothing.
 
 - All three comparisons hold for every seed. On the means, in-distribution F1 is 2.1× the rule's, the false-positive rate on legitimate orders is about 26× lower (0.031 vs 0.823), and unseen-attacker recall is 4.1× lower.
 - Seeds differ mainly in the precision/recall balance. One seed (main_s3) is conservative: order precision 0.95, recall 0.59, and step recall 0.50 versus 0.87 for the other two. Recall intervals are therefore wide (order ±0.27, step ±0.52).
@@ -930,11 +945,12 @@ Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Stude
 ## Open issues
 
 1. **Profitable spoofing depends on the replay impact model.** In the synthetic agent-based market, where a spoof moves the price 4.5–9× less, every manipulator loses money. Profit results do not transfer across market mechanisms.
-2. **The Watchdog misses sparse spoofing** (a wait, then a few trades). This holds in training (SPOOFER-03 GOOG) and on unseen attackers (LATEBURST-ATK recall 0.24), and ablation shows detection rests on trade direction.
-3. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population, and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
-4. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
-5. **Seeds.** The Watchdog uses 3 training seeds, and the two profitable Spoofers now do too (`results/spoofer_seeds.md`): all 3 seeds learned to spoof on both MSFT and INTC. INTC is stable across seeds (+$14,368 ± 1,135); MSFT is not (+$11,431 ± 16,844), because the committed `main` seed earns +$3,628 while the other two earn about +$15k, so the headline understates it. SPOOFER-01/03/05, which never learned to spoof, are still single-seed.
-6. **Layering.** The replay environment allows one large order per side at the best price, so no Spoofer can learn layering. It was tested only with a scripted attacker in the synthetic market (Watchdog recall 0.30 vs rule 1.00; `results/layering_test.md`). Sarao-style orders held several levels back were not tested.
+2. **The detection task is close to a tautology.** The label is `opposite_trades > 0` and the observation hands the detector the participant's trade direction (feature 44) and the side of its resting orders (feature 45), so the label's definition is present in its input. A zero-parameter comparison of those two features scores order-level F1 0.997 in-distribution and 0.995 on the held-out scripted attacker at a false-positive rate of 0.000 (`results/label_observability.md`), and the label-definition rule scores 0.98–0.99 on every pre-registered attack (`results/baselines_final.md`). CP-7 closed the gap to that ceiling; it did not make the problem hard. **The fix is to withhold per-participant attribution from the observation**, which changes the environment and requires retraining. *Largest open item.*
+3. **Sparse spoofing was the original Watchdog's failure mode** (a wait, then a few trades): SPOOFER-03 GOOG in training, LATEBURST-ATK recall 0.24 on a clean test. CP-7's causal label and varied-timing training sources fixed it (recall 0.98–0.99). The ablation finding that detection rests on trade direction still holds, and issue 2 explains why that was inevitable.
+4. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population, and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
+5. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
+6. **Seeds.** The Watchdog uses 3 training seeds, and the two profitable Spoofers now do too (`results/spoofer_seeds.md`): all 3 seeds learned to spoof on both MSFT and INTC. INTC is stable across seeds (+$14,368 ± 1,135); MSFT is not (+$11,431 ± 16,844), because the committed `main` seed earns +$3,628 while the other two earn about +$15k, so the headline understates it. SPOOFER-01/03/05, which never learned to spoof, are still single-seed.
+7. **Layering.** The replay environment allows one large order per side at the best price, so no Spoofer can learn layering. It was tested only with a scripted attacker in the synthetic market (Watchdog recall 0.30 vs rule 1.00; `results/layering_test.md`). Sarao-style orders held several levels back were not tested.
 
 ## Known limitations
 

@@ -33,12 +33,17 @@ Everything below is measured and committed under `results/`. Nothing is estimate
 | Claim | Verdict | Key evidence |
 |---|---|---|
 | 1. RL learns meaningful manipulation | **Partly shown** | SPOOFER-04 (INTC) +$13,208 ± 1,654 per episode, SPOOFER-02 (MSFT) +$2,437 ± 1,068. With price impact switched off the same trading loses money, so the profit is the spoof. Across 3 training seeds each, all 3 seeds learned to spoof on both stocks (INTC +$14,368 ± 1,135; MSFT +$11,431 ± 16,844). But in the synthetic market both lose money, so profitability holds only under the replay impact model. |
-| 2. The Watchdog generalises to unseen attacks | **Not shown — and the test was not a fair one** | Two pre-registered tests, each run once: LATEBURST recall 0.24 vs rule 0.89; layering recall 0.30 vs rule 1.00. An audit then found the label is readable from two of the detector's own input features, so a zero-parameter signature generalises perfectly (order F1 0.995 on the held-out scripted attacker). The failure is the learner's, not the features' — see §2b. |
+| 2. The Watchdog generalises to unseen attacks | **Not shown for the original Watchdog; shown in simulation for CP-7 — but against a ceiling a zero-parameter rule already occupies** | Original Watchdog: LATEBURST recall 0.24 vs rule 0.89; layering 0.30 vs 1.00. Diagnosed as a labelling artefact (§2c), fixed with a causal label, γ = 0 and varied-timing training coverage. CP-7 `cov`: recall **0.98–0.99** at legitimate FPR 0.001–0.012 across four held-out attack families. But the label-definition rule scores the same by construction and a supervised LSTM matches it — see §2b. |
 | 3. It does not flag legitimate activity | **Shown in simulation** | False-positive rate on legitimate orders 0.031 ± 0.067 across 3 seeds vs the rule's 0.823; 0.11 vs 0.92 in the synthetic market. Not testable on real data (see §10). |
+
+**The detector in one line:** the original Watchdog failed on unseen attacks, the cause was the label rather
+than the learner, the fix worked completely — and the ceiling it reached is occupied by a rule with no
+parameters. Read §2b and §2c together; neither is the whole story on its own.
 
 Supporting results:
 
-- **In-distribution detection**: Watchdog order-level F1 **0.753 ± 0.058** (3 seeds) vs rule **0.352**. It flags while the order still rests (median delay 0 steps); the rule can only fire at the cancel (8 steps).
+- **In-distribution detection**: CP-7 `cov` order-level F1 **0.984 ± 0.001** (3 seeds) vs rule **0.352**; the
+  original Watchdog was 0.753 ± 0.058. It flags while the order still rests (median delay 0 steps); the rule can only fire at the cancel (8 steps).
 - **PnL suppression**: with the Watchdog acting inside episodes (flag → cancel the trader's resting orders, block new ones for 200 events), SPOOFER-04's profit falls **83%** vs the rule's 55%, while intervening on legitimate traders about 12× less often.
 - **Interpretability**: detection rests almost entirely on one feature. Ablating "trade direction" drops F1 from 0.772 to **0.113**. That is also why sparse spoofing is missed.
 - **Real cases**: structurally similar to Coscia in the dimensions the agents choose (large orders one side, trading the other, fills 0.4–1.4% vs his 0.08–0.5%, side alternation). Different in speed (44–52% of our spoofs rest over 1 s vs his 0.57%) and no layering in the replay environment.
@@ -77,7 +82,34 @@ What this does and does not change:
   would make the detector half of this project a real experiment, and it is the first item in future work.
 
 Locked down by `tests/test_label_observability.py` so a future change to the label or features cannot quietly
-invalidate this. Full write-up: `AUDIT.md` §2 and `REPORT.md` §6.1.
+invalidate this. Full write-up: `AUDIT.md` §C and `REPORT.md` §6.1.
+
+Arnav reached the same conclusion independently, from the other direction: he built **LABEL-RULE**, the label's
+definition written as a rule, and recorded it as *"the ceiling, perfect by construction, not a competitor."*
+Two people finding this separately is the strongest evidence it is real.
+
+### 2c. How the detector was fixed, and what the fix does and does not prove
+
+The original Watchdog's held-out failure was **not** a learner problem. The hindsight label marked every step an
+order rested, including steps before any opposite trade, so the objective rewarded predicting **who would spoof**
+over detecting **the act**. The diagnostic is unambiguous (`scripts/flag_timing_diagnostic.py`): the original
+Watchdog flagged 99% of SPOOFER-04's orders *before* any opposite trade, and only 13.7% of SPOOFER-03's
+opposite-trade steps.
+
+Three changes, all chosen on test splits and never on held-out data:
+
+1. **Causal label** (`watchdog.dataset.causal_labels`) — positives begin at the first opposite trade.
+2. **γ = 0**, a myopic objective. With γ = 0 the Watchdog's RL training is cost-weighted classification by
+   policy gradient.
+3. **Varied act timing in training** (VARIED-SPOOF, ACCUM), kept in a separate `data/watchdog_ext` so the
+   original splits and every result built on them are unchanged.
+
+Result across four held-out attack families: recall 0.22–0.30 → **0.98–0.99**, legitimate FPR 0.001–0.012
+(`results/posthoc_rescore.md`).
+
+**What this proves:** a labelling choice can silently redefine a task, and diagnosing that is worth more than any
+amount of hyperparameter search. **What it does not prove:** that RL was needed. A supervised LSTM with the same
+labels matches it everywhere and trains in minutes (`results/baselines_final.md`).
 
 ## 3. Getting productive in ~30 minutes
 
@@ -188,11 +220,11 @@ Two synthetic-market dead ends: a fixed cancel probability let liquidity grow wi
 
 ## 7. Open issues, in the order I would tackle them
 
-1. **The detector half of the project does not pose a hard problem** (§2b). The label is readable from two
-   observation features. The fix is not a better learner: it is to withhold per-participant attribution from the
-   observation, so the detector must infer manipulation from aggregate order flow. That changes the environment
-   and requires retraining, but it is the only change that makes the detector results mean anything. *Biggest
-   item on this list.*
+1. **The detector half of the project does not pose a hard problem** (§2b). CP-7 confirmed this rather than
+   refuting it: it closed the gap to a ceiling that a zero-parameter rule already occupied. The fix is not a
+   better learner — it is to withhold per-participant attribution from the observation, so the detector must
+   infer manipulation from aggregate order flow. That changes the environment and requires retraining, and it is
+   the only change that would make the detector results mean something. *Biggest item on this list.*
 2. **Profitability does not transfer across market mechanisms.** In the synthetic market a spoof moves the price 4.5–9× less and every manipulator loses money. Either the replay impact model is too generous or the synthetic market is too inert (its only reactive channel is imbalance-following — no market makers repricing quotes). Deciding which would change how claim 1 is written. *Largest open question.*
 3. **The Watchdog misses sparse spoofing** (a wait, then a few trades): recall 0.24–0.30 on both pre-registered attackers. Ablation says it keys on trade direction. Worth trying: train against a population that includes sparse styles, or add features summarising recent order lifecycle rather than instantaneous trading.
 4. **Spoofing is unprofitable on wide-spread stocks** (AAPL, GOOG, AMZN), so those Spoofers never learned it and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch. A held-out 1-tick stock would be better, but the dataset only has MSFT and INTC of that type and both are training stocks.
@@ -239,7 +271,7 @@ Worth keeping:
 
 ## 11. If you only read one thing
 
-Read `AUDIT.md` §2, then §2b above. The detector half of this project does not pose a hard problem: the label
+Read `AUDIT.md` §C, then §2b and §2c above. The detector half of this project does not pose a hard problem: the label
 is readable from two of the detector's own input features, a zero-parameter signature scores 0.997, and
 gradient boosting beats the RL detector everywhere. Present the detector work as a documented negative result.
 
