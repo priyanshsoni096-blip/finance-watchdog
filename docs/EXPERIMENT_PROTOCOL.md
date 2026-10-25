@@ -65,6 +65,9 @@ input** — definitional leakage, not temporal leakage. A correct temporal split
 Measured: a zero-parameter comparison of those two features scores order-level F1 **0.997** in-distribution and
 **0.995** on a held-out attacker at FPR 0.000.
 
+Every feature, its meaning, when it becomes available and whether it leaks is tabulated in
+`docs/FEATURE_DICTIONARY.md`.
+
 **Control:** `watchdog/anonymised_experiment.py` withholds the whole participant block and audits that the
 remainder cannot reconstruct the label by another route (no retained feature correlates above 0.381; the best
 single-feature rule reaches 0.490 against the withheld pair's 0.948). Guarded by

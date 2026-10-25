@@ -110,7 +110,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-172 tests, about 140 seconds (138 s measured). Tests that need data skip themselves if it isn't downloaded.
+184 tests, about 60 seconds (57 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 
@@ -396,6 +396,7 @@ scripts/make_figures.py           report figures -> results/figures/
 app.py                            Streamlit dashboard: inputs, backend pipeline, results, evidence
 REPORT.md                         full write-up: method, results, discussion, limitations, references
 docs/FINAL_AUDIT.md               audit report (A-J): bugs, research design, model comparison, verdict
+docs/FEATURE_DICTIONARY.md        every input feature: meaning, availability, and measured leakage
 docs/EXPERIMENT_PROTOCOL.md       hypotheses, splits, seeds, metrics and leakage controls
 docs/MODEL_COMPARISON.md          every detector on comparable data, with experiment identifiers
 docs/DEMO_GUIDE.md                the 10-minute presentation run sheet

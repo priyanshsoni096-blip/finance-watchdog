@@ -79,17 +79,26 @@ book and aggregates derived from it are used. Temporal splits; thresholds fitted
 (`total displayed depth`) · largest retained correlation 0.381 (`book L1 bid size`) · retained features with
 correlation > 0.5: **0**. The removal is real.
 
+3 seeds, mean ± 95% Student-t CI. ±0.000 means the model is deterministic given the data (the constants,
+the fitted rule, and logistic regression under lbfgs); only gradient boosting and the LSTM vary with the seed.
+
 ### Step level — is manipulation happening now?
 
-| Model | Held-out precision | Recall | F1 | FPR |
-|---|---|---|---|---|
-| constant: never flag | n/a | 0.000 | 0.000 | 0.000 |
-| constant: always flag | 0.122 | 1.000 | 0.218 | 1.000 |
-| book-imbalance rule | 0.120 | 0.085 | 0.099 | 0.086 |
-| **logistic regression** | 0.409 | 0.376 | **0.392** | 0.075 |
-| gradient boosting | 0.533 | 0.125 | 0.202 | 0.015 |
+| Model | Held-out precision | Recall | F1 | FPR | PR-AUC |
+|---|---|---|---|---|---|
+| constant: never flag | n/a | 0.000 | 0.000 | 0.000 | 0.096 |
+| constant: always flag | 0.122 | 1.000 | 0.218 | 1.000 | 0.096 |
+| book-imbalance rule | 0.120 | 0.085 | 0.099 | 0.086 | 0.100 |
+| **logistic regression** | 0.409 | 0.376 | **0.392** | 0.075 | 0.314 |
+| gradient boosting | 0.540 ± 0.016 | 0.125 ± 0.015 | 0.203 ± 0.020 | 0.015 ± 0.002 | **0.321 ± 0.002** |
+| supervised LSTM | 0.311 ± 0.023 | 0.028 ± 0.007 | 0.052 ± 0.011 | 0.009 ± 0.002 | 0.166 ± 0.015 |
 
-**Logistic regression wins against the constant (0.392 vs 0.218).** This is a real, if modest, result.
+**Logistic regression wins on F1 against the constant (0.392 vs 0.218), and PR-AUC is about 3× the base
+rate (0.32 vs 0.096).** There is real signal in the book alone — modest, but not nothing.
+
+**In-distribution, for contrast:** the LSTM reaches F1 0.864 ± 0.020 and PR-AUC 0.933 ± 0.026, far ahead of
+everything else, then collapses out of distribution. A sequence model memorises the training sources'
+temporal signatures. Had only in-distribution been reported, it would have looked like the clear winner.
 
 ### Episode level — does this window contain manipulation?
 
@@ -97,11 +106,41 @@ correlation > 0.5: **0**. The removal is real.
 |---|---|---|---|---|
 | constant: always flag | 0.625 | 1.000 | **0.769** | 1.000 |
 | logistic regression | 0.685 | 0.836 | 0.753 | 0.640 |
-| gradient boosting | 0.981 | 0.416 | 0.584 | **0.013** |
+| gradient boosting | 0.975 ± 0.013 | 0.416 ± 0.010 | 0.583 ± 0.010 | **0.018 ± 0.010** |
+| supervised LSTM | 0.732 ± 0.048 | 0.288 ± 0.034 | 0.413 ± 0.043 | 0.176 ± 0.025 |
 
 **Episode-level F1 is not a result.** The held-out set is 62.5% positive, so flagging everything beats every
 model. Do not quote it. Gradient boosting is the only model that separates anything usefully here, and it does
-so by being conservative — precision 0.981 at FPR 0.013 — not by winning on F1.
+so by being conservative — precision 0.975 at FPR 0.018 — not by winning on F1.
+
+### Per instrument — the finding the pooled number hides
+
+Step-level F1 per source, held-out, seed 0. "Always flag" scores 0.30–0.36 on each attacker source.
+
+| Source | Logistic regression | Gradient boosting | Supervised LSTM | Constant |
+|---|---|---|---|---|
+| SCRIPTED-ATK_INTC | **0.585** | 0.433 | 0.083 | 0.346 |
+| SCRIPTED-ATK_MSFT | **0.600** | 0.297 | 0.098 | 0.356 |
+| SCRIPTED-ATK_AAPL | 0.073 | 0.000 | 0.004 | **0.300** |
+| SCRIPTED-ATK_GOOG | 0.126 | 0.011 | 0.007 | **0.300** |
+| SCRIPTED-ATK_AMZN | 0.131 | 0.006 | 0.022 | **0.333** |
+
+**Attribution-free detection works on the two 1-tick stocks and loses to a constant on the other three.**
+Those are exactly the stocks where spoofing is profitable, which is coherent — but it means the pooled 0.392
+averages two opposite results and describes neither.
+
+### Calibration (Brier, lower is better)
+
+A classifier predicting the base rate scores **0.099**.
+
+| Model | In-distribution | Held-out |
+|---|---|---|
+| logistic regression | 0.110 | 0.139 |
+| gradient boosting | 0.080 | 0.110 |
+| supervised LSTM | **0.029** | 0.128 |
+
+**No model is calibrated out of distribution** — all three score worse than the base-rate constant. They rank
+better than chance; their probabilities should not be read as probabilities.
 
 ---
 

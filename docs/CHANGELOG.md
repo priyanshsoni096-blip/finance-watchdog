@@ -84,8 +84,8 @@ held-out attack families; and the ceiling it reached is occupied by a rule with 
 
 | | Before | After |
 |---|---|---|
-| Passing | 115 | **172** |
-| Files | 15 | 22 |
+| Passing | 115 | **184** |
+| Files | 15 | 23 |
 
 Added: time-split integrity (4), metric consistency (10), simulator accounting invariants (10), label
 observability (6), causal labels (7), attribution-leakage guards (7), CLI overwrite protection (12). No test was disabled, weakened or
@@ -110,6 +110,30 @@ Found by running every entrypoint's `--help` as a smoke test, which is how they 
   now prints usage, validates its arguments and exits 2 on misuse.
 - The three pre-registered tests that re-ran produced **byte-identical results**, which is an unplanned
   reproduction check in their favour.
+
+## Reporting gaps closed in the attribution-free experiment
+
+The experiment had been run single-seed and reported only pooled precision/recall/F1/FPR. Eight gaps closed:
+
+- **Multi-seed** (`--seeds 0 1 2`) with 95% Student-t intervals using small-sample t values, not 1.96.
+- **PR-AUC** was computed but never rendered. It is the fairer headline here: against a held-out base rate of
+  0.096, logistic regression reaches 0.314 and gradient boosting 0.321.
+- **Confusion matrices** per model on the held-out split.
+- **Per-source breakdown**, which gives instrument and attack family at once.
+- **Supervised LSTM** over whole episodes, the fair comparison for a recurrent RL detector.
+- **Calibration** — Brier score plus a reliability curve, against the base-rate reference.
+- **Feature dictionary** (`docs/FEATURE_DICTIONARY.md`), with every index verified against the code.
+- **12 tests** (`tests/test_anonymised_metrics.py`) pinning each statistic to a hand-checkable case.
+
+**The breakdown changed the conclusion more than the headline F1 did:**
+
+1. The LSTM is the best in-distribution model (step F1 0.864 ± 0.020, PR-AUC 0.933 ± 0.026) and the worst
+   out of it (F1 0.052 ± 0.011). Reporting only in-distribution numbers would have crowned it.
+2. Detection works **only on the two 1-tick stocks**: logistic regression reaches F1 0.585 (INTC) and 0.600
+   (MSFT), but 0.073–0.131 on AAPL, GOOG and AMZN, where it *loses to a constant*. The pooled 0.392 averages
+   two opposite results.
+3. **No model is calibrated out of distribution** — all three score a worse Brier than the base-rate constant
+   (0.110–0.139 against 0.099), despite beating it comfortably in-distribution.
 
 ## Known not-done
 

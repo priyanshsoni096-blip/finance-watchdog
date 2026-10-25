@@ -573,14 +573,22 @@ else:
             st.markdown("#### And with participant attribution removed entirely")
             h, aud = anon.get("headline", {}), anon.get("audit", {})
             held = h.get("held_out_set", "held-out")
+            def _ms(c, key):
+                """Metrics are {mean, ci95} dicts once the experiment runs over several seeds."""
+                v = c.get(key)
+                if isinstance(v, dict):
+                    mu, ci = v.get("mean"), v.get("ci95")
+                    return num(mu, 3) if (ci is None or ci != ci) else f"{num(mu, 3)} ± {num(ci, 3)}"
+                return num(v, 3)
+
             arows = []
             for mname, m in anon["models"].items():
                 c = dig(m, "sets", held, "step", default={})
                 if not c:
                     continue
-                arows.append({"Model (book features only)": mname, "Precision": num(c.get("precision"), 3),
-                              "Recall": num(c.get("recall"), 3), "F1": num(c.get("f1"), 3),
-                              "FPR": num(c.get("fpr"), 3)})
+                arows.append({"Model (book features only)": mname, "Precision": _ms(c, "precision"),
+                              "Recall": _ms(c, "recall"), "F1": _ms(c, "f1"),
+                              "FPR": _ms(c, "fpr"), "PR-AUC": _ms(c, "pr_auc")})
             if arows:
                 st.dataframe(pd.DataFrame(arows), hide_index=True, use_container_width=True)
                 st.markdown(
@@ -768,7 +776,7 @@ else:
 
         with st.expander("Reproduction and test status"):
             c = st.columns(3)
-            c[0].metric("Automated tests", "172")
+            c[0].metric("Automated tests", "184")
             c[1].metric("Scripts reproducing exactly", "12 / 12")
             c[2].metric("Values re-checked", "2,178")
             st.markdown('<div class="cap">Every script was re-run in a clean clone of the repository — '
