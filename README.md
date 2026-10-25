@@ -106,6 +106,27 @@ python -m pytest tests -q
 ```
 115 tests, about 30 seconds (29 s measured). Tests that need data skip themselves if it isn't downloaded.
 
+### Interactive dashboard and report
+
+```bash
+pip install -r requirements-dashboard.txt
+streamlit run app.py --server.fileWatcherType none
+```
+An interactive walkthrough: the inputs, what each backend stage does, the agents, detection results, robustness
+checks, interpretability and evidence quality. Every number is read from `results/`.
+
+> **The `--server.fileWatcherType none` flag is required.** This repo contains a package named `watchdog/`,
+> which shadows the PyPI `watchdog` library Streamlit uses for file watching; without the flag Streamlit
+> starts but every page load fails with `ImportError: cannot import name 'events' from 'watchdog'`.
+
+```bash
+python scripts/make_figures.py
+```
+Regenerates the six report figures in `results/figures/` from the training logs and results.
+
+Written up in full in **`REPORT.md`** (abstract, method, results, discussion, limitations, references), with
+`dashboard.html` as a static one-page alternative to the Streamlit app.
+
 ### Reproduce the reported results without retraining
 
 The final trained models are committed in `checkpoints/`:

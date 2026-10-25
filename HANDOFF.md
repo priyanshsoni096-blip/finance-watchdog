@@ -99,6 +99,10 @@ synthetic/      agent-based market: order book, background traders, calibration,
 scripts/        calibration, PnL decomposition, feature-signal diagnostic, real-case statistics
 tests/          115 tests
 results/        every reported number (.md to read, .json for exact values)
+app.py          Streamlit dashboard: inputs, backend pipeline, results, evidence
+                (run: streamlit run app.py --server.fileWatcherType none — the flag is
+                required because the repo's watchdog/ package shadows the PyPI one)
+REPORT.md       full write-up: method, results, discussion, limitations, references
 dashboard.html  self-contained results page built from results/ by scripts/build_dashboard.py
 configs/        calibration files (committed)
 checkpoints/    trained models (committed; other tags are local only)
