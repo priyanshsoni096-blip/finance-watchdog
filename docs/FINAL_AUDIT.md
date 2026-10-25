@@ -339,6 +339,30 @@ be rebuilt or copied. All CP-7 checkpoints are present on this machine and were 
 
 ---
 
+## I2. Final quality gate — every check actually run
+
+| Check | Command | Result |
+|---|---|---|
+| Full test suite | `python -m pytest tests -q` | **172 passed**, 138 s |
+| Module imports | 13 core modules imported individually | all OK |
+| Entrypoint smoke | `--help` on every script with a `main()` | 5 failures found and fixed (see below) |
+| Hardcoded local paths | grep for `C:/Users`, `/home/`, `/Users/` in sources | none |
+| Secrets / credentials | grep for api keys, tokens, passwords, private keys | none |
+| Oversized tracked files | every tracked file > 5 MB | none; `.git` is 29 MB |
+| Dashboard startup | Streamlit launched headless, `/_stcore/health` polled | serves HTTP 200 |
+| Working tree | `git status --porcelain` | clean, in sync with origin |
+| Cross-platform reproduction | DRIP + REVERSAL rebuilt and re-run | 0 real differences (§D0) |
+
+**The entrypoint smoke test is the one that earned its place.** `--help` on `watchdog/drip_test.py`,
+`reversal_test.py`, `lateburst_test.py` and `scripts/real_flow_rule.py` *executed the test* rather than
+printing usage, because those scripts took no arguments and ignored argv — rewriting committed single-run
+results. One of them, `real_flow_rule.py`, produced a **less complete** file than the committed one (the SPY
+block needs data absent from this machine); it was restored from git. `scripts/pnl_decompose.py --help`
+crashed with an `IndexError`. All five are fixed and guarded by `tests/test_cli_guard.py`.
+
+**Not run:** linting and static type checking (no linter config in the repo, and adding one now would
+produce churn rather than evidence); dependency CVE scanning (no scanner available in this environment).
+
 ## J. Final research verdict
 
 **What the project now establishes.**
