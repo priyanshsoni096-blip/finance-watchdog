@@ -1,9 +1,14 @@
-"""Streamlit dashboard for the RL Finance Watchdog.
+"""SPOOFWATCH CONSOLE — presentation dashboard for the RL Finance Watchdog.
 
-    streamlit run app.py
+    streamlit run app.py --server.fileWatcherType none
 
-Reads the committed files in results/ and configs/ — no training, no data download, no network. Every number
-shown is read from those files, so the dashboard cannot drift from the evidence.
+The flag is required: this repository contains a package named `watchdog/`, which shadows the PyPI `watchdog`
+library Streamlit uses for file watching.
+
+Three views: Overview (headline evidence), Demonstration (a recorded episode, step by step) and Evidence &
+Limitations (the full research record). Every figure is read from committed files in results/ and configs/;
+nothing is computed, trained or fetched live. Missing files degrade to "Not available" rather than placeholder
+numbers.
 """
 from __future__ import annotations
 
@@ -16,591 +21,576 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 RESULTS, FIGS, CONFIGS = ROOT / "results", ROOT / "results" / "figures", ROOT / "configs"
-WD, RULE, GOOD, BAD, WARN = "#4da3ff", "#d9a441", "#39c07c", "#e2605a", "#d9a441"
 
-st.set_page_config(page_title="RL Finance Watchdog", page_icon="🛡️", layout="wide",
-                   initial_sidebar_state="expanded")
+BG, PANEL, LINE = "#0b1220", "#121a2b", "#22304a"
+TEXT, MUTED = "#e6edf7", "#8b99b4"
+WD, RULE, GOOD, BAD = "#3d8bfd", "#e0a200", "#2ecc71", "#e5484d"
+NA = "Not available"
 
-st.markdown("""<style>
-  .block-container {padding-top: 2.2rem; padding-bottom: 3rem;}
-  div[data-testid="stMetricValue"] {font-size: 1.65rem;}
-  .verdict {display:inline-block; padding:3px 11px; border-radius:99px; font-size:.75rem; font-weight:700;}
-  .v-yes {background:rgba(57,192,124,.15); color:#39c07c; border:1px solid rgba(57,192,124,.45);}
-  .v-part {background:rgba(217,164,65,.15); color:#d9a441; border:1px solid rgba(217,164,65,.45);}
-  .v-no {background:rgba(226,96,90,.15); color:#e2605a; border:1px solid rgba(226,96,90,.45);}
-  .stage {border:1px solid rgba(140,160,200,.25); border-radius:8px; padding:12px 14px; height:100%;}
-  .stage h4 {margin:0 0 6px; font-size:.95rem;}
-  .stage p {margin:0; font-size:.82rem; opacity:.85;}
-  .stage code {font-size:.74rem;}
-  .caption-sm {font-size:.8rem; opacity:.7;}
+st.set_page_config(page_title="SpoofWatch Console", page_icon="▦", layout="wide",
+                   initial_sidebar_state="collapsed")
+
+st.markdown(f"""<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  .stApp {{ background:{BG}; }}
+  html, body, [class*="css"] {{ font-family:'Inter',-apple-system,'Segoe UI',sans-serif; }}
+  .block-container {{ padding:1.1rem 1.8rem 2rem; max-width:1600px; }}
+  header[data-testid="stHeader"] {{ background:transparent; height:0; }}
+  h1,h2,h3,h4 {{ color:{TEXT}; letter-spacing:-.2px; }}
+  .mono {{ font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums; }}
+
+  .topbar {{ display:flex; align-items:baseline; gap:14px; border-bottom:1px solid {LINE};
+             padding-bottom:10px; margin-bottom:14px; }}
+  .brand {{ font-size:1.32rem; font-weight:700; color:{TEXT}; letter-spacing:.14em; }}
+  .tagline {{ color:{MUTED}; font-size:.82rem; }}
+  .chip {{ margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.1em;
+           color:{RULE}; border:1px solid {RULE}55; background:{RULE}14; padding:3px 9px; border-radius:3px; }}
+
+  .kpi {{ background:{PANEL}; border:1px solid {LINE}; border-left:3px solid var(--acc,{WD});
+          border-radius:4px; padding:11px 13px; height:100%; }}
+  .kpi .k-label {{ color:{MUTED}; font-size:.68rem; text-transform:uppercase; letter-spacing:.09em;
+                   font-weight:600; }}
+  .kpi .k-val {{ font-family:'JetBrains Mono',monospace; font-size:1.85rem; font-weight:600; color:{TEXT};
+                 line-height:1.15; margin:3px 0 1px; }}
+  .kpi .k-cmp {{ font-family:'JetBrains Mono',monospace; font-size:.8rem; color:{RULE}; }}
+  .kpi .k-dir {{ color:{MUTED}; font-size:.7rem; margin-top:5px; }}
+  .kpi .k-src {{ color:{MUTED}; font-size:.64rem; opacity:.75; margin-top:5px;
+                 font-family:'JetBrains Mono',monospace; }}
+
+  .panel {{ background:{PANEL}; border:1px solid {LINE}; border-radius:4px; padding:12px 14px; }}
+  .finding {{ background:linear-gradient(90deg,{WD}14,transparent); border:1px solid {LINE};
+              border-left:3px solid {WD}; border-radius:4px; padding:11px 14px; }}
+  .finding b {{ color:{TEXT}; }}
+  .warnbar {{ border:1px solid {BAD}44; background:{BAD}10; border-radius:4px; padding:8px 12px;
+              color:#f3bfbd; font-size:.78rem; }}
+  .stage {{ background:{PANEL}; border:1px solid {LINE}; border-radius:4px; padding:9px 11px; height:100%; }}
+  .stage .s-n {{ color:{WD}; font-family:'JetBrains Mono',monospace; font-size:.64rem; letter-spacing:.08em; }}
+  .stage .s-t {{ color:{TEXT}; font-size:.84rem; font-weight:600; margin:2px 0 3px; }}
+  .stage .s-d {{ color:{MUTED}; font-size:.72rem; line-height:1.35; }}
+
+  .verdict {{ display:inline-block; padding:2px 9px; border-radius:3px; font-size:.68rem; font-weight:700;
+              letter-spacing:.06em; font-family:'JetBrains Mono',monospace; }}
+  .v-ok {{ background:{GOOD}18; color:{GOOD}; border:1px solid {GOOD}55; }}
+  .v-part {{ background:{RULE}18; color:{RULE}; border:1px solid {RULE}55; }}
+  .v-no {{ background:{BAD}18; color:{BAD}; border:1px solid {BAD}55; }}
+
+  .ladder {{ font-family:'JetBrains Mono',monospace; font-size:.78rem; width:100%; border-collapse:collapse; }}
+  .ladder td {{ padding:2px 6px; border-bottom:1px solid {LINE}33; }}
+  .ladder .px {{ color:{TEXT}; width:72px; }}
+  .ladder .ask {{ color:#ff9b96; }} .ladder .bid {{ color:#7fd6a0; }}
+  .ladder .barcell {{ width:100%; }}
+  .ladder .bar {{ height:11px; border-radius:2px; display:inline-block; }}
+  .ladder .mine {{ outline:1px solid {RULE}; }}
+  .ladder .sz {{ color:{MUTED}; width:78px; text-align:right; }}
+  .ladder .spread td {{ color:{MUTED}; font-size:.68rem; border-bottom:1px solid {LINE}; padding-top:4px; }}
+
+  .ev {{ font-family:'JetBrains Mono',monospace; font-size:.74rem; color:{MUTED}; padding:2px 0;
+         border-bottom:1px solid {LINE}2b; }}
+  .ev b {{ color:{TEXT}; font-weight:600; }}
+  .ev .flag {{ color:{WD}; }} .ev .alarm {{ color:{BAD}; }} .ev .manip {{ color:{RULE}; }}
+  div[data-testid="stMetricValue"] {{ font-family:'JetBrains Mono',monospace; font-size:1.3rem; }}
+  div[data-testid="stDataFrame"] {{ border:1px solid {LINE}; border-radius:4px; }}
+  .stTabs [data-baseweb="tab-list"] {{ gap:3px; border-bottom:1px solid {LINE}; }}
+  .stTabs [data-baseweb="tab"] {{ background:transparent; color:{MUTED}; font-size:.84rem; }}
+  .stTabs [aria-selected="true"] {{ color:{TEXT}; border-bottom:2px solid {WD}; }}
+  .cap {{ color:{MUTED}; font-size:.74rem; }}
 </style>""", unsafe_allow_html=True)
 
 
-@st.cache_data
-def load(name: str, folder: Path = RESULTS) -> dict:
-    p = folder / name
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+# ─────────────────────────────── data access ───────────────────────────────
+@st.cache_data(show_spinner=False)
+def load(name: str, folder: str = "results") -> dict:
+    p = (RESULTS if folder == "results" else CONFIGS) / name
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
-R = {n: load(f"{n}.json") for n in ("basic_eval", "watchdog_eval", "multiseed", "lateburst_test",
-                                    "layering_test", "pnl_suppression", "feature_ablation",
-                                    "synthetic_eval", "spoofer_seeds", "real_case_stats",
-                                    "synthetic_spoof_impact_pf005", "synthetic_spoof_impact_pf010",
-                                    "synthetic_spoof_impact_pf030")}
-CAL = load("calibration.json", CONFIGS)
-SYNCAL = load("synthetic_calibration.json", CONFIGS)
+R = {n: load(f"{n}.json") for n in (
+    "basic_eval", "watchdog_eval", "multiseed", "lateburst_test", "layering_test", "pnl_suppression",
+    "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes")}
+CAL, SYNCAL = load("calibration.json", "configs"), load("synthetic_calibration.json", "configs")
 MS, RU = R["multiseed"].get("summary", {}), R["multiseed"].get("rule", {})
 
 
-def m(key: str, what: str = "mean"):
-    return MS.get(key, {}).get(what)
+def dig(d: dict, *keys, default=None):
+    for k in keys:
+        if not isinstance(d, dict) or k not in d:
+            return default
+        d = d[k]
+    return d
+
+
+def pct(x, nd=1):
+    return NA if x is None or x != x else f"{100 * x:.{nd}f}%"
+
+
+def num(x, nd=2):
+    return NA if x is None or x != x else f"{x:.{nd}f}"
 
 
 def money(x, k=False):
-    if x is None:
-        return "n/a"
+    if x is None or x != x:
+        return NA
     return f"{'+' if x >= 0 else '−'}${abs(x) / (1000 if k else 1):,.1f}{'k' if k else ''}"
 
 
-def grouped_bar(labels, wd_vals, rule_vals, title, yaxis="score"):
-    fig = go.Figure()
-    fig.add_bar(x=labels, y=wd_vals, name="Watchdog (RL)", marker_color=WD,
-                text=[f"{v:.2f}" for v in wd_vals], textposition="outside")
-    fig.add_bar(x=labels, y=rule_vals, name="Rule baseline", marker_color=RULE,
-                text=[f"{v:.2f}" for v in rule_vals], textposition="outside")
-    fig.update_layout(title=title, barmode="group", height=380, yaxis_title=yaxis,
-                      margin=dict(l=10, r=10, t=50, b=10), legend=dict(orientation="h", y=1.12, x=0),
-                      yaxis=dict(range=[0, 1.18]))
+def kpi(label, value, compare, direction, source, accent=WD):
+    st.markdown(
+        f'<div class="kpi" style="--acc:{accent}"><div class="k-label">{label}</div>'
+        f'<div class="k-val">{value}</div><div class="k-cmp">rule baseline · {compare}</div>'
+        f'<div class="k-dir">{direction}</div><div class="k-src">{source}</div></div>',
+        unsafe_allow_html=True)
+
+
+def chart_layout(fig, height=330, title=None, ytitle=None, yrange=None):
+    fig.update_layout(
+        template="plotly_dark", height=height, title=title, paper_bgcolor=PANEL, plot_bgcolor=PANEL,
+        font=dict(family="Inter, sans-serif", size=12, color=TEXT),
+        margin=dict(l=8, r=8, t=40 if title else 12, b=44),
+        legend=dict(orientation="h", y=-0.16, x=0, font=dict(size=11)),
+        title_font=dict(size=14),
+        yaxis=dict(title=ytitle, range=yrange, gridcolor=LINE, zerolinecolor=LINE),
+        xaxis=dict(gridcolor="rgba(0,0,0,0)", tickfont=dict(size=11)), bargap=.32,
+    )
     return fig
 
 
-# ───────────────────────────────── sidebar ─────────────────────────────────
-with st.sidebar:
-    st.title("🛡️ RL Finance Watchdog")
-    st.caption("Adversarial RL for detecting limit-order-book spoofing")
-    page = st.radio("Section", [
-        "Overview & verdicts", "Inputs: the data", "How it works (pipeline)",
-        "The agents", "Detection results", "Acting on flags", "Robustness checks",
-        "What the detector uses", "Real-world comparison", "Evidence quality",
-    ], label_visibility="collapsed")
-    st.divider()
-    st.markdown("**Scope**")
-    st.caption("Simulation results only. No labelled real-world spoofing data exists, so no claim of "
-               "real-world detection capability is made. CEA §4c(a)(5)(C) (Dodd-Frank §747).")
-    st.divider()
-    st.caption(f"Reading {sum(1 for v in R.values() if v)} committed result files · "
-               "nothing is computed live")
+# ─────────────────────────────── header + nav ───────────────────────────────
+st.markdown(
+    '<div class="topbar"><span class="brand">SPOOFWATCH CONSOLE</span>'
+    '<span class="tagline">Adversarial reinforcement learning for limit order book surveillance</span>'
+    '<span class="chip">RESEARCH / SIMULATION</span></div>', unsafe_allow_html=True)
 
-# ───────────────────────────────── overview ─────────────────────────────────
-if page == "Overview & verdicts":
-    st.header("Can a detector learn to spot market manipulation it has never seen?")
-    st.markdown("> Can a reinforcement learning agent learn to detect *previously unseen* order-book "
-                "manipulation — spoofing — while keeping a low false-positive rate on legitimate activity, "
-                "**without being told what spoofing looks like**?")
+view = st.segmented_control("View", ["Overview", "Demonstration", "Evidence & limitations"],
+                            default="Overview", label_visibility="collapsed")
+if view is None:
+    view = "Overview"
 
-    st.subheader("The three claims")
-    c1, c2, c3 = st.columns(3, gap="medium")
-    across = R["spoofer_seeds"].get("across_seeds", {})
-    with c1:
-        st.markdown('<span class="verdict v-part">PARTLY SHOWN</span>', unsafe_allow_html=True)
-        st.markdown("##### 1 · RL learns manipulation")
-        st.metric("INTC profit per episode", money(across.get("SPOOFER-04", {}).get("pnl_mean")),
-                  delta=f"± {across.get('SPOOFER-04', {}).get('pnl_ci95', 0):,.0f} over 3 seeds",
-                  delta_color="off")
-        st.caption("Spoofing was never rewarded — only profit. All 3 seeds discovered it on both narrow-spread "
-                   "stocks. With price impact switched off the same trading **loses** "
-                   f"{money(across.get('SPOOFER-04', {}).get('no_impact_mean'))}, proving the profit is the spoof.")
-        st.warning("But it does not survive a market where prices emerge from order matching.", icon="⚠️")
-    with c2:
-        st.markdown('<span class="verdict v-no">NOT SHOWN</span>', unsafe_allow_html=True)
-        st.markdown("##### 2 · Generalises to unseen attacks")
-        st.metric("Recall on an unseen attacker", f"{m('LATEBURST-ATK order recall'):.2f}",
-                  delta=f"rule: {RU.get('LATEBURST-ATK order recall', 0):.2f}", delta_color="inverse")
-        st.caption("Two **pre-registered** tests — hypothesis committed before the data existed, each run once "
-                   "— both went against the Watchdog. It keys on trading against a resting order, so sparse "
-                   "manipulation slips past.")
-        st.error("The honest negative result of the project.", icon="✖️")
-    with c3:
-        st.markdown('<span class="verdict v-yes">SHOWN IN SIMULATION</span>', unsafe_allow_html=True)
-        st.markdown("##### 3 · Few false positives")
-        st.metric("False-positive rate, legitimate orders", f"{m('legitimate-only order FPR'):.3f}",
-                  delta=f"rule: {RU.get('legitimate-only order FPR', 0):.2f}", delta_color="inverse")
-        st.caption("About **26× fewer** false accusations than the static rule, and it holds up in a different "
-                   "market mechanism too. This is what makes a surveillance system usable in practice.")
-        st.success("Decisive, across 3 seeds and 2 market models.", icon="✔️")
+# ─────────────────────────────── VIEW A ───────────────────────────────
+if view == "Overview":
+    st.markdown(
+        f'<div class="cap" style="margin:2px 0 12px">'
+        f'<b style="color:{TEXT}">Spoofing</b> places a large order to make the market look one-sided, moving the '
+        f'price, then cancels it after trading on the other side. It is illegal (CEA §4c(a)(5)(C)). '
+        f'Exchanges mostly police it with static rules. <b style="color:{TEXT}">The question:</b> can a learning '
+        f'agent do better — catching manipulation it was never shown, without accusing honest traders?</div>',
+        unsafe_allow_html=True)
 
-    st.divider()
-    st.subheader("The finding in one sentence")
-    st.info("**The static rule catches nearly everything — including nearly everything innocent. The adaptive "
-            "detector is precise, quiet and early, but blind to manipulation shaped differently from what it "
-            "was trained on.** Neither is deployable alone; the trade-off is the result.", icon="🎯")
+    c = st.columns(4, gap="small")
+    with c[0]:
+        kpi("False positives · legitimate orders", pct(dig(MS, "legitimate-only order FPR", "mean")),
+            pct(RU.get("legitimate-only order FPR")), "Lower is better · ~26× fewer false accusations",
+            "multiseed.md · order-level · 3 seeds", GOOD)
+    with c[1]:
+        kpi("In-distribution F1 · known attacks", num(dig(MS, "in-distribution order F1", "mean"), 3),
+            num(RU.get("in-distribution order F1"), 3), "Higher is better · ±0.058 over 3 seeds",
+            "multiseed.md · order-level · test split", WD)
+    with c[2]:
+        s4 = next((r for r in R["pnl_suppression"].get("rows", []) if r["source"] == "SPOOFER-04"), {})
+        kpi("Profit removed · SPOOFER-04 INTC", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
+            pct(dig(s4, "rule", "suppression_pct", default=0) / 100, 0),
+            "Higher is better · detector acts inside the episode",
+            "pnl_suppression.md · 50 episodes", GOOD)
+    with c[3]:
+        kpi("Held-out attack recall · LATEBURST", num(dig(MS, "LATEBURST-ATK order recall", "mean")),
+            num(RU.get("LATEBURST-ATK order recall")), "Higher is better · the baseline wins decisively",
+            "lateburst_test.md · pre-registered · 3 seeds", BAD)
 
-    ind = R["watchdog_eval"].get("buckets", {}).get("In-distribution (test split)", {})
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("In-distribution F1", f"{m('in-distribution order F1'):.3f}",
-              delta=f"rule {RU.get('in-distribution order F1', 0):.2f}", delta_color="normal")
-    k2.metric("Detection delay", "0 steps", delta="rule: 8 steps", delta_color="normal")
-    k3.metric("Profit removed (INTC)", "83%", delta="rule: 55%", delta_color="normal")
-    k4.metric("Reproduces exactly", "12/12 scripts", delta="2,178 values, 0 diffs", delta_color="off")
+    st.write("")
+    g1, g2 = st.columns([3, 2], gap="medium")
+    with g1:
+        ind = dig(R["watchdog_eval"], "buckets", "In-distribution (test split)", default={})
+        lb, lay = R["lateburst_test"], R["layering_test"]
+        labels = ["Known attacks<br>(in-distribution)", "LATEBURST<br>(held out)", "LAYER<br>(held out)"]
+        wd_v = [dig(ind, "watchdog_orders", "f1", default=0),
+                dig(lb, "overall", "watchdog_orders", "f1", default=0),
+                dig(lay, "pooled", "watchdog_orders", "f1", default=0)]
+        ru_v = [dig(ind, "rule_orders", "f1", default=0),
+                dig(lb, "overall", "rule_orders", "f1", default=0),
+                dig(lay, "pooled", "rule_orders", "f1", default=0)]
+        fig = go.Figure()
+        fig.add_bar(x=labels, y=wd_v, name="RL Watchdog", marker_color=WD,
+                    text=[f"{v:.2f}" for v in wd_v], textposition="outside", textfont=dict(size=12))
+        fig.add_bar(x=labels, y=ru_v, name="Rule baseline", marker_color=RULE,
+                    text=[f"{v:.2f}" for v in ru_v], textposition="outside", textfont=dict(size=12))
+        fig.add_vline(x=.5, line_width=1, line_dash="dot", line_color=MUTED)
+        fig.add_annotation(x=1.5, y=1.08, text="attacks never seen in training", showarrow=False,
+                           font=dict(size=10, color=MUTED))
+        st.plotly_chart(chart_layout(fig, 340, "Detection quality — order-level F1", "F1", [0, 1.2]),
+                        use_container_width=True)
+        st.markdown('<div class="cap">The Watchdog more than doubles the baseline on attacks resembling its '
+                    'training, and loses to it on both pre-registered unseen attacks.<br>'
+                    '<span style="opacity:.75">Single Watchdog seed (<span class="mono">main</span>), the one the pre-registered tests ran on; the KPI above is the 3-seed mean, so values differ slightly.</span></div>',
+                    unsafe_allow_html=True)
+    with g2:
+        legit = dig(R["watchdog_eval"], "buckets", "Legitimate only (HONEST + FLICKER)", default={})
+        syn = dig(R["synthetic_eval"], "detection", "Legitimate only", default={})
+        rows = [("Replay market", dig(legit, "watchdog_orders", "fpr", default=0),
+                 dig(legit, "rule_orders", "fpr", default=0)),
+                ("Synthetic market", dig(syn, "watchdog_orders", "fpr", default=0),
+                 dig(syn, "rule_orders", "fpr", default=0))]
+        fig = go.Figure()
+        fig.add_bar(y=[r[0] for r in rows], x=[100 * r[2] for r in rows], name="Rule baseline",
+                    orientation="h", marker_color=RULE,
+                    text=[f"{100 * r[2]:.0f}%" for r in rows], textposition="outside")
+        fig.add_bar(y=[r[0] for r in rows], x=[100 * r[1] for r in rows], name="RL Watchdog",
+                    orientation="h", marker_color=WD,
+                    text=[f"{100 * r[1]:.0f}%" for r in rows], textposition="outside")
+        fig.update_layout(xaxis=dict(range=[0, 108], ticksuffix="%", gridcolor=LINE))
+        st.plotly_chart(chart_layout(fig, 340, "False alarms on legitimate orders", None),
+                        use_container_width=True)
+        st.markdown('<div class="cap">Why this decides usability: at the baseline\'s rate, four in five '
+                    'investigated traders did nothing wrong, and real alerts drown.<br>'
+                    '<span style="opacity:.75">Order-level, single <span class="mono">main</span> seed per market; the KPI above is the 3-seed replay-market mean.</span></div>',
+                    unsafe_allow_html=True)
 
-# ───────────────────────────────── inputs ─────────────────────────────────
-elif page == "Inputs: the data":
-    st.header("What goes in")
-    st.caption("Real NASDAQ limit-order-book data — not synthetic prices — from the LOBSTER sample release.")
+    st.write("")
+    f1, f2 = st.columns([3, 2], gap="medium")
+    f1.markdown(
+        '<div class="finding"><b>Finding.</b> Markedly lower false-positive rates in simulation, but '
+        'generalisation to unseen manipulation remains unresolved — on both pre-registered held-out attacks the '
+        'static rule recalls more.</div>', unsafe_allow_html=True)
+    f2.markdown(
+        '<div class="warnbar"><b>Research prototype.</b> Simulation only. LOBSTER carries no participant '
+        'identities, so this detector has never been validated against labelled real-world spoofing.</div>',
+        unsafe_allow_html=True)
 
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Trading day", "2012-06-21")
-    c2.metric("Stocks", "5")
-    c3.metric("Book depth", "10 levels")
-    c4.metric("Market events", "~2.1 million")
+# ─────────────────────────────── VIEW B ───────────────────────────────
+elif view == "Demonstration":
+    demo = R["demo_episodes"]
+    stages = [("01", "Market data", "LOBSTER order book replayed event by event"),
+              ("02", "PPO spoofer agents", "Rewarded on profit alone — spoofing has to emerge"),
+              ("03", "Watchdog surveillance", "RecurrentPPO flags or clears every step"),
+              ("04", "Rule baseline", "Large order cancelled quickly — industry-style"),
+              ("05", "Evaluation", "Both scored on the same recorded orders")]
+    for col, (n, t, d) in zip(st.columns(5, gap="small"), stages):
+        col.markdown(f'<div class="stage"><div class="s-n">{n}</div><div class="s-t">{t}</div>'
+                     f'<div class="s-d">{d}</div></div>', unsafe_allow_html=True)
+    st.write("")
 
-    st.subheader("Per-stock market structure")
-    st.caption("These two groups behave completely differently, and that difference drives every result.")
-    if CAL:
+    if not demo.get("episodes"):
+        st.warning(f"{NA} — recorded episodes are missing. Generate them with "
+                   "`python scripts/build_demo_episode.py`.")
+        st.stop()
+
+    eps = demo["episodes"]
+    names = [e["scenario"] for e in eps]
+    top = st.columns([3, 2, 2], gap="medium")
+    with top[0]:
+        choice = st.selectbox("Recorded episode", names, index=0)
+    ep = next(e for e in eps if e["scenario"] == choice)
+    steps, orders, summ = ep["steps"], ep["orders"], ep["summary"]
+    key = f"step_{names.index(choice)}"
+    if key not in st.session_state:
+        st.session_state[key] = 0
+
+    first_manip = next((s["step"] for s in steps if s["manipulation_active"]), 0)
+    first_flag = next((s["step"] for s in steps if s["watchdog_flag"]), None)
+    with top[1]:
+        st.markdown('<div class="cap" style="margin-bottom:4px">Jump to</div>', unsafe_allow_html=True)
+        b = st.columns(3)
+        if b[0].button("⏮ Start", use_container_width=True):
+            st.session_state[key] = 0
+        if b[1].button("⚑ Manipulation", use_container_width=True, disabled=not summ["manipulation_steps"]):
+            st.session_state[key] = first_manip
+        if b[2].button("◉ First flag", use_container_width=True, disabled=first_flag is None):
+            st.session_state[key] = first_flag or 0
+    with top[2]:
+        st.markdown(
+            f'<div class="cap">{ep["ticker"]} · 1 decision = {ep["events_per_step"]} market events · '
+            f'lot {ep["lot"]:,} shares<br>Recorded replay of committed models — not a live market.</div>',
+            unsafe_allow_html=True)
+
+    i = st.slider("Step", 0, len(steps) - 1, key=key)
+    s = steps[i]
+
+    L, M, Rr = st.columns([3, 3, 4], gap="medium")
+
+    with L:
+        st.markdown('<div class="cap" style="margin-bottom:6px">ORDER BOOK — top 3 levels</div>',
+                    unsafe_allow_html=True)
+        mine = {(r["side"], round(r["price"], 4)): r["size"] for r in s["resting"]}
+        mx = max([lv["size"] for lv in s["ask"] + s["bid"]] +
+                 [v + lv["size"] for (sd, p), v in mine.items() for lv in s["ask"] + s["bid"]] + [1])
         rows = []
-        for tk, v in CAL["tickers"].items():
-            rows.append({
-                "Stock": tk, "Events": f"{v['events']:,}", "Median price": f"${v['median_mid']:,.2f}",
-                "Spread (ticks)": f"{v['median_spread_ticks']:.0f}",
-                "Depth at touch": f"{v['median_touch_depth']:,.0f}",
-                "Impact λ (fitted)": f"{v['lambda']:.3f}", "Fit R²": f"{v['ofi_r2']:.2f}",
-                "A 10× spoof moves price": f"{v['lambda'] * 10:.2f} spreads",
-            })
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-        st.info("**Why spoofing only works on two of them.** On AAPL/GOOG/AMZN a spoof moves the price less "
-                "than half the spread, so it cannot cover the cost of trading. Manipulation emerged only on "
-                "MSFT and INTC — the 1-tick, deep-book stocks.", icon="💡")
+        for lv in reversed(s["ask"]):
+            own = mine.get(("ask", round(lv["price"], 4)), 0)
+            w = 100 * (lv["size"] + own) / mx
+            rows.append(f'<tr><td class="px ask">{lv["price"]:.2f}</td><td class="barcell">'
+                        f'<span class="bar{" mine" if own else ""}" style="width:{w:.0f}%;background:'
+                        f'{"#e0a20055" if own else "#ff9b9633"}"></span></td>'
+                        f'<td class="sz">{lv["size"] + own:,.0f}{" ◀" if own else ""}</td></tr>')
+        spread = s["ask"][0]["price"] - s["bid"][0]["price"]
+        rows.append(f'<tr class="spread"><td colspan="3">mid {s["mid"]:.3f} · spread {spread:.2f}</td></tr>')
+        for lv in s["bid"]:
+            own = mine.get(("bid", round(lv["price"], 4)), 0)
+            w = 100 * (lv["size"] + own) / mx
+            rows.append(f'<tr><td class="px bid">{lv["price"]:.2f}</td><td class="barcell">'
+                        f'<span class="bar{" mine" if own else ""}" style="width:{w:.0f}%;background:'
+                        f'{"#e0a20055" if own else "#7fd6a033"}"></span></td>'
+                        f'<td class="sz">{lv["size"] + own:,.0f}{" ◀" if own else ""}</td></tr>')
+        st.markdown(f'<table class="ladder">{"".join(rows)}</table>', unsafe_allow_html=True)
+        st.markdown(f'<div class="cap" style="margin-top:6px">◀ marks the watched trader\'s own resting order'
+                    f'{" — none resting" if not mine else ""}.</div>', unsafe_allow_html=True)
 
-    st.subheader("How the price impact was calibrated")
-    st.markdown("The agent's orders must be able to move the price, or spoofing is impossible — but replayed "
-                "history cannot react. So an impact model is layered on top, and its strength is **fitted from "
-                "the real data** rather than assumed:")
-    cc1, cc2 = st.columns([2, 3])
-    with cc1:
-        st.markdown("""
-1. Measure order-flow imbalance at the touch for every event.
-2. Regress the mid-price change on it (Cont, Kukanov & Stoikov, 2014).
-3. The slope **is** the impact coefficient λ.
-4. Fit how impact builds with an order's age, at 10 / 50 / 200 / 1000 events.
-        """)
-        st.caption("A rejected alternative is kept in the code as a negative result: a percentile-based rule "
-                   "implied a spoof would move MSFT/INTC by 44–58 spreads, which is implausible.")
-    with cc2:
-        if (FIGS / "fig4_spoof_impact.png").exists():
-            st.image(str(FIGS / "fig4_spoof_impact.png"))
+    with M:
+        st.markdown('<div class="cap" style="margin-bottom:6px">THIS STEP</div>', unsafe_allow_html=True)
+        truth = ("MANIPULATION ACTIVE" if s["manipulation_active"] else "no manipulation")
+        tcls = "v-no" if s["manipulation_active"] else "v-ok"
+        wd_badge = ("FLAGGED" if s["watchdog_flag"] else "cleared")
+        if s["watchdog_flag"] and s["manipulation_active"]:
+            wcls, wnote = "v-ok", "correct detection"
+        elif s["watchdog_flag"]:
+            wcls, wnote = "v-no", "false alarm"
+        elif s["manipulation_active"]:
+            wcls, wnote = "v-no", "missed"
+        else:
+            wcls, wnote = "v-ok", "correctly quiet"
+        st.markdown(
+            f'<div class="panel"><div class="cap">Ground truth (hindsight label)</div>'
+            f'<span class="verdict {tcls}">{truth}</span>'
+            f'<div class="cap" style="margin-top:10px">RL Watchdog decision</div>'
+            f'<span class="verdict {wcls}">{wd_badge}</span> <span class="cap">{wnote}</span>'
+            f'<div class="cap" style="margin-top:10px">Trader action</div>'
+            f'<span class="mono" style="color:{TEXT}">{s["action"]}</span>'
+            f'{f" @ {s['trade_price']:.3f}" if s["trade_price"] else ""}'
+            f'<div class="cap" style="margin-top:10px">Inventory · P&amp;L</div>'
+            f'<span class="mono" style="color:{TEXT}">{s["inventory_lots"]:+.0f} lots · '
+            f'{money(s["pnl"])}</span></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="cap" style="margin-top:8px">The rule baseline cannot decide yet: it only fires when '
+            f'an order is cancelled. Its verdicts appear in the order log.</div>', unsafe_allow_html=True)
 
-    st.subheader("What the agent sees and does")
-    o1, o2 = st.columns(2)
-    with o1:
-        st.markdown("**Observation — 43 numbers, every step**")
-        st.markdown("""
-- 40 book features: 10 levels × (ask price, ask size, bid price, bid size)
-- 3 own-state features: inventory, profit, resting order size
-        """)
-        st.caption("Scale-free: prices as multiples of that stock's spread, sizes as log ratios to typical "
-                   "depth. Without this, the same book shape differs ~15× between AAPL and INTC.")
-    with o2:
-        st.markdown("**Actions — one of six, per decision**")
-        st.markdown("""
-- do nothing · buy 1 lot · sell 1 lot
-- place a large order at the best bid / best ask (10× typical depth)
-- cancel resting orders
-        """)
-        st.caption("One decision per 10 market events. Reward = profit change, in spread units, minus an "
-                   "inventory penalty. Nothing in the reward mentions spoofing.")
+    with Rr:
+        st.markdown('<div class="cap" style="margin-bottom:6px">EVENT LOG — to this step</div>',
+                    unsafe_allow_html=True)
+        log = []
+        for o in orders:
+            if o["placed_step"] <= i:
+                tag = '<span class="manip">manipulative</span>' if o["manipulative"] else "legitimate"
+                log.append(f'<div class="ev">step {o["placed_step"]:>3} · <b>large {o["side"]} order</b> '
+                           f'{o["size"]:,.0f} ({o["depth_multiple"]:.0f}× depth) · {tag}</div>')
+            rm = o["removed_step"]
+            if rm is not None and rm <= i:
+                verdict = ('<span class="alarm">RULE: FALSE ALARM</span>' if o["rule_flagged"] and not o["manipulative"]
+                           else '<span class="flag">RULE: flagged</span>' if o["rule_flagged"]
+                           else "rule: no flag")
+                log.append(f'<div class="ev">step {rm:>3} · order {o["removed_by"]} after '
+                           f'{(rm - o["placed_step"])} steps · {verdict}</div>')
+        flagged = [st_["step"] for st_ in steps[:i + 1] if st_["watchdog_flag"]]
+        if flagged:
+            log.append(f'<div class="ev">watchdog flagged <b>{len(flagged)}</b> of {i + 1} steps so far '
+                       f'(first at step {flagged[0]})</div>')
+        st.markdown("".join(log[-14:]) or '<div class="ev">no events yet</div>', unsafe_allow_html=True)
 
-# ───────────────────────────────── pipeline ─────────────────────────────────
-elif page == "How it works (pipeline)":
-    st.header("What happens in the backend")
-    st.caption("Seven stages, each a committed script. Nothing here runs live — the dashboard reads the "
-               "outputs these stages produced.")
+    st.write("")
+    o1, o2, o3, o4 = st.columns(4)
+    o1.metric("Manipulative orders", f"{summ['manipulative_orders']} / {summ['large_orders']}")
+    o2.metric("Watchdog caught", f"{summ['watchdog_caught']} / {summ['manipulative_orders']}",
+              delta=f"{summ['watchdog_flagged_steps']} of {summ['steps']} steps flagged", delta_color="off")
+    o3.metric("Rule flagged", f"{summ['rule_flagged_orders']} / {summ['large_orders']}",
+              delta=f"{summ['rule_false_alarms']} false alarms",
+              delta_color="inverse" if summ["rule_false_alarms"] else "off")
+    o4.metric("Trader P&L this episode", money(summ["final_pnl"]))
 
-    stages = [
-        ("1 · Load market data", "data/download.py<br>env/lobster_data.py",
-         "Fetch ~600 MB of LOBSTER CSVs; parse messages and book snapshots into arrays, verified row-aligned."),
-        ("2 · Make it comparable", "env/normalization.py",
-         "Prices → multiples of that stock's spread; sizes → log ratios to trailing depth. Lets one agent "
-         "design work across a $585 stock and a $27 one."),
-        ("3 · Model price impact", "env/price_impact.py",
-         "Fit λ per stock from order-flow imbalance, plus how impact builds with an order's age."),
-        ("4 · Build the market", "env/lob_env.py",
-         "Replay events; the agent's orders shift the price it trades at, can be run over by the market, and "
-         "its position is valued at the <i>real</i> mid so holding alone earns nothing."),
-        ("5 · Train manipulators", "training/train_spoofer.py",
-         "PPO agents rewarded purely on profit. Spoofing has to emerge because it pays — it is never taught."),
-        ("6 · Record surveillance", "watchdog/dataset.py",
-         "Freeze the agents, replay them, and record what a surveillance system could see: the book plus the "
-         "watched trader's own order activity. Split train / test / held-out."),
-        ("7 · Train the detector", "watchdog/train_watchdog.py",
-         "RecurrentPPO flags or clears each step. Reward: +1 correct flag, −1 miss, <b>−2 false accusation</b>. "
-         "It is never shown the rule that defines the label."),
-    ]
-    for i in range(0, len(stages), 4):
-        for col, (title, files, desc) in zip(st.columns(4, gap="small"), stages[i:i + 4]):
-            col.markdown(f'<div class="stage"><h4>{title}</h4><p><code>{files}</code></p>'
-                         f'<p style="margin-top:8px">{desc}</p></div>', unsafe_allow_html=True)
-        st.write("")
+    if ep["kind"] == "legitimate":
+        st.markdown('<div class="finding">This trader never manipulates — it places large orders and cancels '
+                    f'them. The Watchdog stays silent; the rule raises <b>{summ["rule_false_alarms"]} false '
+                    'alarms</b>, because size-and-cancel is ordinary market making.</div>',
+                    unsafe_allow_html=True)
+    elif summ["watchdog_caught"] < summ["manipulative_orders"]:
+        st.markdown('<div class="warnbar"><b>The generalisation failure, in one episode.</b> This attacker was '
+                    'never seen in training: it waits ~100–200 events before trading, so the Watchdog — which '
+                    'keys on trading against a resting order — flags only '
+                    f'{summ["watchdog_flagged_steps"]} of {summ["steps"]} steps.</div>', unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="finding">Manipulation the Watchdog recognises: it flags while the order is '
+                    'still resting, where the rule can only react once the order is cancelled.</div>',
+                    unsafe_allow_html=True)
 
-    st.divider()
-    st.subheader("Then: evaluation, against a rule that stands in for industry practice")
-    e1, e2 = st.columns(2)
-    with e1:
-        st.markdown("**The baseline it must beat**")
-        rule = R["watchdog_eval"].get("rule", {})
-        st.code(f"flag an order if\n    size ≥ {rule.get('n_mult', 2)}× typical depth\nAND cancelled within "
-                f"{rule.get('m_events', 1000):,} events\nAND it never executed", language="text")
-        st.caption("Tuned on the same training data the Watchdog saw. This is the shape of rule real exchange "
-                   "surveillance uses.")
-    with e2:
-        st.markdown("**How both are scored**")
-        st.markdown("""
-- The **same recorded orders** go to both detectors
-- An order counts as manipulation if its owner traded the opposite side while it rested
-- Buckets: in-distribution · held-out stock · unseen attackers · legitimate-only
-        """)
-        st.caption("Plus two pre-registered tests whose hypotheses were committed before their data existed.")
-
-    st.divider()
-    st.subheader("Guardrails that changed the conclusions")
-    g1, g2, g3, g4 = st.columns(4)
-    g1.info("**Pre-registration**\n\nAttacker, procedure and hypothesis committed before any data existed; "
-            "run once. Both tests went against us.", icon="📜")
-    g2.info("**Counterfactuals**\n\nEvery profit claim re-run with impact switched off. Caught 4 environment "
-            "exploits that looked like real manipulation.", icon="🔍")
-    g3.info("**No tuning on held-out data**\n\nOne candidate improvement was judged on the test split only — "
-            "and rejected.", icon="🚧")
-    g4.info("**Multiple seeds**\n\n3 training seeds for the detector and each profitable manipulator, with "
-            "confidence intervals.", icon="🎲")
-
-# ───────────────────────────────── agents ─────────────────────────────────
-elif page == "The agents":
-    st.header("The manipulators")
-    st.caption("Five PPO agents, one per stock. None was told to spoof.")
-
-    agents = {a["agent"]: a for a in R["basic_eval"].get("agents", [])}
-    roster = [
-        ("SPOOFER-01", "AAPL", "high inventory penalty", "never learned to spoof — it cannot pay here"),
-        ("SPOOFER-02", "MSFT", "low inventory penalty", "learned spoof-and-trade"),
-        ("SPOOFER-03", "GOOG", "bid-side only", "marginal; sparse trading"),
-        ("SPOOFER-04", "INTC", "default", "learned spoof-and-trade — strongest"),
-        ("SPOOFER-05", "AMZN", "held out from the detector", "never learned to spoof"),
-    ]
-    rows = []
-    for name, tk, variant, outcome in roster:
-        a = agents.get(name, {})
-        rows.append({"Agent": name, "Stock": tk, "Variation": variant,
-                     "Profit / episode": money(a.get("pnl_mean")),
-                     "± 95% CI": f"{a.get('pnl_ci95', 0):,.0f}",
-                     "Trades vs own order": f"{a.get('trades_against_own_spoof_per_ep', 0):.0f}",
-                     "Outcome": outcome})
-    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-
-    st.subheader("How the behaviour emerged")
-    if (FIGS / "fig1_spoofer_training.png").exists():
-        st.image(str(FIGS / "fig1_spoofer_training.png"))
-    st.caption("Left: at one decision per market event the agent gave up trading entirely — the payoff came "
-               "~50 decisions after the spoof, too far for credit assignment. One decision per 10 events fixed "
-               "it. Right: the spoofing signature appearing over training.")
-
-    st.subheader("Does it depend on a lucky seed?")
-    sd = R["spoofer_seeds"]
-    if sd:
-        s1, s2 = st.columns([3, 2])
-        with s1:
-            rows = [{"Agent": r["agent"], "Stock": r["ticker"], "Seed": r["tag"],
-                     "Profit / episode": money(r["calibrated"]["pnl_mean"]),
-                     "± CI": f"{r['calibrated']['pnl_ci95']:,.0f}",
-                     "Impact switched off": money(r["no_impact"]["pnl_mean"]),
-                     "Trades vs own order": f"{r['calibrated']['trades_against_own_spoof_per_ep']:.0f}"}
-                    for r in sd["per_seed"]]
-            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-        with s2:
-            for agent, a in sd.get("across_seeds", {}).items():
-                st.metric(f"{agent} · {a['ticker']} across {a['seeds']} seeds", money(a["pnl_mean"]),
-                          delta=f"± {a['pnl_ci95']:,.0f}", delta_color="off")
-        st.success("**3 of 3 seeds learned to spoof on both stocks**, and every seed loses money with impact "
-                   "switched off — so the profit is the manipulation, not an artefact.", icon="✔️")
-
-# ───────────────────────────────── detection ─────────────────────────────────
-elif page == "Detection results":
-    st.header("Watchdog vs the rule baseline")
-    we = R["watchdog_eval"].get("buckets", {})
-    lb, lay = R["lateburst_test"], R["layering_test"]
-    syn = R["synthetic_eval"].get("detection", {}).get("Manipulators + legitimate", {})
-
-    labels = ["In-distribution\nF1", "Unseen attacker\nrecall", "Layering\nrecall", "Synthetic market\nF1",
-              "False positives\n(lower better)"]
-    wd_vals = [we.get("In-distribution (test split)", {}).get("watchdog_orders", {}).get("f1", 0),
-               lb.get("overall", {}).get("watchdog_orders", {}).get("recall", 0),
-               lay.get("pooled", {}).get("watchdog_orders", {}).get("recall", 0),
-               syn.get("watchdog_orders", {}).get("f1", 0),
-               we.get("Legitimate only (HONEST + FLICKER)", {}).get("watchdog_orders", {}).get("fpr", 0)]
-    rule_vals = [we.get("In-distribution (test split)", {}).get("rule_orders", {}).get("f1", 0),
-                 lb.get("overall", {}).get("rule_orders", {}).get("recall", 0),
-                 lay.get("pooled", {}).get("rule_orders", {}).get("recall", 0),
-                 syn.get("rule_orders", {}).get("f1", 0),
-                 we.get("Legitimate only (HONEST + FLICKER)", {}).get("rule_orders", {}).get("fpr", 0)]
-    st.plotly_chart(grouped_bar([l.replace("\n", " ") for l in labels], wd_vals, rule_vals,
-                                "Every evaluation bucket, same orders scored by both"), use_container_width=True)
-
-    st.subheader("Browse a single bucket")
-    pick = st.selectbox("Evaluation bucket", list(we.keys()))
-    b = we[pick]
-    w, r = b["watchdog_orders"], b["rule_orders"]
-    c = st.columns(5)
-    for col, key, label in zip(c, ("precision", "recall", "f1", "fpr"),
-                               ("Precision", "Recall", "F1", "False-positive rate")):
-        wv, rv = w.get(key), r.get(key)
-        col.metric(f"{label}", "n/a" if wv is None or wv != wv else f"{wv:.2f}",
-                   delta=("n/a" if rv is None or rv != rv else f"rule {rv:.2f}"),
-                   delta_color="inverse" if key == "fpr" else "normal")
-    c[4].metric("Orders judged", f"{w.get('n', 0):,}", delta=f"{w.get('positives', 0):,} manipulative",
-                delta_color="off")
-
-    st.divider()
-    st.subheader("The two pre-registered tests")
-    st.caption("Attacker behaviour, evaluation procedure and hypothesis were committed to version control "
-               "**before any of their data existed**, and each test was run exactly once.")
-    p1, p2 = st.columns(2)
-    with p1:
-        st.markdown("##### LATEBURST-ATK — an unseen attacker")
-        st.caption("Spoof, wait 100–200 events, trade in a burst, cancel immediately.")
-        o = lb.get("overall", {})
-        a, bq = st.columns(2)
-        a.metric("Watchdog recall", f"{o.get('watchdog_orders', {}).get('recall', 0):.2f}")
-        bq.metric("Rule recall", f"{o.get('rule_orders', {}).get('recall', 0):.2f}")
-        st.markdown(f"Hypothesis tested: *stock-identity shortcut*. **Result: {lb.get('verdict', 'n/a')}** "
-                    f"(ratio {lb.get('ratio', float('nan')):.2f} vs threshold 2.0).")
-    with p2:
-        st.markdown("##### LAYER-ATK — layering, Coscia-style")
-        st.caption("Four stacked large orders at successive price levels, then trade the other side.")
-        pooled = lay.get("pooled", {})
-        a, bq = st.columns(2)
-        a.metric("Watchdog F1", f"{lay.get('watchdog_f1', 0):.2f}")
-        bq.metric("Rule F1", f"{lay.get('rule_f1', 0):.2f}")
-        st.markdown(f"Hypothesis tested: *Watchdog F1 ≥ rule F1*. **Result: {lay.get('verdict', 'n/a')}** "
-                    f"(FPR {pooled.get('watchdog_orders', {}).get('fpr', 0):.2f} vs "
-                    f"{pooled.get('rule_orders', {}).get('fpr', 0):.2f}).")
-
-    st.subheader("Why the rule is unusable despite its recall")
-    rf = R["basic_eval"].get("real_flow", {})
-    if rf:
-        df = pd.DataFrame([{"Stock": k, "Flags per 10k events": v["flags_per_10k_events"],
-                            "Large orders": f"{v['large_orders']:,}", "Events": f"{v['events']:,}"}
-                           for k, v in rf.items()])
-        cc1, cc2 = st.columns([2, 3])
-        cc1.dataframe(df, hide_index=True, use_container_width=True)
-        fig = go.Figure(go.Bar(x=df["Stock"], y=df["Flags per 10k events"], marker_color=RULE,
-                               text=[f"{v:.2f}" for v in df["Flags per 10k events"]], textposition="outside"))
-        fig.update_layout(height=320, title="Rule's flag rate on real, unlabelled order flow",
-                          margin=dict(l=10, r=10, t=50, b=10), yaxis_title="flags per 10k events")
-        cc2.plotly_chart(fig, use_container_width=True)
-        st.error("**A single static threshold cannot serve different markets.** The same rule fires 3,400× "
-                 "more often on AMZN than on MSFT. On labelled simulation data it wrongly flags 82% of "
-                 "legitimate large orders — every real alert would arrive buried in false accusations.",
-                 icon="⚠️")
-
-# ───────────────────────────────── suppression ─────────────────────────────────
-elif page == "Acting on flags":
-    st.header("Does surveillance actually stop the manipulation?")
-    st.caption("Detection is only useful if acting on it removes the incentive. Here the detector runs inside "
-               "the episode: on a flag, the exchange cancels the trader's resting orders and blocks new ones "
-               "for 200 events. Same seeds in all three conditions.")
-    ps = R["pnl_suppression"]
-    rows = [r for r in ps.get("rows", []) if r["source"] in ("SPOOFER-04", "SPOOFER-02")]
-    cols = st.columns(len(rows)) if rows else []
-    for col, r in zip(cols, rows):
-        with col:
-            st.markdown(f"##### {r['source']} · {r['ticker']}")
-            a, b_, c_ = st.columns(3)
-            a.metric("No surveillance", money(r["none"]["pnl_mean"], k=True))
-            b_.metric("Watchdog", money(r["watchdog"]["pnl_mean"], k=True),
-                      delta=f"−{r['watchdog']['suppression_pct']:.0f}%", delta_color="inverse")
-            c_.metric("Rule", money(r["rule"]["pnl_mean"], k=True),
-                      delta=f"−{r['rule']['suppression_pct']:.0f}%", delta_color="inverse")
-    if (FIGS / "fig6_pnl_suppression.png").exists():
-        st.image(str(FIGS / "fig6_pnl_suppression.png"))
-
-    st.subheader("Cost to legitimate traders")
-    legit = [r for r in ps.get("rows", []) if r["kind"] == "legitimate"]
-    if legit:
-        df = pd.DataFrame([{"Trader": f"{r['source']} · {r['ticker']}",
-                            "Watchdog interventions / episode": f"{r['watchdog']['triggers_per_ep']:.1f}",
-                            "Rule interventions / episode": f"{r['rule']['triggers_per_ep']:.1f}",
-                            "Watchdog orders blocked": f"{r['watchdog']['blocked_per_ep']:.1f}",
-                            "Rule orders blocked": f"{r['rule']['blocked_per_ep']:.1f}"} for r in legit])
-        st.dataframe(df, hide_index=True, use_container_width=True)
-        st.success("Against manipulation it recognises, the Watchdog removes **more** profit while disrupting "
-                   "legitimate traders about **12× less often**.", icon="✔️")
-    st.caption("Caveat: the attackers are frozen — they do not adapt to being watched. This measures "
-               "suppression of non-adaptive manipulation.")
-
-# ───────────────────────────────── robustness ─────────────────────────────────
-elif page == "Robustness checks":
-    st.header("Does it survive a different kind of market?")
-    st.caption("The main environment imposes price impact by formula. So a second market was built where "
-               "prices emerge only from order matching between simple traders — calibrated against real "
-               "MSFT/INTC statistics, never against whether spoofing pays.")
-
-    if SYNCAL:
-        t, s = SYNCAL.get("targets", {}), SYNCAL.get("chosen_stats", {})
-        df = pd.DataFrame([
-            {"Statistic": "Median spread (ticks)", "Real MSFT/INTC": f"{t.get('spread_ticks', 0):.1f}",
-             "Synthetic market": f"{s.get('spread_ticks', 0):.1f}"},
-            {"Statistic": "Share of events where price moves", "Real MSFT/INTC": f"{t.get('mid_change_share', 0):.3%}",
-             "Synthetic market": f"{s.get('mid_change_share', 0):.3%}"},
-            {"Statistic": "Price range over 2,000 events (ticks)", "Real MSFT/INTC": f"{t.get('range_2000_ticks', 0):.1f}",
-             "Synthetic market": f"{s.get('range_2000_ticks', 0):.1f}"},
-            {"Statistic": "Depth at touch (shares)", "Real MSFT/INTC": f"{t.get('touch_depth', 0):,.0f}",
-             "Synthetic market": f"{s.get('touch_depth', 0):,.0f}"},
-        ])
-        c1, c2 = st.columns([2, 3])
-        c1.markdown("##### Calibration quality")
-        c1.dataframe(df, hide_index=True, use_container_width=True)
-        if (FIGS / "fig4_spoof_impact.png").exists():
-            c2.image(str(FIGS / "fig4_spoof_impact.png"))
-
-    st.subheader("What happens to the manipulators there")
-    se = R["synthetic_eval"]
-    if se:
-        rows = [{"Agent": r["source"], "Type": r["kind"],
-                 "Profit (market reacts)": money(r["reactive"]["pnl_mean"]),
-                 "Profit (market blind to them)": money(r["blind"]["pnl_mean"]),
-                 "Gain from spoofing": f"{money(r['manipulation_gain_mean'])} ± {r['manipulation_gain_ci95']:,.0f}",
-                 "Trades vs own order": f"{r['reactive']['trades_against_own_spoof_per_ep']:.0f}"}
-                for r in se.get("sources", [])]
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
-        st.error("**Every manipulator loses money here.** A spoof moves this market 4.5–9× less than the "
-                 "replay model assumes, and no manipulation gain is clearly above zero. Claim 1 holds under "
-                 "the replay impact model and not beyond it — the project's largest open question.", icon="⚠️")
-        det = se.get("detection", {})
-        d1, d2, d3 = st.columns(3)
-        mm = det.get("Manipulators + legitimate", {}).get("watchdog_orders", {})
-        ll = det.get("Legitimate only", {})
-        d1.metric("Watchdog precision here", f"{mm.get('precision', 0):.2f}")
-        d2.metric("Watchdog recall here", f"{mm.get('recall', 0):.2f}", delta="falls from 0.80", delta_color="inverse")
-        d3.metric("False positives", f"{ll.get('watchdog_orders', {}).get('fpr', 0):.2f}",
-                  delta=f"rule {ll.get('rule_orders', {}).get('fpr', 0):.2f}", delta_color="inverse")
-        st.caption("Detection partly transfers — precision and the false-positive advantage survive the change "
-                   "of market mechanism; recall does not.")
-
-# ───────────────────────────────── interpretability ─────────────────────────────────
-elif page == "What the detector uses":
-    st.header("Opening the black box")
-    st.caption("Each feature group is replaced by its training average and the unchanged detector is "
-               "re-scored. A large drop means it depended on that group.")
-    fa = R["feature_ablation"].get("results", {})
-    if fa:
-        order = ["none", "participant: trade direction", "all participant features (6)",
-                 "participant: resting size", "participant: placed this step",
-                 "participant: cancelled this step", "participant: oldest order age",
-                 "participant: resting side imbalance", "all book features (40)",
-                 "book price offsets (all levels)", "book sizes (all levels)", "best level only (4)"]
-        rows = [{"Feature group removed": k if k != "none" else "nothing (baseline)",
-                 "Order F1": fa[k]["order F1"], "Step recall": fa[k]["step recall"],
-                 "False positives": fa[k]["legitimate order FPR"]} for k in order if k in fa]
-        df = pd.DataFrame(rows)
-        c1, c2 = st.columns([3, 2])
-        with c1:
-            fig = go.Figure(go.Bar(x=df["Order F1"], y=df["Feature group removed"], orientation="h",
-                                   marker_color=[BAD if v < .5 else WD for v in df["Order F1"]],
-                                   text=[f"{v:.3f}" for v in df["Order F1"]], textposition="outside"))
-            fig.update_layout(height=430, title="Detection quality after removing each group",
-                              xaxis_title="order F1", margin=dict(l=10, r=40, t=50, b=10),
-                              yaxis=dict(autorange="reversed"), xaxis=dict(range=[0, 1.05]))
-            st.plotly_chart(fig, use_container_width=True)
-        with c2:
-            st.dataframe(df.style.format({"Order F1": "{:.3f}", "Step recall": "{:.3f}",
-                                          "False positives": "{:.3f}"}), hide_index=True,
-                         use_container_width=True, height=430)
-        st.error("**The detector rests on one signal: does this participant trade against their own resting "
-                 "order?** Remove it and F1 collapses from 0.772 to 0.113. That is exactly why sparse "
-                 "manipulation — a wait, then a couple of trades — gets through, and it points at the fix: "
-                 "train against a population containing sparse styles.", icon="🔎")
-
-# ───────────────────────────────── real cases ─────────────────────────────────
-elif page == "Real-world comparison":
-    st.header("How close is the learned strategy to documented manipulation?")
-    st.caption("Compared against the court and regulatory record in the Coscia (Panther Energy) and Sarao "
-               "cases. Structure only — this is not a claim of real-world detection.")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("##### Where the agent had freedom — it matches")
-        st.dataframe(pd.DataFrame([
-            {"Behaviour": "Large orders ever filled", "Coscia (record)": "0.08% – 0.5%", "SPOOFER-04": "0.4%"},
-            {"Behaviour": "Trades on the opposite side", "Coscia (record)": "yes, that is the mechanism", "SPOOFER-04": "97% of orders"},
-            {"Behaviour": "Reverses direction after a cycle", "Coscia (record)": "algorithm 'operated in reverse'", "SPOOFER-04": "74% of orders"},
-        ]), hide_index=True, use_container_width=True)
-        st.success("Nobody programmed this shape — it emerged from profit-seeking alone.", icon="✔️")
-    with c2:
-        st.markdown("##### Where it differs — and why")
-        st.dataframe(pd.DataFrame([
-            {"Behaviour": "Orders resting over 1 second", "Coscia (record)": "0.57%", "SPOOFER-04": "52%"},
-            {"Behaviour": "Layering across price levels", "Coscia (record)": "several stacked orders", "SPOOFER-04": "not possible"},
-            {"Behaviour": "Order size ratio", "Coscia (record)": "5 vs 50+ contracts", "SPOOFER-04": "fixed by design"},
-        ]), hide_index=True, use_container_width=True)
-        st.warning("Speed differs because the calibrated impact rewards patience; layering is impossible "
-                   "because the environment allows one large order per side.", icon="⚠️")
-    st.caption("Sources: CFTC Docket 13-26 (2013); United States v. Coscia, 866 F.3d 782 (7th Cir. 2017); "
-               "CFTC Release 7156-15 (2015). Two figures found in search summaries were discarded because "
-               "they did not appear in the primary documents.")
-
-# ───────────────────────────────── evidence ─────────────────────────────────
+# ─────────────────────────────── VIEW C ───────────────────────────────
 else:
-    st.header("How much should you trust these numbers?")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Automated tests", "115", delta="on real market data", delta_color="off")
-    c2.metric("Scripts reproducing exactly", "12 / 12", delta="0 differences", delta_color="off")
-    c3.metric("Values re-checked", "2,178", delta="from a clean clone", delta_color="off")
-    c4.metric("Pre-registered tests", "2", delta="both went against us", delta_color="off")
+    t1, t2, t3, t4 = st.tabs(["Headline evidence", "Held-out tests", "Robustness", "Technical detail"])
 
-    st.subheader("Reproduction check")
-    st.caption("Every script was re-run in a fresh clone of the repository — committed code and models only — "
-               "and each output compared value by value against the committed results.")
-    st.dataframe(pd.DataFrame([
-        {"Script": "scripts/calibrate.py", "Checked": "calibration file identical"},
-        {"Script": "evaluation/basic_eval.py", "Checked": "479 values"},
-        {"Script": "watchdog/dataset.py", "Checked": "all 32 dataset files bit-for-bit"},
-        {"Script": "watchdog/evaluate_watchdog.py", "Checked": "282 values"},
-        {"Script": "watchdog/lateburst_test.py", "Checked": "267 values"},
-        {"Script": "watchdog/multiseed_summary.py", "Checked": "60 values"},
-        {"Script": "watchdog/pnl_suppression.py", "Checked": "234 values"},
-        {"Script": "watchdog/feature_ablation.py", "Checked": "83 values"},
-        {"Script": "scripts/real_case_stats.py", "Checked": "74 values"},
-        {"Script": "synthetic/spoof_impact.py (×4)", "Checked": "164 values"},
-        {"Script": "synthetic/layering_test.py", "Checked": "119 values"},
-        {"Script": "synthetic/evaluate_synthetic.py", "Checked": "320 values"},
-        {"Script": "synthetic/calibrate.py", "Checked": "96 values"},
-    ]), hide_index=True, use_container_width=True, height=360)
+    with t1:
+        c1, c2 = st.columns([3, 2], gap="medium")
+        with c1:
+            st.markdown('<div class="cap">Multi-seed validation — 3 Watchdog training seeds, Student-t 95% CI, '
+                        'all scored on identical recorded data (<span class="mono">multiseed.md</span>)</div>',
+                        unsafe_allow_html=True)
+            if MS:
+                rows = []
+                for k, v in MS.items():
+                    rows.append({"Metric (order-level unless noted)": k,
+                                 "Watchdog": f"{v['mean']:.3f} ± {v['ci95']:.3f}" if v['mean'] == v['mean'] else NA,
+                                 "Rule": num(RU.get(k), 3) if k in RU else "—"})
+                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=330)
+            else:
+                st.info(NA)
+        with c2:
+            st.markdown('<div class="cap">Profit suppression — detector acting inside the episode, 50 episodes, '
+                        'identical seeds (<span class="mono">pnl_suppression.md</span>)</div>',
+                        unsafe_allow_html=True)
+            rows = [r for r in R["pnl_suppression"].get("rows", [])
+                    if r["source"] in ("SPOOFER-04", "SPOOFER-02")]
+            if rows:
+                fig = go.Figure()
+                labels = [f"{r['source']}<br>{r['ticker']}" for r in rows]
+                for name, key, color in (("No surveillance", "none", MUTED), ("Watchdog", "watchdog", WD),
+                                         ("Rule", "rule", RULE)):
+                    fig.add_bar(x=labels, y=[r[key]["pnl_mean"] / 1000 for r in rows], name=name,
+                                marker_color=color, text=[f"{r[key]['pnl_mean'] / 1000:.1f}k" for r in rows],
+                                textposition="outside")
+                st.plotly_chart(chart_layout(fig, 320, "Profit per episode", "$ thousands"),
+                                use_container_width=True)
+                st.markdown('<div class="cap">Interventions per episode against legitimate traders: Watchdog '
+                            '0.3–0.4, rule 4.7.</div>', unsafe_allow_html=True)
 
-    st.subheader("Mistakes found and corrected along the way")
-    st.caption("Headline profit proved misleading four times. Each exploit was caught by decomposing where "
-               "the profit came from, never by reading the profit itself.")
-    e1, e2 = st.columns(2)
-    e1.dataframe(pd.DataFrame([
-        {"Problem": "Free accumulation", "Symptom": "+$253k/episode, buying below the real bid"},
-        {"Problem": "Alternating-side swings", "Symptom": "~$240k/episode, round trips costing $53"},
-        {"Problem": "Early termination", "Symptom": "31 of 31 early endings escaped a loss"},
-        {"Problem": "Thin opening book", "Symptom": "meaningless order sizes at the open"},
-    ]), hide_index=True, use_container_width=True)
-    e2.dataframe(pd.DataFrame([
-        {"Problem": "Manipulators stopped trading", "Cause": "payoff 50 decisions away — credit assignment"},
-        {"Problem": "Detector never flagged", "Cause": "input scale, not reward design"},
-        {"Problem": "Synthetic market froze", "Cause": "liquidity grew without bound"},
-        {"Problem": "Impact calibration implausible", "Cause": "percentile rule implied 44–58 spread moves"},
-    ]), hide_index=True, use_container_width=True)
+    with t2:
+        st.markdown('<div class="cap">Both tests were <b>pre-registered</b>: the attacker, the procedure and the '
+                    'hypothesis were committed to version control before any of their data existed, and each '
+                    'test was run exactly once.</div>', unsafe_allow_html=True)
+        st.write("")
+        lb, lay = R["lateburst_test"], R["layering_test"]
+        for title, d, bucket, note in (
+            ("LATEBURST-ATK · replay market", lb, dig(lb, "overall", default={}),
+             "Spoof, wait 100–200 market events, trade in a burst, cancel. Negatives: FLICKER on the same stock."),
+            ("LAYER-ATK · synthetic market", lay, dig(lay, "pooled", default={}),
+             "Four stacked large orders at successive price levels (Coscia-style), then trade the other side."),
+        ):
+            if not bucket:
+                continue
+            w, r = bucket["watchdog_orders"], bucket["rule_orders"]
+            st.markdown(f"**{title}** &nbsp;<span class='verdict v-no'>HYPOTHESIS "
+                        f"{d.get('verdict', 'n/a').upper()}</span>", unsafe_allow_html=True)
+            cols = st.columns(5)
+            for col, (lab, wv, rv, inv) in zip(cols, [
+                ("Precision", w["precision"], r["precision"], False),
+                ("Recall", w["recall"], r["recall"], False),
+                ("F1", w["f1"], r["f1"], False),
+                ("False positives", w["fpr"], r["fpr"], True),
+            ]):
+                col.metric(lab, num(wv), delta=f"rule {num(rv)}",
+                           delta_color="inverse" if inv else "normal")
+            cols[4].metric("Orders judged", f"{w['n']:,}", delta=f"{w['positives']:,} manipulative",
+                           delta_color="off")
+            st.markdown(f'<div class="cap">{note}</div>', unsafe_allow_html=True)
+            st.write("")
+        st.markdown('<div class="warnbar"><b>Preserved negative result.</b> Generalisation to unseen '
+                    'manipulation has not been demonstrated. The static rule recalls more in both tests.</div>',
+                    unsafe_allow_html=True)
 
-    st.subheader("Honest limitations")
-    st.markdown("""
-- Profitable manipulation is established **only under the replay impact model** — it does not survive the
-  agent-based market.
-- The detector **misses sparse manipulation**; confirmed twice under pre-registration.
-- LOBSTER carries **no participant identities**, so the detector cannot be run on real order flow — only the
-  rule can, and only as an unlabelled flag rate.
-- One trading day, five stocks.
-- The manipulation label is an **economic proxy for intent**, not a legal determination.
-    """)
+    with t3:
+        se = R["synthetic_eval"]
+        st.markdown('<div class="cap">Sim-to-sim check: a second market where prices emerge from order matching '
+                    'between simple traders, calibrated to real MSFT/INTC statistics and never to whether '
+                    'spoofing pays (<span class="mono">synthetic_eval.md</span>).</div>', unsafe_allow_html=True)
+        st.write("")
+        c1, c2 = st.columns([3, 2], gap="medium")
+        with c1:
+            rows = [{"Agent": r["source"], "Type": r["kind"],
+                     "Market reacts": money(r["reactive"]["pnl_mean"]),
+                     "Market blind to them": money(r["blind"]["pnl_mean"]),
+                     "Gain from spoofing": f"{money(r['manipulation_gain_mean'])} ± "
+                                           f"{r['manipulation_gain_ci95']:,.0f}"}
+                    for r in se.get("sources", [])]
+            if rows:
+                st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+        with c2:
+            if (FIGS / "fig4_spoof_impact.png").exists():
+                st.image(str(FIGS / "fig4_spoof_impact.png"))
+        st.markdown('<div class="warnbar"><b>Scope limit on profitability.</b> Every manipulator loses money '
+                    'here: a spoof moves this market 4.5–9× less than the replay model assumes. Simulated '
+                    'profitability depends on that impact model and is <b>not</b> evidence of real-world '
+                    'profitability.</div>', unsafe_allow_html=True)
+        det = se.get("detection", {})
+        if det:
+            mm = dig(det, "Manipulators + legitimate", "watchdog_orders", default={})
+            ll = det.get("Legitimate only", {})
+            d1, d2, d3 = st.columns(3)
+            d1.metric("Watchdog precision here", num(mm.get("precision")))
+            d2.metric("Watchdog recall here", num(mm.get("recall")), delta="0.80 in replay market",
+                      delta_color="inverse")
+            d3.metric("False positives", num(dig(ll, "watchdog_orders", "fpr")),
+                      delta=f"rule {num(dig(ll, 'rule_orders', 'fpr'))}", delta_color="inverse")
 
-st.divider()
-st.caption("Every figure is read from committed result files · rebuild the static page with "
-           "`python scripts/build_dashboard.py` · full write-up in `REPORT.md`, handover notes in `HANDOFF.md`")
+    with t4:
+        with st.expander("What the detector relies on — feature ablation (test split)"):
+            fa = R["feature_ablation"].get("results", {})
+            if fa:
+                order = ["none", "participant: trade direction", "all participant features (6)",
+                         "all book features (40)", "participant: resting size", "participant: placed this step",
+                         "participant: cancelled this step", "participant: oldest order age",
+                         "participant: resting side imbalance", "book price offsets (all levels)",
+                         "book sizes (all levels)", "best level only (4)"]
+                df = pd.DataFrame([{"Group removed": k if k != "none" else "nothing (baseline)",
+                                    "Order F1": fa[k]["order F1"], "Step recall": fa[k]["step recall"],
+                                    "False positives": fa[k]["legitimate order FPR"]}
+                                   for k in order if k in fa])
+                st.dataframe(df.style.format({"Order F1": "{:.3f}", "Step recall": "{:.3f}",
+                                              "False positives": "{:.3f}"}),
+                             hide_index=True, use_container_width=True)
+                st.markdown('<div class="cap">Removing one feature — whether the participant traded, and in '
+                            'which direction — collapses F1 from 0.772 to 0.113. That is why sparse '
+                            'manipulation is missed.</div>', unsafe_allow_html=True)
+            else:
+                st.info(NA)
+
+        with st.expander("Market data and impact calibration"):
+            if CAL:
+                st.dataframe(pd.DataFrame([{
+                    "Stock": tk, "Events": f"{v['events']:,}", "Median price": f"${v['median_mid']:,.2f}",
+                    "Spread (ticks)": f"{v['median_spread_ticks']:.0f}",
+                    "Depth at touch": f"{v['median_touch_depth']:,.0f}",
+                    "Impact λ (fitted)": f"{v['lambda']:.3f}", "Fit R²": f"{v['ofi_r2']:.2f}",
+                } for tk, v in CAL["tickers"].items()]), hide_index=True, use_container_width=True)
+                st.markdown('<div class="cap">λ is fitted per stock from order-flow imbalance (Cont, Kukanov & '
+                            'Stoikov 2014), not assumed. Spoofing is only profitable on the 1-tick stocks '
+                            '(MSFT, INTC).</div>', unsafe_allow_html=True)
+            else:
+                st.info(NA)
+
+        with st.expander("Spoofer agents across training seeds"):
+            sd = R["spoofer_seeds"]
+            if sd:
+                st.dataframe(pd.DataFrame([{
+                    "Agent": r["agent"], "Stock": r["ticker"], "Seed": r["tag"],
+                    "Profit / episode": money(r["calibrated"]["pnl_mean"]),
+                    "± CI": f"{r['calibrated']['pnl_ci95']:,.0f}",
+                    "Impact switched off": money(r["no_impact"]["pnl_mean"]),
+                } for r in sd["per_seed"]]), hide_index=True, use_container_width=True)
+                st.markdown('<div class="cap">3 of 3 seeds learned to spoof on both stocks; every seed loses '
+                            'money with impact disabled, so the profit is the manipulation.</div>',
+                            unsafe_allow_html=True)
+            else:
+                st.info(NA)
+
+        with st.expander("Reproduction and test status"):
+            c = st.columns(3)
+            c[0].metric("Automated tests", "115")
+            c[1].metric("Scripts reproducing exactly", "12 / 12")
+            c[2].metric("Values re-checked", "2,178")
+            st.markdown('<div class="cap">Every script was re-run in a clean clone of the repository — '
+                        'committed code and models only — and each output compared value by value against the '
+                        'committed results. 0 differences.</div>', unsafe_allow_html=True)
+
+    st.write("")
+    st.markdown("#### Limitations")
+    lim = st.columns(5, gap="small")
+    for col, (t, d) in zip(lim, [
+        ("Generalisation unproven", "Both pre-registered held-out attacks favour the static rule."),
+        ("Profit is model-dependent", "Spoofing pays under the replay impact model, not in the synthetic market."),
+        ("No real-world validation", "LOBSTER has no participant identities; no labelled spoofing exists."),
+        ("Label is a proxy", "Trading the opposite side while an order rests — not a legal finding of intent."),
+        ("Narrow data", "One trading day, five stocks; spoofing only pays on the two 1-tick stocks."),
+    ]):
+        col.markdown(f'<div class="stage"><div class="s-t">{t}</div><div class="s-d">{d}</div></div>',
+                     unsafe_allow_html=True)
+
+st.markdown(
+    f'<div class="cap" style="margin-top:18px;border-top:1px solid {LINE};padding-top:8px">'
+    'All figures read from committed files in <span class="mono">results/</span> and '
+    '<span class="mono">configs/</span> · nothing is trained, simulated or fetched live · full write-up in '
+    '<span class="mono">REPORT.md</span></div>', unsafe_allow_html=True)

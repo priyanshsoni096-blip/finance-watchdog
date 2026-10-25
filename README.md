@@ -112,8 +112,17 @@ python -m pytest tests -q
 pip install -r requirements-dashboard.txt
 streamlit run app.py --server.fileWatcherType none
 ```
-An interactive walkthrough: the inputs, what each backend stage does, the agents, detection results, robustness
-checks, interpretability and evidence quality. Every number is read from `results/`.
+**SPOOFWATCH CONSOLE** — a presentation console in three views:
+- **Overview** — four KPI cards (false positives, in-distribution F1, profit suppression, held-out recall), two
+  comparison charts, and the headline finding. Fits one screen at 1366×768.
+- **Demonstration** — steps through a recorded episode: the order book with the watched trader's own resting
+  order marked, the Watchdog's decision at that step, the rule's verdict on each order, and an event log.
+  Three scenarios show a catch, a miss and a false alarm.
+- **Evidence & limitations** — multi-seed table, both pre-registered tests, synthetic-market robustness, and
+  technical detail in expanders.
+
+Every number is read from `results/`; nothing is trained, simulated or fetched live. Charts label whether a
+value is the 3-seed mean or the single `main` seed, since the two differ slightly.
 
 > **The `--server.fileWatcherType none` flag is required.** This repo contains a package named `watchdog/`,
 > which shadows the PyPI `watchdog` library Streamlit uses for file watching; without the flag Streamlit
@@ -122,6 +131,12 @@ checks, interpretability and evidence quality. Every number is read from `result
 ```bash
 python scripts/make_figures.py
 ```
+
+```bash
+python scripts/build_demo_episode.py
+```
+Re-records the demonstration episodes in `results/demo_episodes.json`: replays the frozen agents in the real
+environment and stores the book, the agent's orders, the Watchdog's per-step decision and the rule's verdict.
 Regenerates the six report figures in `results/figures/` from the training logs and results.
 
 Written up in full in **`REPORT.md`** (abstract, method, results, discussion, limitations, references), with
