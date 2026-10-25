@@ -132,11 +132,21 @@ ablation is a partial indication: removing the participant features entirely lea
 
 ### D0. Cross-platform reproduction of a pre-registered test
 
-Arnav's `data/watchdog/drip` and `reversal` datasets are gitignored, so they were **regenerated from scratch on
-this machine** and `watchdog/drip_test.py` re-run end to end. The pre-registered DRIP-ATK result reproduced
-**exactly**: 1,164 numeric values compared, **0 differences**, both hypotheses landing on the same verdicts
-(H1 supported, Watchdog F1 0.409 vs rule 0.336; H2 supported, SAMESIDE FPR 0.012). Recording, scoring and the
-verdict are therefore reproducible across operating systems from the committed code and checkpoints alone.
+Arnav's `data/watchdog/drip` and `reversal` datasets are gitignored, so both were **regenerated from scratch on
+this machine** (Windows/x86) and their pre-registered tests re-run end to end, against the result files he
+produced on macOS. Comparison against a pre-regeneration backup of the committed files:
+
+| Test | Numeric values | Bit-identical | Float noise (<1e-10 rel.) | Real differences |
+|---|---|---|---|---|
+| DRIP-ATK | 1,164 | 1,158 | 5 | **0** |
+| REVERSAL-ATK | 1,615 | 1,609 | 5 | **0** |
+
+The only non-identical values are the five per-stock attacker P&L figures, differing at relative ~1e-15 —
+floating-point accumulation order across platforms — plus wall-clock runtime. **Every detection metric,
+confusion count and hypothesis verdict is bit-identical**: DRIP H1 supported (Watchdog F1 0.409 vs rule 0.336)
+and H2 supported (SAMESIDE FPR 0.012); REVERSAL H1 supported (recall 0.981), H2 supported (legitimate FPR
+0.006), H3 supported (F1 0.986 vs rule 0.591). Recording, scoring and verdict are reproducible across operating
+systems from the committed code and checkpoints alone.
 
 ### D1. Independent verification of CP-7
 
