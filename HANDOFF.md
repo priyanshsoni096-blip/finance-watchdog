@@ -111,6 +111,7 @@ synthetic/      agent-based market: order book, background traders, calibration,
 scripts/        calibration, PnL decomposition, feature-signal diagnostic, real-case statistics
 tests/          115 tests
 results/        every reported number (.md to read, .json for exact values)
+dashboard.html  self-contained results page built from results/ by scripts/build_dashboard.py
 configs/        calibration files (committed)
 checkpoints/    trained models (committed; other tags are local only)
 ```
@@ -199,4 +200,4 @@ Worth keeping:
 
 ## 11. If you only read one thing
 
-Read "Results at a glance" at the top of `README.md`, then `results/watchdog_eval.md` and `results/synthetic_eval.md`. Between them they hold the honest answer: the Watchdog is far better than a static rule at not crying wolf, and no better — usually worse — at catching manipulation it has not seen.
+Open `dashboard.html` in a browser, then read "Results at a glance" at the top of `README.md`, then `results/watchdog_eval.md` and `results/synthetic_eval.md`. Between them they hold the honest answer: the Watchdog is far better than a static rule at not crying wolf, and no better — usually worse — at catching manipulation it has not seen.

@@ -228,6 +228,12 @@ Simulated order structure for the Coscia/Sarao comparison.
 python scripts/spoofer_seeds.py --episodes 20
 ```
 Every Spoofer seed through the same evaluation, with an impact-free counterfactual per seed.
+
+```bash
+python scripts/build_dashboard.py
+```
+Regenerates `dashboard.html`, a single self-contained page summarising every result (open it in any browser, works offline). Rebuild it after regenerating any result.
+Every Spoofer seed through the same evaluation, with an impact-free counterfactual per seed.
 Simulated order structure for the Coscia/Sarao comparison.
 
 ```bash
