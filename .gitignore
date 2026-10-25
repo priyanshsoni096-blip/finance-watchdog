@@ -9,3 +9,4 @@ __pycache__/
 *.npy
 run_seeds.sh
 seeds_run.log
+run_temporal.sh
