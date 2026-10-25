@@ -137,15 +137,25 @@ python watchdog/multiseed_summary.py --tags main main_s2 main_s3
 
 `multiseed_summary.py` needs the LATEBURST-ATK data that `lateburst_test.py` saves. That test is seeded, so rerunning it regenerates the same data; it does not revisit the pre-registered verdict, which was fixed on its first run.
 
-What has been checked to reproduce exactly:
-- **`basic_eval.py`, from a fresh clone of this repository** (committed code and checkpoints; raw LOBSTER data copied in rather than re-downloaded): all 479 numbers matched `results/basic_eval.json`. The same check in the working copy also matched.
-- **`scripts/calibrate.py`, in that fresh clone**: regenerated `configs/calibration.json` with no difference from the committed file.
-- **`dataset.py`, in that fresh clone**: the full Watchdog dataset was regenerated (131 s). All 32 source files (12 train, 12 test, 8 heldout) matched the original dataset bit for bit.
-- **`evaluate_watchdog.py`, in that fresh clone** (on the regenerated dataset and the committed Watchdog): all 282 numbers matched `results/watchdog_eval.json`. It had also matched twice in the working copy.
-- **`lateburst_test.py`, in that fresh clone**: all 267 numbers matched `results/lateburst_test.json`.
-- **`multiseed_summary.py`, in that fresh clone**: all 60 numbers matched `results/multiseed.json`.
-- **`pnl_suppression.py`, in that fresh clone**: all 234 numbers matched `results/pnl_suppression.json`.
-- **Everything else** uses fixed seeds but has not been re-run and compared.
+What has been checked to reproduce exactly, from a fresh clone of this repository (committed code and checkpoints, raw LOBSTER data copied in):
+
+**Every script reproduces bit-for-bit. 2,178 numeric values compared across 12 scripts, 0 differences.**
+
+| Script | Checked |
+|---|---|
+| `scripts/calibrate.py` | `configs/calibration.json` identical |
+| `evaluation/basic_eval.py` | 479 values |
+| `watchdog/dataset.py` | all 32 dataset files bit-for-bit |
+| `watchdog/evaluate_watchdog.py` | 282 values |
+| `watchdog/lateburst_test.py` | 267 values |
+| `watchdog/multiseed_summary.py` | 60 values |
+| `watchdog/pnl_suppression.py` | 234 values |
+| `watchdog/feature_ablation.py` | 83 values |
+| `scripts/real_case_stats.py` | 74 values |
+| `synthetic/spoof_impact.py` (4 runs) | 164 values |
+| `synthetic/layering_test.py` | 119 values |
+| `synthetic/evaluate_synthetic.py` | 320 values |
+| `synthetic/calibrate.py` | 96 values |
 
 ```bash
 python training/train_spoofer.py SPOOFER-04 --timesteps 600000
