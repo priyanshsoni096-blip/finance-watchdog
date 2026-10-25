@@ -37,6 +37,9 @@ from evaluation.baseline_detector import OrderRecord  # noqa: E402
 from evaluation.rollout import OBS_DIM, record_episode  # noqa: E402
 
 DATA_DIR = ROOT / "data" / "watchdog"
+# Disjoint stretches of the trading day per split, as fractions of the usable range (after the warmup).
+# Without this the splits shared market data: 33 of 50 test episodes overlapped a training episode.
+TIME_SPLIT = {"train": (0.0, 0.60), "test": (0.60, 0.80), "heldout": (0.80, 1.0)}
 TICKERS = ["AAPL", "MSFT", "GOOG", "INTC", "AMZN"]
 HELD_OUT = "AMZN"
 SEED_BASE = {"train": 100_000, "test": 200_000, "heldout": 300_000}
@@ -92,12 +95,24 @@ def orders_from_array(arr: np.ndarray) -> list[tuple[int, OrderRecord]]:
     return out
 
 
-def build_source(src: Source, split: str, episodes: int, cache: dict) -> dict:
+def split_window(day_len: int, split: str, warmup: int = 30_000) -> dict:
+    """Episode-start window for a split, so train / test / heldout use disjoint parts of the day."""
+    if split not in TIME_SPLIT:
+        return {}
+    lo_f, hi_f = TIME_SPLIT[split]
+    usable = day_len - warmup
+    return {"start_min": int(warmup + lo_f * usable), "start_max": int(warmup + hi_f * usable)}
+
+
+def build_source(src: Source, split: str, episodes: int, cache: dict, time_split: bool = False) -> dict:
     if src.ticker not in cache:
         d = load_day(src.ticker)
         cache[src.ticker] = (d, reference_stats(d))
     d, s = cache[src.ticker]
-    env = LimitOrderBookEnv(EnvConfig(ticker=src.ticker, **src.cfg), day=d, stats=s)
+    cfg = dict(src.cfg)
+    if time_split:
+        cfg.update(split_window(len(d), split))
+    env = LimitOrderBookEnv(EnvConfig(ticker=src.ticker, **cfg), day=d, stats=s)
     policy = src.make_policy()
     salt = zlib.crc32(f"{src.name}/{src.ticker}".encode()) % 10_000
     rng = np.random.default_rng(SEED_BASE[split] + salt)
@@ -132,6 +147,8 @@ def main() -> int:
     p.add_argument("--tag", default="main")
     p.add_argument("--splits", nargs="*", default=["train", "test", "heldout"])
     p.add_argument("--out", default=str(DATA_DIR))
+    p.add_argument("--time-split", action="store_true",
+                   help="give train / test / heldout disjoint stretches of the trading day")
     args = p.parse_args()
 
     t0, cache = time.time(), {}
@@ -144,7 +161,7 @@ def main() -> int:
         out_dir = Path(args.out) / split
         out_dir.mkdir(parents=True, exist_ok=True)
         for src in by_split[split]:
-            data = build_source(src, split, n, cache)
+            data = build_source(src, split, n, cache, time_split=args.time_split)
             np.savez_compressed(out_dir / f"{src.name}_{src.ticker}.npz", **data)
             assert data["X"].shape[1] == OBS_DIM
             print(f"[{time.time() - t0:6.0f}s] {split:7s} {src.name:12s} {src.ticker} episodes={n} "

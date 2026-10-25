@@ -60,6 +60,11 @@ class EnvConfig:
     # trailing touch depth is 0.08x its day median. With 30k, no start on any ticker yields a
     # spoof under 5 lots (measured; 3.9% of INTC starts did at 5k).
     warmup: int = 30_000
+    # Optional episode-start window, as event indices. Used to give train / validation / held-out splits
+    # disjoint stretches of the trading day: without it, episodes are drawn from the whole day and 33 of 50
+    # test episodes overlapped a training episode (mean 980 of 2,000 events).
+    start_min: int | None = None
+    start_max: int | None = None
     impact_form: str = "linear"
     impact_lambda: float | None = None  # None -> per-ticker calibrated value
     bid_only: bool = False             # SPOOFER-03 constraint: spoof-sell disabled
@@ -106,9 +111,14 @@ class LimitOrderBookEnv(gym.Env):
 
         valid = np.isfinite(self.day.mid)
         self._valid = valid
-        self._last_start = len(self.day) - cfg.episode_len * cfg.events_per_step - 1
-        if self._last_start <= cfg.warmup:
-            raise ValueError("episode longer than available data")
+        span = cfg.episode_len * cfg.events_per_step
+        self._first_start = max(cfg.warmup, cfg.start_min or 0)
+        self._last_start = len(self.day) - span - 1
+        if cfg.start_max is not None:
+            self._last_start = min(self._last_start, cfg.start_max - span)
+        if self._last_start <= self._first_start:
+            raise ValueError(
+                f"no room for an episode: window [{self._first_start}, {self._last_start}] with span {span}")
 
     # ------------------------------------------------------------------ setup
     def _calibrated_lambda(self) -> float:
@@ -215,7 +225,7 @@ class LimitOrderBookEnv(gym.Env):
         if "start" in options:
             start = int(options["start"])
         else:
-            start = int(self.np_random.integers(self.cfg.warmup, self._last_start))
+            start = int(self.np_random.integers(self._first_start, self._last_start))
         while not self._valid[start]:
             start += 1
         self.t = start
