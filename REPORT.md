@@ -17,7 +17,7 @@ supplied. Both were compared against a rule-based baseline (large order cancelle
 
 Spoofing emerged in agents trading the two narrow-spread stocks: profit of $14,368 ± 1,135 (INTC) and
 $11,431 ± 16,844 (MSFT) per episode across three training seeds, which becomes a loss of $7–8k when the
-price-impact model is disabled, confirming the profit comes from the manipulation itself. The Watchdog
+price-impact model is disabled, confirming the profit comes from the manipulation itself. The first Watchdog
 achieved an order-level F1 of 0.753 ± 0.058 against the rule's 0.352, and a false-positive rate on legitimate
 orders of 0.031 ± 0.067 against 0.823 — roughly 26× fewer false accusations. However, on two **pre-registered**
 held-out attacks it recalled only 0.22 and 0.30 of manipulative orders where the rule recalled 0.89 and 1.00.
@@ -158,13 +158,13 @@ RL test (AMZN) with no manipulation to detect.
 
 **Figure 3.** Watchdog versus rule across every evaluation bucket.
 
-| Measure | Watchdog | Rule | Source |
-|---|---|---|---|
-| In-distribution order F1 | **0.753 ± 0.058** | 0.352 | `multiseed.md` |
-| False positives, legitimate orders | **0.031 ± 0.067** | 0.823 | `multiseed.md` |
-| False positives, held-out stock | **0.004 ± 0.018** | 0.972 | `multiseed.md` |
-| Recall, pre-registered unseen attacker | 0.217 ± 0.156 | **0.885** | `lateburst_test.md` |
-| Recall, pre-registered layering attack | 0.30 | **1.00** | `layering_test.md` |
+| Measure | Original Watchdog | CP-7 `cov` | Rule | Source |
+|---|---|---|---|---|
+| In-distribution order F1 | 0.753 ± 0.058 | **0.984 ± 0.001** | 0.352 | `multiseed.md`, `posthoc_rescore.md` |
+| False positives, legitimate orders | 0.031 ± 0.067 | **0.002 ± 0.002** | 0.823 | `multiseed.md`, `posthoc_rescore.md` |
+| False positives, held-out stock | 0.004 ± 0.018 | **0.001 ± 0.002** | 0.972 | `multiseed.md`, `posthoc_rescore.md` |
+| Recall, pre-registered unseen attacker | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | `lateburst_test.md`, `posthoc_rescore.md` |
+| Recall, pre-registered layering attack | 0.30 | not re-measured | **1.00** | `layering_test.md` |
 | Detection delay (median) | **0 steps** | 8 steps | `watchdog_eval.md` |
 
 Two findings stand out.

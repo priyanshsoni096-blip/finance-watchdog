@@ -130,6 +130,14 @@ ablation is a partial indication: removing the participant features entirely lea
 
 ## D. Model comparison report
 
+### D0. Cross-platform reproduction of a pre-registered test
+
+Arnav's `data/watchdog/drip` and `reversal` datasets are gitignored, so they were **regenerated from scratch on
+this machine** and `watchdog/drip_test.py` re-run end to end. The pre-registered DRIP-ATK result reproduced
+**exactly**: 1,164 numeric values compared, **0 differences**, both hypotheses landing on the same verdicts
+(H1 supported, Watchdog F1 0.409 vs rule 0.336; H2 supported, SAMESIDE FPR 0.012). Recording, scoring and the
+verdict are therefore reproducible across operating systems from the committed code and checkpoints alone.
+
 ### D1. Independent verification of CP-7
 
 Arnav's results were produced on macOS. I re-ran `checkpoints/WATCHDOG/cov` on Windows from his committed

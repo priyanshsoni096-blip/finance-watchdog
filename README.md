@@ -61,10 +61,10 @@ Read both of these alongside the task-difficulty caveat above: the label-definit
 
 **Also measured.**
 
-| Measure | Watchdog | Rule | Source |
-|---|---|---|---|
-| In-distribution order F1 (3 seeds) | 0.753 ± 0.058 | 0.352 | `multiseed.md` |
-| Profit cut when acting inside episodes (SPOOFER-04, INTC) | 83% | 55% | `pnl_suppression.md` |
+| Measure | Original Watchdog | CP-7 `cov` | Rule | Source |
+|---|---|---|---|---|
+| In-distribution order F1 (3 seeds) | 0.753 ± 0.058 | **0.984 ± 0.001** | 0.352 | `multiseed.md`, `posthoc_rescore.md` |
+| Profit cut when acting inside episodes (SPOOFER-04, INTC) | 83% | not re-measured | 55% | `pnl_suppression.md` |
 
 ---
 
