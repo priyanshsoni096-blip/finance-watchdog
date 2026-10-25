@@ -6,7 +6,7 @@ reconciled in commit `5a32de9`. Everything recorded here was executed. Work that
 such in §G and §J rather than assumed to pass.
 
 - **Merge base:** `d9e242b` · **main before merge:** `4c7201c` (tag `pre-merge-main`) · **merged:** `5a32de9`
-- **Test suite:** **146 passing**, 19 test files
+- **Test suite:** **153 passing**, 20 test files
 - **Headline finding:** the detection task is close to a tautology (§C). CP-7 reached the label's ceiling; it did
   not make the problem hard.
 - **Independent verification:** Arnav's CP-7 `cov` result reproduced exactly on a second machine (§D)
@@ -65,6 +65,8 @@ Confirmed defects only — reproduced, measured, and affecting reported results.
 | **Reproduction** | `scripts/flag_timing_diagnostic.py` — the original Watchdog flagged **99%** of SPOOFER-04's orders before any opposite trade, and only **13.7%** of SPOOFER-03's opposite-trade steps |
 | **Fix** | `causal_labels()`: positives begin at the first step the owner trades opposite a resting manipulative order. Every causal positive is also a hindsight positive. |
 | **Measured effect** | Held-out recall 0.22–0.30 → **0.98–0.99** across four attack families |
+| **Measured label gap** | The causal label keeps 87.0% of train and 87.3% of test hindsight positives, so the change is not mainly in volume but in *which* steps are positive: it removes exactly the pre-act steps the detector had been keying on |
+| **Regression test** | `tests/test_causal_labels.py` (7 tests), including the docstring's claim that every causal positive is also a hindsight positive |
 | **Found by** | Arnav |
 
 **Reviewed and found correct** (not defects): Gymnasium space conformance, `reset`/`step` contracts, termination
@@ -231,7 +233,7 @@ historical prices never react to the agent. One large order per side is permitte
 
 ## G. Test report
 
-**146 passing, 19 test files, ~57 s.** No tests were disabled, weakened or skipped to obtain a pass.
+**153 passing, 20 test files, ~58 s.** No tests were disabled, weakened or skipped to obtain a pass.
 
 | Area | File | Tests |
 |---|---|---|
@@ -247,6 +249,7 @@ historical prices never react to the agent. One large order per side is permitte
 | Episode recording | `test_rollout.py` | 7 |
 | Synthetic simulator | `test_synthetic_simulator.py` | 6 |
 | Label observability | `test_label_observability.py` | 6 |
+| Causal labels | `test_causal_labels.py` | 7 |
 | Temporal split | `test_time_split.py` | 4 |
 | Rule detector | `test_baseline_detector.py` | 4 |
 | Roster granularity | `test_roster.py` | 3 |
@@ -295,7 +298,7 @@ pip install -r requirements.txt
 pip install -r requirements-dashboard.txt
 python data/download.py                                      # ~600 MB LOBSTER data
 python scripts/calibrate.py
-python -m pytest tests -q                                    # 146 tests, ~57 s
+python -m pytest tests -q                                    # 153 tests, ~58 s
 python watchdog/dataset.py --episodes 150                    # record surveillance data
 python watchdog/dataset.py --extended                        # CP-7 round-2 training sources
 python watchdog/evaluate_watchdog.py --tag cov               # the CP-7 detector

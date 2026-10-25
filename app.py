@@ -696,7 +696,7 @@ else:
 
         with st.expander("Reproduction and test status"):
             c = st.columns(3)
-            c[0].metric("Automated tests", "139")
+            c[0].metric("Automated tests", "153")
             c[1].metric("Scripts reproducing exactly", "12 / 12")
             c[2].metric("Values re-checked", "2,178")
             st.markdown('<div class="cap">Every script was re-run in a clean clone of the repository — '

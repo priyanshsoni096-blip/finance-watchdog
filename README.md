@@ -110,7 +110,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-139 tests, about 45 seconds (46 s measured). Tests that need data skip themselves if it isn't downloaded.
+153 tests, about 56 seconds (56 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 

@@ -334,7 +334,7 @@ the Watchdog is precise and quiet but misses manipulation it has not seen.</p>
 
 <h2>Evidence quality</h2>
 <div class="cards">
-  <div class="card"><h3>Tests</h3><div class="big">139</div><p class="vs">passing, on real market data</p></div>
+  <div class="card"><h3>Tests</h3><div class="big">153</div><p class="vs">passing, on real market data</p></div>
   <div class="card"><h3>Pre-registered tests</h3><div class="big">2</div><p class="vs">attacker, procedure and hypothesis committed before any data existed; each run once</p></div>
   <div class="card"><h3>Training seeds</h3><div class="big">3 + 3</div><p class="vs">Watchdog seeds and seeds per profitable Spoofer, with confidence intervals</p></div>
 </div>
