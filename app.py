@@ -22,12 +22,21 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent
 RESULTS, FIGS, CONFIGS = ROOT / "results", ROOT / "results" / "figures", ROOT / "configs"
 
-BG, PANEL, LINE = "#0b1220", "#121a2b", "#22304a"
-TEXT, MUTED = "#e6edf7", "#8b99b4"
-WD, RULE, GOOD, BAD = "#3d8bfd", "#e0a200", "#2ecc71", "#e5484d"
+# Restrained financial-terminal palette: ink background, charcoal cards, one emerald accent,
+# muted orange reserved for warnings and the rule baseline.
+BG, PANEL, LINE = "#12141C", "#1B1E29", "#2A2E3B"
+TEXT, MUTED = "#EDEBE4", "#8B8F9C"
+WD, RULE, GOOD, BAD = "#3FB68B", "#8B8F9C", "#3FB68B", "#E8734A"
 NA = "Not available"
 
-st.set_page_config(page_title="SpoofWatch Console", page_icon="▦", layout="wide",
+
+def rgba(hex_colour: str, alpha: float) -> str:
+    """Plotly marker colours must be rgba(); CSS-style 8-digit hex is rejected."""
+    h = hex_colour.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({r},{g},{b},{alpha})"
+
+st.set_page_config(page_title="Finance Watchdog", page_icon="▦", layout="wide",
                    initial_sidebar_state="collapsed")
 
 st.markdown(f"""<style>
@@ -41,13 +50,14 @@ st.markdown(f"""<style>
 
   .topbar {{ display:flex; align-items:baseline; gap:14px; border-bottom:1px solid {LINE};
              padding-bottom:10px; margin-bottom:14px; }}
-  .brand {{ font-size:1.32rem; font-weight:700; color:{TEXT}; letter-spacing:.14em; }}
+  .brand {{ font-size:1.3rem; font-weight:700; color:{TEXT}; letter-spacing:.02em; }}
   .tagline {{ color:{MUTED}; font-size:.82rem; }}
   .chip {{ margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:.68rem; letter-spacing:.1em;
-           color:{RULE}; border:1px solid {RULE}55; background:{RULE}14; padding:3px 9px; border-radius:3px; }}
+           color:{BAD}; border:1px solid {BAD}66; background:{BAD}16; padding:3px 9px; border-radius:4px;
+           font-weight:600; }}
 
   .kpi {{ background:{PANEL}; border:1px solid {LINE}; border-left:3px solid var(--acc,{WD});
-          border-radius:4px; padding:11px 13px; height:100%; }}
+          border-radius:6px; padding:12px 14px; height:100%; }}
   .kpi .k-label {{ color:{MUTED}; font-size:.68rem; text-transform:uppercase; letter-spacing:.09em;
                    font-weight:600; }}
   .kpi .k-val {{ font-family:'JetBrains Mono',monospace; font-size:1.85rem; font-weight:600; color:{TEXT};
@@ -57,12 +67,17 @@ st.markdown(f"""<style>
   .kpi .k-src {{ color:{MUTED}; font-size:.64rem; opacity:.75; margin-top:5px;
                  font-family:'JetBrains Mono',monospace; }}
 
-  .panel {{ background:{PANEL}; border:1px solid {LINE}; border-radius:4px; padding:12px 14px; }}
+  .panel {{ background:{PANEL}; border:1px solid {LINE}; border-radius:6px; padding:12px 14px; }}
+  .sechead {{ color:{MUTED}; font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+              font-weight:600; margin:2px 0 8px; }}
   .finding {{ background:linear-gradient(90deg,{WD}14,transparent); border:1px solid {LINE};
               border-left:3px solid {WD}; border-radius:4px; padding:11px 14px; }}
   .finding b {{ color:{TEXT}; }}
-  .warnbar {{ border:1px solid {BAD}44; background:{BAD}10; border-radius:4px; padding:8px 12px;
-              color:#f3bfbd; font-size:.78rem; }}
+  .warnbar {{ border:1px solid {BAD}55; background:{BAD}12; border-radius:6px; padding:9px 13px;
+              color:#F0C3AE; font-size:.78rem; line-height:1.45; }}
+  .notebar {{ border:1px solid {LINE}; background:{PANEL}; border-radius:6px; padding:9px 13px;
+              color:{MUTED}; font-size:.76rem; line-height:1.45; }}
+  .notebar b {{ color:{TEXT}; }}
   .stage {{ background:{PANEL}; border:1px solid {LINE}; border-radius:4px; padding:9px 11px; height:100%; }}
   .stage .s-n {{ color:{WD}; font-family:'JetBrains Mono',monospace; font-size:.64rem; letter-spacing:.08em; }}
   .stage .s-t {{ color:{TEXT}; font-size:.84rem; font-weight:600; margin:2px 0 3px; }}
@@ -169,9 +184,9 @@ def chart_layout(fig, height=330, title=None, ytitle=None, yrange=None):
 
 # ─────────────────────────────── header + nav ───────────────────────────────
 st.markdown(
-    '<div class="topbar"><span class="brand">SPOOFWATCH CONSOLE</span>'
-    '<span class="tagline">Adversarial reinforcement learning for limit order book surveillance</span>'
-    '<span class="chip">RESEARCH / SIMULATION</span></div>', unsafe_allow_html=True)
+    '<div class="topbar"><span class="brand">Finance Watchdog</span>'
+    '<span class="tagline">Reinforcement Learning for Market Manipulation Research</span>'
+    '<span class="chip">SIMULATED DATA</span></div>', unsafe_allow_html=True)
 
 view = st.segmented_control("View", ["Overview", "Demonstration", "Evidence & limitations"],
                             default="Overview", label_visibility="collapsed")
@@ -181,105 +196,122 @@ if view is None:
 # ─────────────────────────────── VIEW A ───────────────────────────────
 if view == "Overview":
     st.markdown(
-        f'<div class="cap" style="margin:2px 0 12px">'
-        f'<b style="color:{TEXT}">Spoofing</b> places a large order to make the market look one-sided, moving the '
-        f'price, then cancels it after trading on the other side. It is illegal (CEA §4c(a)(5)(C)). '
-        f'Exchanges mostly police it with static rules. <b style="color:{TEXT}">The question:</b> can a learning '
-        f'agent do better — catching manipulation it was never shown, without accusing honest traders?</div>',
+        f'<div class="cap" style="margin:2px 0 14px; font-size:.86rem; line-height:1.55">'
+        f'Trading agents learn to <b style="color:{TEXT}">spoof</b> a replayed NASDAQ order book — placing large '
+        f'orders to tilt the price, then trading the other way — with no instruction to do so beyond profit.<br>'
+        f'A surveillance model then tries to catch them, and is measured against a static rule of the kind '
+        f'exchanges actually run.</div>',
         unsafe_allow_html=True)
 
     lo = dig(R["label_observability"], "signatures", "opposite-side signature",
              "in-distribution (test split)", "orders", default={})
     if lo:
         st.markdown(
-            '<div class="warnbar"><b>Audit finding — read before any detector number.</b> The manipulation '
-            'label is readable from two of the detector&rsquo;s own input features, so a zero-parameter '
-            f'signature scores order-level F1 {num(lo.get("f1"), 3)} in-distribution and 0.995 on a held-out '
-            'attacker at a false-positive rate of 0.000, and a supervised LSTM matches the RL Watchdog '
-            'everywhere in minutes. The CP-7 figures below are real and were earned by fixing a labelling '
-            'artefact — but they reach a ceiling a rule with no parameters already occupies. See '
-            '<span class="mono">Evidence &amp; limitations &rarr; Is the task hard?</span></div>',
+            '<div class="warnbar"><b>Read this before any detector number.</b> The label can be read off two '
+            f'of the detector&rsquo;s own inputs, so a rule with no parameters scores F1 {num(lo.get("f1"), 3)}. '
+            'The scores below are real but they sit at that ceiling — '
+            '<span class="mono">Evidence &rarr; How hard is the task?</span></div>',
             unsafe_allow_html=True)
         st.write("")
 
-    c = st.columns(4, gap="small")
+    st.markdown('<div class="sechead">Detector — surveillance model vs the rule baseline</div>',
+                unsafe_allow_html=True)
+    c = st.columns(3, gap="small")
     with c[0]:
-        kpi("False positives · legitimate orders", pct(ph("cov", "legitimate order FPR")),
-            pct(PHRULE.get("legitimate order FPR")), "Lower is better · CP-7 Watchdog · 3 seeds",
-            "posthoc_rescore.md · order-level", GOOD)
+        kpi("Detection F1 · known attacks", num(ph("cov", "in-distribution order F1"), 3),
+            num(PHRULE.get("in-distribution order F1"), 3), "Higher is better · 3 seeds, ±0.001",
+            "posthoc_rescore.md · order level", WD)
     with c[1]:
-        kpi("In-distribution F1 · known attacks", num(ph("cov", "in-distribution order F1"), 3),
-            num(PHRULE.get("in-distribution order F1"), 3), "Higher is better · ±0.001 over 3 seeds",
-            "posthoc_rescore.md · order-level · test split", WD)
+        kpi("False positives · legitimate orders", pct(ph("cov", "legitimate order FPR")),
+            pct(PHRULE.get("legitimate order FPR")), "Lower is better · 3 seeds",
+            "posthoc_rescore.md · order level", GOOD)
     with c[2]:
+        kpi("Recall · unseen attack (LATEBURST)", num(ph("cov", "LATEBURST-ATK recall")),
+            num(PHRULE.get("LATEBURST-ATK recall")), "Higher is better · earlier model scored 0.22",
+            "posthoc_rescore.md · 3 seeds", GOOD)
+
+    st.write("")
+    st.markdown('<div class="sechead">Attacker — profit inside the simulator, not a real-market claim</div>',
+                unsafe_allow_html=True)
+    a = st.columns(3, gap="small")
+    intc = dig(R["spoofer_seeds"], "across_seeds", "SPOOFER-04", default={}) or {}
+    with a[0]:
+        mu, off = intc.get("pnl_mean"), intc.get("no_impact_mean")
+        kpi("Spoofer profit / episode · INTC", money(mu, k=True) if mu is not None else NA,
+            f"impact model off: {money(off, k=True)}" if off is not None else NA,
+            f"Simulated · {intc.get('seeds', 3)} seeds · replay impact model",
+            "spoofer_seeds.md", RULE)
+    with a[1]:
         s4 = next((r for r in R["pnl_suppression"].get("rows", []) if r["source"] == "SPOOFER-04"), {})
-        kpi("Profit removed · SPOOFER-04 INTC", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
+        kpi("Profit removed by surveillance", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
             pct(dig(s4, "rule", "suppression_pct", default=0) / 100, 0),
-            "Higher is better · detector acts inside the episode",
-            "pnl_suppression.md · 50 episodes", GOOD)
-    with c[3]:
-        kpi("Held-out attack recall · LATEBURST", num(ph("cov", "LATEBURST-ATK recall")),
-            num(PHRULE.get("LATEBURST-ATK recall")), "Higher is better · CP-7 · original Watchdog scored 0.22",
-            "posthoc_rescore.md · post-hoc · 3 seeds", GOOD)
+            "Higher is better · detector acts inside the episode", "pnl_suppression.md · 50 episodes", GOOD)
+    with a[2]:
+        anon = dig(R["anonymised_experiment"], "headline", default={})
+        kpi("Without participant attribution", num(anon.get("best_step_f1"), 3),
+            f"constant classifier {num(anon.get('best_constant_step_f1'), 3)}",
+            "Step level · order book only · the honest number",
+            "anonymised_experiment.md", BAD)
 
     st.write("")
     g1, g2 = st.columns([3, 2], gap="medium")
     with g1:
-        ind = dig(R["watchdog_eval"], "buckets", "In-distribution (test split)", default={})
-        lb, lay = R["lateburst_test"], R["layering_test"]
-        labels = ["Known attacks<br>(in-distribution)", "LATEBURST<br>(held out)", "LAYER<br>(held out)"]
-        wd_v = [dig(ind, "watchdog_orders", "f1", default=0),
-                dig(lb, "overall", "watchdog_orders", "f1", default=0),
-                dig(lay, "pooled", "watchdog_orders", "f1", default=0)]
-        ru_v = [dig(ind, "rule_orders", "f1", default=0),
-                dig(lb, "overall", "rule_orders", "f1", default=0),
-                dig(lay, "pooled", "rule_orders", "f1", default=0)]
+        # one source for every bar, so the chart and the KPI cards cannot disagree
+        bars = [("Known attacks<br>(in-distribution)", "in-distribution order F1"),
+                ("LATEBURST<br>(held out)", "LATEBURST-ATK pooled F1"),
+                ("DRIP<br>(held out)", "DRIP-ATK pooled F1"),
+                ("REVERSAL<br>(held out)", "REVERSAL-ATK pooled F1")]
+        labels = [b[0] for b in bars]
+        wd_v = [ph("cov", b[1]) or 0 for b in bars]
+        old_v = [ph("main", b[1]) or 0 for b in bars]
+        ru_v = [PHRULE.get(b[1]) or 0 for b in bars]
         fig = go.Figure()
-        fig.add_bar(x=labels, y=wd_v, name="RL Watchdog", marker_color=WD,
-                    text=[f"{v:.2f}" for v in wd_v], textposition="outside", textfont=dict(size=12))
+        fig.add_bar(x=labels, y=wd_v, name="Surveillance model (current)", marker_color=WD,
+                    text=[f"{v:.2f}" for v in wd_v], textposition="outside", textfont=dict(size=11))
+        fig.add_bar(x=labels, y=old_v, name="Earlier model", marker_color=rgba(WD, 0.42),
+                    text=[f"{v:.2f}" for v in old_v], textposition="outside", textfont=dict(size=11))
         fig.add_bar(x=labels, y=ru_v, name="Rule baseline", marker_color=RULE,
-                    text=[f"{v:.2f}" for v in ru_v], textposition="outside", textfont=dict(size=12))
+                    text=[f"{v:.2f}" for v in ru_v], textposition="outside", textfont=dict(size=11))
         fig.add_vline(x=.5, line_width=1, line_dash="dot", line_color=MUTED)
-        fig.add_annotation(x=1.5, y=1.08, text="attacks never seen in training", showarrow=False,
+        fig.add_annotation(x=2.0, y=1.12, text="attacks never seen in training", showarrow=False,
                            font=dict(size=10, color=MUTED))
-        st.plotly_chart(chart_layout(fig, 340, "Detection quality — order-level F1", "F1", [0, 1.2]),
-                        use_container_width=True)
-        st.markdown('<div class="cap">The Watchdog more than doubles the baseline on attacks resembling its '
-                    'training, and loses to it on both pre-registered unseen attacks.<br>'
-                    '<span style="opacity:.75">Single Watchdog seed (<span class="mono">main</span>), the one the pre-registered tests ran on; the KPI above is the 3-seed mean, so values differ slightly.</span></div>',
+        st.plotly_chart(chart_layout(fig, 340, "Detection quality — order-level F1 (higher is better)",
+                                     "F1", [0, 1.2]), use_container_width=True)
+        st.markdown('<div class="cap">Fixing how manipulation was labelled — marking the act rather than the '
+                    'actor — moved held-out recall from 0.22 to 0.98. All bars are 3-seed means from '
+                    '<span class="mono">posthoc_rescore.md</span>, the same source as the cards above.</div>',
                     unsafe_allow_html=True)
     with g2:
-        legit = dig(R["watchdog_eval"], "buckets", "Legitimate only (HONEST + FLICKER)", default={})
-        syn = dig(R["synthetic_eval"], "detection", "Legitimate only", default={})
-        rows = [("Replay market", dig(legit, "watchdog_orders", "fpr", default=0),
-                 dig(legit, "rule_orders", "fpr", default=0)),
-                ("Synthetic market", dig(syn, "watchdog_orders", "fpr", default=0),
-                 dig(syn, "rule_orders", "fpr", default=0))]
+        # same source and same three models as the chart on the left, so the two cannot disagree
+        rows = [("Rule baseline", PHRULE.get("legitimate order FPR") or 0, RULE),
+                ("Earlier model", ph("main", "legitimate order FPR") or 0, rgba(WD, 0.42)),
+                ("Surveillance model<br>(current)", ph("cov", "legitimate order FPR") or 0, WD)]
         fig = go.Figure()
-        fig.add_bar(y=[r[0] for r in rows], x=[100 * r[2] for r in rows], name="Rule baseline",
-                    orientation="h", marker_color=RULE,
-                    text=[f"{100 * r[2]:.0f}%" for r in rows], textposition="outside")
-        fig.add_bar(y=[r[0] for r in rows], x=[100 * r[1] for r in rows], name="RL Watchdog",
-                    orientation="h", marker_color=WD,
-                    text=[f"{100 * r[1]:.0f}%" for r in rows], textposition="outside")
+        for _lab, _v, _c in rows:
+            fig.add_bar(y=[_lab], x=[100 * _v], orientation="h", marker_color=_c, showlegend=False,
+                        text=[f"{100 * _v:.1f}%"], textposition="outside", textfont=dict(size=12))
         fig.update_layout(xaxis=dict(range=[0, 108], ticksuffix="%", gridcolor=LINE))
-        st.plotly_chart(chart_layout(fig, 340, "False alarms on legitimate orders", None),
+        st.plotly_chart(chart_layout(fig, 340, "False alarms on legitimate orders (lower is better)", None),
                         use_container_width=True)
-        st.markdown('<div class="cap">Why this decides usability: at the baseline\'s rate, four in five '
-                    'investigated traders did nothing wrong, and real alerts drown.<br>'
-                    '<span style="opacity:.75">Order-level, single <span class="mono">main</span> seed per market; the KPI above is the 3-seed replay-market mean.</span></div>',
+        st.markdown('<div class="cap">Why this decides usability: at the rule&rsquo;s rate, four in five '
+                    'investigated traders did nothing wrong and real alerts drown. Replay market, order '
+                    'level, 3-seed means (<span class="mono">posthoc_rescore.md</span>). The synthetic-market '
+                    'comparison is under <span class="mono">Evidence &amp; robustness</span>.</div>',
                     unsafe_allow_html=True)
 
     st.write("")
     f1, f2 = st.columns([3, 2], gap="medium")
     f1.markdown(
-        '<div class="finding"><b>Finding.</b> Markedly lower false-positive rates in simulation, but '
-        'generalisation to unseen manipulation remains unresolved — on both pre-registered held-out attacks the '
-        'static rule recalls more.</div>', unsafe_allow_html=True)
+        '<div class="finding"><b>Main finding.</b> The detector\'s early failure on unseen attacks was caused '
+        'by the <b>label</b>, not the model: marking every step an order rested taught it to predict '
+        '<i>who would spoof</i> rather than detect <i>the act</i>. Fixing that moved held-out recall from 0.22 '
+        'to 0.98 across four attack families — but the ceiling it reached is one a rule with '
+        '<b>no parameters</b> already occupies, so this measures a recoverable label, not a hard problem '
+        'solved.</div>', unsafe_allow_html=True)
     f2.markdown(
-        '<div class="warnbar"><b>Research prototype.</b> Simulation only. LOBSTER carries no participant '
-        'identities, so this detector has never been validated against labelled real-world spoofing.</div>',
-        unsafe_allow_html=True)
+        '<div class="warnbar"><b>Simulated data.</b> Every number here comes from replayed and simulated '
+        'markets. LOBSTER carries no participant identities, so nothing in this project establishes '
+        'real-world spoofing detection.</div>', unsafe_allow_html=True)
 
 # ─────────────────────────────── VIEW B ───────────────────────────────
 elif view == "Demonstration":
@@ -436,8 +468,11 @@ elif view == "Demonstration":
 
 # ─────────────────────────────── VIEW C ───────────────────────────────
 else:
-    t0, tg, t1, t2, t3, t4 = st.tabs(["Is the task hard?", "Detector generations", "Headline evidence",
-                                      "Held-out tests", "Robustness", "Technical detail"])
+    # Four tabs, not six. t1/t3/t4 alias the last one so their existing blocks render into it in
+    # source order, keeping secondary detail behind one click instead of three more tabs.
+    t0, tg, t2, _detail = st.tabs(["How hard is the task?", "Detector generations", "Held-out attacks",
+                                   "Evidence & robustness"])
+    t1 = t3 = t4 = _detail
 
     with tg:
         st.markdown('<div class="cap">Three generations of the same detector, re-scored on every saved replay '
@@ -575,6 +610,7 @@ else:
                     unsafe_allow_html=True)
 
     with t1:
+        st.markdown('<div class="sechead">Multi-seed headline evidence</div>', unsafe_allow_html=True)
         c1, c2 = st.columns([3, 2], gap="medium")
         with c1:
             st.markdown('<div class="cap">Multi-seed validation — 3 Watchdog training seeds, Student-t 95% CI, '
@@ -643,6 +679,8 @@ else:
                     unsafe_allow_html=True)
 
     with t3:
+        st.markdown('<div class="sechead">Robustness — does any of it survive a different market?</div>',
+                    unsafe_allow_html=True)
         se = R["synthetic_eval"]
         st.markdown('<div class="cap">Sim-to-sim check: a second market where prices emerge from order matching '
                     'between simple traders, calibrated to real MSFT/INTC statistics and never to whether '
@@ -677,6 +715,7 @@ else:
                       delta=f"rule {num(dig(ll, 'rule_orders', 'fpr'))}", delta_color="inverse")
 
     with t4:
+        st.markdown('<div class="sechead">Technical detail</div>', unsafe_allow_html=True)
         with st.expander("What the detector relies on — feature ablation (test split)"):
             fa = R["feature_ablation"].get("results", {})
             if fa:
