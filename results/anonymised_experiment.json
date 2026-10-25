@@ -1,0 +1,322 @@
+{
+  "data": "C:\\Users\\Rahul Soni\\Desktop\\finance-watchdog\\data\\watchdog_v2",
+  "history": 10,
+  "seed": 0,
+  "audit": {
+    "n": 360000,
+    "positive_rate": 0.11143611111111111,
+    "withheld_pair_step_f1": 0.9478336130927402,
+    "max_abs_point_biserial_corr": 0.3811415129354897,
+    "n_features_corr_above_0.5": 0,
+    "top_correlated_feature": "book L1 bid size",
+    "top_correlated_feature_index": 3,
+    "best_single_feature_rule_f1": 0.4901127446836309,
+    "best_single_feature_index": 44,
+    "best_single_feature": "total displayed depth"
+  },
+  "models": {
+    "constant: never flag": {
+      "sets": {
+        "test (in-distribution)": {
+          "step": {
+            "n": 120000,
+            "positives": 13866,
+            "tp": 0,
+            "fp": 0,
+            "fn": 13866,
+            "tn": 106134,
+            "precision": NaN,
+            "recall": 0.0,
+            "f1": 0.0,
+            "fpr": 0.0
+          },
+          "episode": {
+            "n": 600,
+            "positives": 154,
+            "tp": 0,
+            "fp": 0,
+            "fn": 154,
+            "tn": 446,
+            "precision": NaN,
+            "recall": 0.0,
+            "f1": 0.0,
+            "fpr": 0.0
+          }
+        },
+        "held-out": {
+          "step": {
+            "n": 80000,
+            "positives": 9781,
+            "tp": 0,
+            "fp": 0,
+            "fn": 9781,
+            "tn": 70219,
+            "precision": NaN,
+            "recall": 0.0,
+            "f1": 0.0,
+            "fpr": 0.0
+          },
+          "episode": {
+            "n": 400,
+            "positives": 250,
+            "tp": 0,
+            "fp": 0,
+            "fn": 250,
+            "tn": 150,
+            "precision": NaN,
+            "recall": 0.0,
+            "f1": 0.0,
+            "fpr": 0.0
+          }
+        }
+      }
+    },
+    "constant: always flag": {
+      "sets": {
+        "test (in-distribution)": {
+          "step": {
+            "n": 120000,
+            "positives": 13866,
+            "tp": 13866,
+            "fp": 106134,
+            "fn": 0,
+            "tn": 0,
+            "precision": 0.11555,
+            "recall": 1.0,
+            "f1": 0.20716238626686387,
+            "fpr": 1.0
+          },
+          "episode": {
+            "n": 600,
+            "positives": 154,
+            "tp": 154,
+            "fp": 446,
+            "fn": 0,
+            "tn": 0,
+            "precision": 0.25666666666666665,
+            "recall": 1.0,
+            "f1": 0.40848806366047746,
+            "fpr": 1.0
+          }
+        },
+        "held-out": {
+          "step": {
+            "n": 80000,
+            "positives": 9781,
+            "tp": 9781,
+            "fp": 70219,
+            "fn": 0,
+            "tn": 0,
+            "precision": 0.1222625,
+            "recall": 1.0,
+            "f1": 0.21788574419977502,
+            "fpr": 1.0
+          },
+          "episode": {
+            "n": 400,
+            "positives": 250,
+            "tp": 250,
+            "fp": 150,
+            "fn": 0,
+            "tn": 0,
+            "precision": 0.625,
+            "recall": 1.0,
+            "f1": 0.7692307692307693,
+            "fpr": 1.0
+          }
+        }
+      }
+    },
+    "book-imbalance rule (|deep imbalance| > p90 = 0.279)": {
+      "threshold": 0.2792138159275055,
+      "sets": {
+        "test (in-distribution)": {
+          "step": {
+            "n": 120000,
+            "positives": 13866,
+            "tp": 406,
+            "fp": 8391,
+            "fn": 13460,
+            "tn": 97743,
+            "precision": 0.04615209730589974,
+            "recall": 0.029280253858358574,
+            "f1": 0.03582932533203901,
+            "fpr": 0.07906043303748092
+          },
+          "episode": {
+            "n": 600,
+            "positives": 154,
+            "tp": 55,
+            "fp": 246,
+            "fn": 99,
+            "tn": 200,
+            "precision": 0.18272425249169436,
+            "recall": 0.35714285714285715,
+            "f1": 0.24175824175824173,
+            "fpr": 0.5515695067264574
+          }
+        },
+        "held-out": {
+          "step": {
+            "n": 80000,
+            "positives": 9781,
+            "tp": 828,
+            "fp": 6066,
+            "fn": 8953,
+            "tn": 64153,
+            "precision": 0.12010443864229765,
+            "recall": 0.08465392086698702,
+            "f1": 0.0993103448275862,
+            "fpr": 0.08638687534712827
+          },
+          "episode": {
+            "n": 400,
+            "positives": 250,
+            "tp": 156,
+            "fp": 147,
+            "fn": 94,
+            "tn": 3,
+            "precision": 0.5148514851485149,
+            "recall": 0.624,
+            "f1": 0.5641952983725135,
+            "fpr": 0.98
+          }
+        }
+      }
+    },
+    "logistic regression": {
+      "threshold": 0.7,
+      "train_f1": 0.617196680707971,
+      "sets": {
+        "test (in-distribution)": {
+          "step": {
+            "n": 120000,
+            "positives": 13866,
+            "tp": 11797,
+            "fp": 12241,
+            "fn": 2069,
+            "tn": 93893,
+            "precision": 0.4907646226807555,
+            "recall": 0.8507860954853599,
+            "f1": 0.6224672857745885,
+            "fpr": 0.11533533080822357,
+            "pr_auc": 0.5002251138268211
+          },
+          "episode": {
+            "n": 600,
+            "positives": 154,
+            "tp": 150,
+            "fp": 245,
+            "fn": 4,
+            "tn": 201,
+            "precision": 0.379746835443038,
+            "recall": 0.974025974025974,
+            "f1": 0.546448087431694,
+            "fpr": 0.5493273542600897
+          }
+        },
+        "held-out": {
+          "step": {
+            "n": 80000,
+            "positives": 9781,
+            "tp": 3673,
+            "fp": 5300,
+            "fn": 6108,
+            "tn": 64919,
+            "precision": 0.4093391284966009,
+            "recall": 0.3755239750536755,
+            "f1": 0.3917031033379546,
+            "fpr": 0.07547814694028682,
+            "pr_auc": 0.3135331636162793
+          },
+          "episode": {
+            "n": 400,
+            "positives": 250,
+            "tp": 209,
+            "fp": 96,
+            "fn": 41,
+            "tn": 54,
+            "precision": 0.6852459016393443,
+            "recall": 0.836,
+            "f1": 0.7531531531531532,
+            "fpr": 0.64
+          }
+        }
+      }
+    },
+    "gradient boosting": {
+      "threshold": 0.85,
+      "train_f1": 0.8185792349726776,
+      "sets": {
+        "test (in-distribution)": {
+          "step": {
+            "n": 120000,
+            "positives": 13866,
+            "tp": 8119,
+            "fp": 5310,
+            "fn": 5747,
+            "tn": 100824,
+            "precision": 0.604587087646139,
+            "recall": 0.5855329583153036,
+            "f1": 0.5949074922146914,
+            "fpr": 0.05003109276951778,
+            "pr_auc": 0.6300376548915702
+          },
+          "episode": {
+            "n": 600,
+            "positives": 154,
+            "tp": 137,
+            "fp": 117,
+            "fn": 17,
+            "tn": 329,
+            "precision": 0.5393700787401575,
+            "recall": 0.8896103896103896,
+            "f1": 0.6715686274509804,
+            "fpr": 0.2623318385650224
+          }
+        },
+        "held-out": {
+          "step": {
+            "n": 80000,
+            "positives": 9781,
+            "tp": 1219,
+            "fp": 1068,
+            "fn": 8562,
+            "tn": 69151,
+            "precision": 0.5330126803672934,
+            "recall": 0.12462938349861977,
+            "f1": 0.20202187603579716,
+            "fpr": 0.015209558666457797,
+            "pr_auc": 0.31967578198044727
+          },
+          "episode": {
+            "n": 400,
+            "positives": 250,
+            "tp": 104,
+            "fp": 2,
+            "fn": 146,
+            "tn": 148,
+            "precision": 0.9811320754716981,
+            "recall": 0.416,
+            "f1": 0.5842696629213483,
+            "fpr": 0.013333333333333334
+          }
+        }
+      }
+    }
+  },
+  "headline": {
+    "best_step_f1": 0.3917031033379546,
+    "best_step_model": "logistic regression",
+    "best_episode_f1": 0.7531531531531532,
+    "best_episode_model": "logistic regression",
+    "best_constant_step_f1": 0.21788574419977502,
+    "best_constant_step": "constant: always flag",
+    "best_constant_episode_f1": 0.7692307692307693,
+    "best_constant_episode": "constant: always flag",
+    "beats_constant_step": true,
+    "beats_constant_episode": false,
+    "held_out_set": "held-out"
+  },
+  "runtime_s": 55.6
+}
