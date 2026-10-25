@@ -309,6 +309,13 @@ python watchdog/posthoc_rescore.py                           # all generations, 
 streamlit run app.py --server.fileWatcherType none
 ```
 
+**Dependencies.** `requirements.txt` is the declared set; `requirements-lock.txt` is a `pip freeze` of the
+macOS environment that reproduced every one of Arnav's results and is left exactly as recorded. One defect was
+found and fixed during this audit: `scripts/supervised_baseline.py` imported scikit-learn without declaring it,
+so a fresh clone following the README hit a bare `ImportError`. scikit-learn is now declared, and the script
+exits with an actionable message if it is absent. It is the only module in the repo that needs it, which is why
+the lock file (predating that script) does not list it.
+
 **Artifacts not in git** (`checkpoints/`, `data/` are gitignored): model checkpoints and recorded datasets must
 be rebuilt or copied. All CP-7 checkpoints are present on this machine and were used for §D1.
 

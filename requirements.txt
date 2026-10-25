@@ -6,3 +6,5 @@ stable-baselines3>=2.9
 sb3-contrib>=2.9
 pytest>=8
 matplotlib>=3.9
+# scripts/supervised_baseline.py only (logistic regression and gradient boosting baselines)
+scikit-learn>=1.5

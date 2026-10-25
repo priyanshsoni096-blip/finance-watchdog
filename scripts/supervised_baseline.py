@@ -70,10 +70,13 @@ def pick_threshold(probs: dict[str, np.ndarray], train: dict[str, dict]) -> tupl
 
 
 def fit_models(Xtr: np.ndarray, ytr: np.ndarray, seed: int = 0) -> dict:
-    from sklearn.ensemble import HistGradientBoostingClassifier
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import StandardScaler
+    try:
+        from sklearn.ensemble import HistGradientBoostingClassifier
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
+    except ImportError as e:  # the only script in the repo that needs scikit-learn
+        raise SystemExit("this script needs scikit-learn: pip install 'scikit-learn>=1.5'") from e
 
     models = {}
     t0 = time.time()
