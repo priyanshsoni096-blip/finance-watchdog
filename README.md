@@ -25,6 +25,8 @@ Every number below comes from a committed file in `results/`, except the no-impa
 | SPOOFER-04 (INTC) PnL per episode, replay market | +$13,208 ± 1,654 | `basic_eval.md` |
 | SPOOFER-02 (MSFT) PnL per episode, replay market | +$2,437 ± 1,068 | `basic_eval.md` |
 | Same trading with price impact switched off (10 episodes) | −$8,414 (INTC), −$5,407 (MSFT) | `scripts/pnl_decompose.py` |
+| Across 3 training seeds each | INTC +$14,368 ± 1,135; MSFT +$11,431 ± 16,844; 3/3 seeds spoofed on both | `spoofer_seeds.md` |
+| Same seeds with impact switched off | −$7,037 (MSFT) and −$8,279 (INTC) | `spoofer_seeds.md` |
 | Same Spoofers in the synthetic agent-based market | −$3,270 ± 688 (INTC), −$2,930 ± 686 (MSFT) | `synthetic_eval.md` |
 | Large orders filled: Spoofers vs Coscia | 0.4–1.4% vs 0.08–0.5% | `real_case_comparison.md` |
 | Large orders resting over 1 s: Spoofers vs Coscia | 44–52% vs 0.57% | `real_case_comparison.md` |
@@ -223,6 +225,12 @@ python scripts/real_case_stats.py
 Simulated order structure for the Coscia/Sarao comparison.
 
 ```bash
+python scripts/spoofer_seeds.py --episodes 20
+```
+Every Spoofer seed through the same evaluation, with an impact-free counterfactual per seed.
+Simulated order structure for the Coscia/Sarao comparison.
+
+```bash
 python synthetic/calibrate.py
 ```
 Calibrates the synthetic market to real MSFT/INTC statistics; writes `configs/synthetic_calibration.json`.
@@ -286,12 +294,14 @@ scripts/calibrate.py              per-stock statistics -> configs/calibration.js
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
+scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
 
 tests/                            115 unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market)
 checkpoints/                      trained models + logs (git-ignored)
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
                                   feature_ablation, real_case_stats, synthetic_spoof_impact, synthetic_eval,
+                                  spoofer_seeds,
                                   layering_test (.md and .json each); real_case_comparison.md
 ```
 
@@ -732,7 +742,7 @@ Headline comparison, Watchdog vs rule. Watchdog values are the mean ± 95% Stude
 2. **The Watchdog misses sparse spoofing** (a wait, then a few trades). This holds in training (SPOOFER-03 GOOG) and on unseen attackers (LATEBURST-ATK recall 0.24), and ablation shows detection rests on trade direction.
 3. **Spoofing is unprofitable on wide-spread stocks under calibrated impact** (AAPL, GOOG, AMZN shifts are 0.37–0.62 spreads). That thins out the Spoofer population, and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch.
 4. **The manipulation label is a proxy** (trading on the opposite side while the order rests). It stands in for intent and is not a legal determination.
-5. **Seeds.** The Watchdog headline metrics use 3 training seeds with Student-t 95% CIs (`results/multiseed.md`). Each Spoofer is still a single training seed, and PnL CIs use a normal approximation over episodes.
+5. **Seeds.** The Watchdog uses 3 training seeds, and the two profitable Spoofers now do too (`results/spoofer_seeds.md`): all 3 seeds learned to spoof on both MSFT and INTC. INTC is stable across seeds (+$14,368 ± 1,135); MSFT is not (+$11,431 ± 16,844), because the committed `main` seed earns +$3,628 while the other two earn about +$15k, so the headline understates it. SPOOFER-01/03/05, which never learned to spoof, are still single-seed.
 6. **Layering.** The replay environment allows one large order per side at the best price, so no Spoofer can learn layering. It was tested only with a scripted attacker in the synthetic market (Watchdog recall 0.30 vs rule 1.00; `results/layering_test.md`). Sarao-style orders held several levels back were not tested.
 
 ## Known limitations

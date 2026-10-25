@@ -1,0 +1,158 @@
+{
+  "episodes": 20,
+  "tags": [
+    "main",
+    "seed11",
+    "seed23"
+  ],
+  "per_seed": [
+    {
+      "agent": "SPOOFER-02",
+      "tag": "main",
+      "ticker": "MSFT",
+      "calibrated": {
+        "pnl_mean": 3628.263850209085,
+        "pnl_ci95": 1154.7317139613604,
+        "trades_per_ep": 109.75,
+        "trades_against_own_spoof_per_ep": 59.45,
+        "manipulative_order_share": 0.7553191489361702,
+        "profitable_episode_share": 0.95
+      },
+      "no_impact": {
+        "pnl_mean": -4723.5,
+        "pnl_ci95": 923.4513531746001,
+        "trades_per_ep": 109.75,
+        "trades_against_own_spoof_per_ep": 59.45,
+        "manipulative_order_share": 0.7553191489361702,
+        "profitable_episode_share": 0.0
+      }
+    },
+    {
+      "agent": "SPOOFER-02",
+      "tag": "seed11",
+      "ticker": "MSFT",
+      "calibrated": {
+        "pnl_mean": 15885.74464950841,
+        "pnl_ci95": 978.7443407672545,
+        "trades_per_ep": 167.5,
+        "trades_against_own_spoof_per_ep": 166.7,
+        "manipulative_order_share": 0.956386292834891,
+        "profitable_episode_share": 1.0
+      },
+      "no_impact": {
+        "pnl_mean": -7795.45,
+        "pnl_ci95": 495.8845967230257,
+        "trades_per_ep": 167.8,
+        "trades_against_own_spoof_per_ep": 167.0,
+        "manipulative_order_share": 0.9528301886792453,
+        "profitable_episode_share": 0.0
+      }
+    },
+    {
+      "agent": "SPOOFER-02",
+      "tag": "seed23",
+      "ticker": "MSFT",
+      "calibrated": {
+        "pnl_mean": 14779.260933559344,
+        "pnl_ci95": 2005.5933294122324,
+        "trades_per_ep": 171.2,
+        "trades_against_own_spoof_per_ep": 170.5,
+        "manipulative_order_share": 0.9444444444444444,
+        "profitable_episode_share": 1.0
+      },
+      "no_impact": {
+        "pnl_mean": -8592.75,
+        "pnl_ci95": 929.8363344515611,
+        "trades_per_ep": 171.2,
+        "trades_against_own_spoof_per_ep": 170.5,
+        "manipulative_order_share": 0.9444444444444444,
+        "profitable_episode_share": 0.0
+      }
+    },
+    {
+      "agent": "SPOOFER-04",
+      "tag": "main",
+      "ticker": "INTC",
+      "calibrated": {
+        "pnl_mean": 13846.30747744035,
+        "pnl_ci95": 2076.107544708863,
+        "trades_per_ep": 172.8,
+        "trades_against_own_spoof_per_ep": 172.25,
+        "manipulative_order_share": 0.9745454545454545,
+        "profitable_episode_share": 0.95
+      },
+      "no_impact": {
+        "pnl_mean": -8211.15,
+        "pnl_ci95": 526.2649134240883,
+        "trades_per_ep": 172.8,
+        "trades_against_own_spoof_per_ep": 172.25,
+        "manipulative_order_share": 0.9745454545454545,
+        "profitable_episode_share": 0.0
+      }
+    },
+    {
+      "agent": "SPOOFER-04",
+      "tag": "seed11",
+      "ticker": "INTC",
+      "calibrated": {
+        "pnl_mean": 14697.830588903418,
+        "pnl_ci95": 2212.09703740875,
+        "trades_per_ep": 156.8,
+        "trades_against_own_spoof_per_ep": 156.05,
+        "manipulative_order_share": 0.9172749391727494,
+        "profitable_episode_share": 1.0
+      },
+      "no_impact": {
+        "pnl_mean": -8094.0,
+        "pnl_ci95": 692.2754522176544,
+        "trades_per_ep": 157.05,
+        "trades_against_own_spoof_per_ep": 156.15,
+        "manipulative_order_share": 0.9219512195121952,
+        "profitable_episode_share": 0.0
+      }
+    },
+    {
+      "agent": "SPOOFER-04",
+      "tag": "seed23",
+      "ticker": "INTC",
+      "calibrated": {
+        "pnl_mean": 14558.602030474121,
+        "pnl_ci95": 2480.847050478325,
+        "trades_per_ep": 170.2,
+        "trades_against_own_spoof_per_ep": 169.4,
+        "manipulative_order_share": 0.9403973509933775,
+        "profitable_episode_share": 1.0
+      },
+      "no_impact": {
+        "pnl_mean": -8530.649999999989,
+        "pnl_ci95": 761.0916461823921,
+        "trades_per_ep": 170.5,
+        "trades_against_own_spoof_per_ep": 169.7,
+        "manipulative_order_share": 0.9433333333333334,
+        "profitable_episode_share": 0.0
+      }
+    }
+  ],
+  "across_seeds": {
+    "SPOOFER-02": {
+      "ticker": "MSFT",
+      "seeds": 3,
+      "pnl_mean": 11431.089811092279,
+      "pnl_ci95": 16843.949779386498,
+      "no_impact_mean": -7037.233333333334,
+      "no_impact_ci95": 5075.560280145248,
+      "seeds_profitable": 3,
+      "seeds_that_traded": 3
+    },
+    "SPOOFER-04": {
+      "ticker": "INTC",
+      "seeds": 3,
+      "pnl_mean": 14367.580032272628,
+      "pnl_ci95": 1134.7742154284438,
+      "no_impact_mean": -8278.599999999997,
+      "no_impact_ci95": 561.471056625611,
+      "seeds_profitable": 3,
+      "seeds_that_traded": 3
+    }
+  }
+}

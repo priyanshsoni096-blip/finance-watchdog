@@ -32,7 +32,7 @@ Everything below is measured and committed under `results/`. Nothing is estimate
 
 | Claim | Verdict | Key evidence |
 |---|---|---|
-| 1. RL learns meaningful manipulation | **Partly shown** | SPOOFER-04 (INTC) +$13,208 ± 1,654 per episode, SPOOFER-02 (MSFT) +$2,437 ± 1,068. With price impact switched off the same trading loses money, so the profit is the spoof. But in the synthetic market both lose money, so profitability holds only under the replay impact model. |
+| 1. RL learns meaningful manipulation | **Partly shown** | SPOOFER-04 (INTC) +$13,208 ± 1,654 per episode, SPOOFER-02 (MSFT) +$2,437 ± 1,068. With price impact switched off the same trading loses money, so the profit is the spoof. Across 3 training seeds each, all 3 seeds learned to spoof on both stocks (INTC +$14,368 ± 1,135; MSFT +$11,431 ± 16,844). But in the synthetic market both lose money, so profitability holds only under the replay impact model. |
 | 2. The Watchdog generalises to unseen attacks | **Not shown** | Two pre-registered tests, each run once: LATEBURST recall 0.24 vs rule 0.89; layering recall 0.30 vs rule 1.00. |
 | 3. It does not flag legitimate activity | **Shown in simulation** | False-positive rate on legitimate orders 0.031 ± 0.067 across 3 seeds vs the rule's 0.823; 0.11 vs 0.92 in the synthetic market. Not testable on real data (see §10). |
 
@@ -134,6 +134,7 @@ checkpoints/    trained models (committed; other tags are local only)
 | `synthetic_eval.md` | Does any of it survive a different market mechanism? | Detection partly; profitability not at all |
 | `synthetic_spoof_impact*.md` | How hard does a spoof move an emergent market? | 0.29–0.55 spreads vs the replay model's ~2.5 |
 | `real_case_stats.md` | Our attackers' order structure | Cancel rates, resting times, side flips |
+| `spoofer_seeds.md` | Does the Spoofer result depend on the training seed? | 3/3 seeds spoofed on both stocks; INTC stable, MSFT varies widely |
 
 ---
 
@@ -161,7 +162,7 @@ Two synthetic-market dead ends: a fixed cancel probability let liquidity grow wi
 2. **The Watchdog misses sparse spoofing** (a wait, then a few trades): recall 0.24–0.30 on both pre-registered attackers. Ablation says it keys on trade direction. Worth trying: train against a population that includes sparse styles, or add features summarising recent order lifecycle rather than instantaneous trading.
 3. **Spoofing is unprofitable on wide-spread stocks** (AAPL, GOOG, AMZN), so those Spoofers never learned it and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch. A held-out 1-tick stock would be better, but the dataset only has MSFT and INTC of that type and both are training stocks.
 4. **Layering cannot be learned**, only scripted: the replay environment allows one large order per side. Supporting several would need an action-space change and full retraining.
-5. **Single seed per Spoofer** (the Watchdog has three).
+5. **Seeds.** The two profitable Spoofers and the Watchdog now have 3 seeds each. MSFT varies widely across seeds (+$3,628 to +$15,886), so the committed `main` seed understates it; INTC is stable. SPOOFER-01/03/05, which never learned to spoof, remain single-seed.
 6. **The manipulation label is a proxy** — trading on the opposite side while the order rests. It stands in for intent; it is not a legal determination.
 
 ---
