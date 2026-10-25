@@ -33,7 +33,7 @@ Everything below is measured and committed under `results/`. Nothing is estimate
 | Claim | Verdict | Key evidence |
 |---|---|---|
 | 1. RL learns meaningful manipulation | **Partly shown** | SPOOFER-04 (INTC) +$13,208 ± 1,654 per episode, SPOOFER-02 (MSFT) +$2,437 ± 1,068. With price impact switched off the same trading loses money, so the profit is the spoof. Across 3 training seeds each, all 3 seeds learned to spoof on both stocks (INTC +$14,368 ± 1,135; MSFT +$11,431 ± 16,844). But in the synthetic market both lose money, so profitability holds only under the replay impact model. |
-| 2. The Watchdog generalises to unseen attacks | **Not shown** | Two pre-registered tests, each run once: LATEBURST recall 0.24 vs rule 0.89; layering recall 0.30 vs rule 1.00. |
+| 2. The Watchdog generalises to unseen attacks | **Not shown — and the test was not a fair one** | Two pre-registered tests, each run once: LATEBURST recall 0.24 vs rule 0.89; layering recall 0.30 vs rule 1.00. An audit then found the label is readable from two of the detector's own input features, so a zero-parameter signature generalises perfectly (order F1 0.995 on the held-out scripted attacker). The failure is the learner's, not the features' — see §2b. |
 | 3. It does not flag legitimate activity | **Shown in simulation** | False-positive rate on legitimate orders 0.031 ± 0.067 across 3 seeds vs the rule's 0.823; 0.11 vs 0.92 in the synthetic market. Not testable on real data (see §10). |
 
 Supporting results:
@@ -44,6 +44,40 @@ Supporting results:
 - **Real cases**: structurally similar to Coscia in the dimensions the agents choose (large orders one side, trading the other, fills 0.4–1.4% vs his 0.08–0.5%, side alternation). Different in speed (44–52% of our spoofs rest over 1 s vs his 0.57%) and no layering in the replay environment.
 
 ---
+
+
+### 2b. Read this before you quote any detector number
+
+An audit after the main results found that **the detection task as posed is close to a tautology.** The label
+is `opposite_trades > 0` — the owner traded the opposite side while the order rested — and observation feature
+44 is the participant's trade direction while feature 45 is the side its resting orders sit on. Comparing their
+signs *is* the label.
+
+Measured with no parameters and no fitting (`python scripts/label_observability.py`):
+
+| Group | Precision | Recall | Order F1 |
+|---|---|---|---|
+| In-distribution (test split) | 0.999 | 0.994 | **0.997** |
+| Held-out scripted attacker | 1.000 | 0.990 | **0.995** |
+| Legitimate only | — | — | FPR **0.000** |
+
+Supervised baselines agree (`python scripts/supervised_baseline.py`): gradient boosting fitted on train only
+reaches order F1 0.96 in-distribution and 0.99 on both scripted buckets, against the Watchdog's 0.77 / 0.38 /
+0.26. **Reinforcement learning is not justified for the detector.**
+
+What this does and does not change:
+
+- **Does not change** the Spoofer side. Agents discovering profitable spoofing under a calibrated impact model
+  is unaffected, and it is the project's real contribution.
+- **Does change** how every detector number must be presented. Watchdog 0.753 vs rule 0.352 is a comparison of
+  two handicapped detectors far below a trivial signature, not evidence that learning helps.
+- **The genuine hard problem is attribution.** The environment hands surveillance the knowledge of which orders
+  and trades belong to the monitored participant. Real surveillance must establish that first; anonymised data
+  such as LOBSTER cannot. Removing per-participant attribution from the observation is the single change that
+  would make the detector half of this project a real experiment, and it is the first item in future work.
+
+Locked down by `tests/test_label_observability.py` so a future change to the label or features cannot quietly
+invalidate this. Full write-up: `AUDIT.md` §2 and `REPORT.md` §6.1.
 
 ## 3. Getting productive in ~30 minutes
 
@@ -128,6 +162,8 @@ checkpoints/    trained models (committed; other tags are local only)
 | `synthetic_spoof_impact*.md` | How hard does a spoof move an emergent market? | 0.29–0.55 spreads vs the replay model's ~2.5 |
 | `real_case_stats.md` | Our attackers' order structure | Cancel rates, resting times, side flips |
 | `spoofer_seeds.md` | Does the Spoofer result depend on the training seed? | 3/3 seeds spoofed on both stocks; INTC stable, MSFT varies widely |
+| `label_observability.md` | **How hard is the detection task really?** | **Not hard: a zero-parameter two-feature signature scores order F1 0.997 / 0.995 held-out. Read this before quoting any detector number.** |
+| `supervised_baseline.md` | Is RL necessary for the detector? | No: gradient boosting beats it on every bucket (0.96 vs 0.77 in-distribution) |
 
 ---
 
@@ -151,12 +187,17 @@ Two synthetic-market dead ends: a fixed cancel probability let liquidity grow wi
 
 ## 7. Open issues, in the order I would tackle them
 
-1. **Profitability does not transfer across market mechanisms.** In the synthetic market a spoof moves the price 4.5–9× less and every manipulator loses money. Either the replay impact model is too generous or the synthetic market is too inert (its only reactive channel is imbalance-following — no market makers repricing quotes). Deciding which would change how claim 1 is written. *Largest open question.*
-2. **The Watchdog misses sparse spoofing** (a wait, then a few trades): recall 0.24–0.30 on both pre-registered attackers. Ablation says it keys on trade direction. Worth trying: train against a population that includes sparse styles, or add features summarising recent order lifecycle rather than instantaneous trading.
-3. **Spoofing is unprofitable on wide-spread stocks** (AAPL, GOOG, AMZN), so those Spoofers never learned it and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch. A held-out 1-tick stock would be better, but the dataset only has MSFT and INTC of that type and both are training stocks.
-4. **Layering cannot be learned**, only scripted: the replay environment allows one large order per side. Supporting several would need an action-space change and full retraining.
-5. **Seeds.** The two profitable Spoofers and the Watchdog now have 3 seeds each. MSFT varies widely across seeds (+$3,628 to +$15,886), so the committed `main` seed understates it; INTC is stable. SPOOFER-01/03/05, which never learned to spoof, remain single-seed.
-6. **The manipulation label is a proxy** — trading on the opposite side while the order rests. It stands in for intent; it is not a legal determination.
+1. **The detector half of the project does not pose a hard problem** (§2b). The label is readable from two
+   observation features. The fix is not a better learner: it is to withhold per-participant attribution from the
+   observation, so the detector must infer manipulation from aggregate order flow. That changes the environment
+   and requires retraining, but it is the only change that makes the detector results mean anything. *Biggest
+   item on this list.*
+2. **Profitability does not transfer across market mechanisms.** In the synthetic market a spoof moves the price 4.5–9× less and every manipulator loses money. Either the replay impact model is too generous or the synthetic market is too inert (its only reactive channel is imbalance-following — no market makers repricing quotes). Deciding which would change how claim 1 is written. *Largest open question.*
+3. **The Watchdog misses sparse spoofing** (a wait, then a few trades): recall 0.24–0.30 on both pre-registered attackers. Ablation says it keys on trade direction. Worth trying: train against a population that includes sparse styles, or add features summarising recent order lifecycle rather than instantaneous trading.
+4. **Spoofing is unprofitable on wide-spread stocks** (AAPL, GOOG, AMZN), so those Spoofers never learned it and the held-out RL test (SPOOFER-05, AMZN) has no manipulation to catch. A held-out 1-tick stock would be better, but the dataset only has MSFT and INTC of that type and both are training stocks.
+5. **Layering cannot be learned**, only scripted: the replay environment allows one large order per side. Supporting several would need an action-space change and full retraining.
+6. **Seeds.** The two profitable Spoofers and the Watchdog now have 3 seeds each. MSFT varies widely across seeds (+$3,628 to +$15,886), so the committed `main` seed understates it; INTC is stable. SPOOFER-01/03/05, which never learned to spoof, remain single-seed.
+7. **The manipulation label is a proxy** — trading on the opposite side while the order rests. It stands in for intent; it is not a legal determination.
 
 ---
 
@@ -191,4 +232,11 @@ Worth keeping:
 
 ## 11. If you only read one thing
 
-Run `streamlit run app.py --server.fileWatcherType none` (or open `dashboard.html`), read `REPORT.md`, then read "Results at a glance" at the top of `README.md`, then `results/watchdog_eval.md` and `results/synthetic_eval.md`. Between them they hold the honest answer: the Watchdog is far better than a static rule at not crying wolf, and no better — usually worse — at catching manipulation it has not seen.
+Read `AUDIT.md` §2, then §2b above. The detector half of this project does not pose a hard problem: the label
+is readable from two of the detector's own input features, a zero-parameter signature scores 0.997, and
+gradient boosting beats the RL detector everywhere. Present the detector work as a documented negative result.
+
+What stands up, and is worth presenting: **RL agents discovering profitable spoofing on their own**, under a
+price-impact model calibrated from real order flow, with structure matching documented enforcement cases — plus
+a simulator, a calibration and a reproduction pipeline that are correct and verified. After that, run
+`streamlit run app.py --server.fileWatcherType none` (or open `dashboard.html`) and read `REPORT.md`.

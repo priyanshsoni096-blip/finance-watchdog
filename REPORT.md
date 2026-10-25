@@ -23,9 +23,19 @@ orders of 0.031 ± 0.067 against 0.823 — roughly 26× fewer false accusations.
 held-out attacks it recalled only 0.22 and 0.30 of manipulative orders where the rule recalled 0.89 and 1.00.
 
 The central thesis — that an adaptive detector generalises better than a static rule — is therefore **not
-supported for recall**, and **strongly supported for precision and false-positive cost**. A feature ablation
-explains why: detection rests almost entirely on observing the agent trade against its own resting order, so
-sparse manipulation evades it. A further sim-to-sim test found that the Spoofers' profitability does not
+supported for recall**, and **supported for precision and false-positive cost**. A feature ablation explains
+why: detection rests almost entirely on observing the agent trade against its own resting order, so sparse
+manipulation evades it.
+
+A subsequent audit (§6.1) establishes a stronger and less favourable result. The manipulation label is
+`opposite_trades > 0`, and two of the detector's own input features state the participant's trade direction
+and the side of its resting orders, so a **zero-parameter comparison of those two features scores an
+order-level F1 of 0.997 in-distribution and 0.995 on the held-out scripted attacker, at a false-positive rate
+of 0.000** — and gradient boosting fitted on the train split reaches 0.96 and 0.99. The detection task as
+posed is therefore close to a tautology, the learned detector solves it worse than a trivial rule, and the
+genuine difficulty of spoofing surveillance — attributing orders and trades to an account — is assumed away by
+the environment. The detector results below should be read as a documented negative result; the contribution
+that survives is the emergence of profitable manipulation on the attacker side. A further sim-to-sim test found that the Spoofers' profitability does not
 survive a market where prices emerge from order matching rather than from an impact model, which bounds the
 scope of the first result.
 
@@ -40,7 +50,8 @@ scope of the first result.
 This decomposes into three claims, each requiring evidence rather than assumption:
 
 1. RL learns meaningful manipulation (not a reward-hacking artefact).
-2. The Watchdog generalises to attacks it has not seen.
+2. The Watchdog generalises to attacks it has not seen. *(Not supported — and §6.1 shows the task was
+   not a hard test of it.)*
 3. It does not simply flag legitimate activity.
 
 **Scope statement, used verbatim throughout:** this project demonstrates the feasibility of an RL-based
@@ -170,7 +181,45 @@ manipulation it recognises, the adaptive detector is both more effective and les
 
 ## 6. Why the Watchdog fails, and what failed along the way
 
-### 6.1 Interpretability
+### 6.1 The detection task is close to a tautology
+
+The ablation below shows the Watchdog relies almost entirely on one feature. A direct measurement explains
+why that is inevitable: **the label is present in the observation.**
+
+The manipulation label is `opposite_trades > 0` — the order's owner traded on the opposite side while the
+order rested. Observation feature 44 is the participant's trade direction this step and feature 45 is the side
+its resting orders sit on, so comparing their signs reproduces the label's definition. Scoring that comparison
+as a detector, with **no parameters and no fitting at all**:
+
+| Group | Manipulative / orders | Precision | Recall | Order F1 |
+|---|---|---|---|---|
+| In-distribution (test split) | 1,543 / 7,243 | 0.999 | 0.994 | **0.997** |
+| Held-out scripted attacker | 2,420 / 2,580 | 1.000 | 0.990 | **0.995** |
+| Legitimate only (HONEST + FLICKER) | 0 / 2,688 | — | — | FPR 0.000 |
+
+"A resting order is present" alone gives order F1 0.362 at FPR 1.000, so it is specifically the two-feature
+comparison that carries the label, not the presence of a large order. Supervised detectors confirm it: fitted
+on the train split with thresholds chosen on train orders only, gradient boosting reaches order F1 0.96
+in-distribution and 0.99 on both scripted-attacker buckets, against the Watchdog's 0.77, 0.38 and 0.26.
+(`scripts/label_observability.py`, `scripts/supervised_baseline.py`.)
+
+Three things follow, and they bound every detector result in this report:
+
+1. **The Watchdog is not discovering manipulation.** It is recovering, imperfectly, a definition it was handed
+   in its own input. Its F1 of 0.753 against the rule's 0.352 is a real difference between two restricted
+   detectors — the rule may only fire at cancel time — but it is not evidence that learning was required.
+2. **The generalisation failure is a property of the learner, not of the features.** A zero-parameter
+   signature transfers to the unseen scripted attacker unchanged. The Watchdog's collapse there therefore
+   cannot be attributed to the observation lacking the signal, and the hypothesis in §1 claim 2 is not merely
+   unsupported — it was tested on a task where the information was always available.
+3. **The real simplification is perfect attribution.** The environment tells surveillance which orders and
+   trades belong to the monitored participant. A regulator or exchange with account-level data has that;
+   anonymised feeds such as LOBSTER do not. Establishing attribution — not recognising the pattern once
+   attribution is given — is the hard part of spoofing detection, and this project assumes it away.
+
+This was found by audit after the main results were produced, and is reported here rather than reframed.
+
+### 6.2 Interpretability: what the Watchdog actually learned
 
 A feature-group ablation on the test split isolates the cause. Removing the single feature "did this
 participant trade, and in which direction" collapses order-level F1 from 0.772 to **0.113** and step recall to
@@ -182,7 +231,7 @@ order. The dense MSFT/INTC Spoofers do this on almost every step. Sparse manipul
 trades — do not, and slip through. This is visible inside training too: SPOOFER-03 (GOOG) spoofs on 21% of its
 test steps and is flagged on 1.8%.
 
-### 6.2 Environment exploits found and closed
+### 6.3 Environment exploits found and closed
 
 Headline profit was repeatedly misleading. Four exploits were caught only by decomposing where PnL came from:
 
@@ -193,7 +242,7 @@ Headline profit was repeatedly misleading. Four exploits were caught only by dec
 | Early termination | All 31 of 31 early endings occurred on a run-over step — an escape from losses | Lot scaled to depth; no early termination |
 | Thin opening book | INTC depth 0.08× its median at event 15,000 | 30,000-event warmup |
 
-### 6.3 Training collapses
+### 6.4 Training collapses
 
 ![Watchdog training](results/figures/fig2_watchdog_training.png)
 
@@ -241,16 +290,24 @@ hypothesis, not a defence.
 
 ## 9. Discussion
 
-The headline finding is a trade-off rather than a victory, and it is a policy-relevant one. The static rule
-catches nearly everything, including nearly everything innocent; the adaptive detector is precise, quiet, early,
-and blind to manipulation structured differently from what it has seen. A real surveillance deployment cannot
-use the rule as measured here — an 82% false-positive rate means investigating mostly legitimate traders — but
-it cannot rely on this Watchdog alone either.
+The detector comparison is a trade-off rather than a victory. The static rule catches nearly everything,
+including nearly everything innocent; the adaptive detector is precise, quiet, early, and blind to
+manipulation structured differently from what it has seen. Neither could be deployed as measured here.
 
-The ablation points to why, and to the likely fix: the detector keyed on a single behavioural signature
-because the training population exhibited one dominant style. Training against a population deliberately
-spanning sparse and dense manipulation is the natural next experiment, and is cheap relative to what has been
-built.
+That comparison, however, is not the most important thing the project established about its own detector.
+Because the label is recoverable from two of the detector's input features (§6.1), neither detector was facing
+a hard problem, and the right reading of the 0.753-versus-0.352 gap is that two differently handicapped
+detectors sit well below a zero-parameter signature at 0.997. **The honest conclusion on the detector side is
+negative: the RL formulation is not justified for this task, and the task is not a test of the research
+question it was built to answer.** Gradient boosting on the same features, fitted in seconds, dominates the
+recurrent policy on every bucket.
+
+The ablation points to why the Watchdog in particular does poorly: it keyed on a single behavioural signature
+because the training population exhibited one dominant style, and because that signature is the label. The
+instructive redesign is therefore not "train against more styles" but **remove the label from the
+observation** — require the detector to infer intent from order-flow structure without being told which
+trades belong to the resting order's owner. That is a different and genuinely hard problem, and it is the one
+real surveillance faces.
 
 Two methodological results are worth stating independently of the detector. First, **headline profit is not
 evidence of learned manipulation** — four separate exploits produced large, plausible-looking profits, and each
@@ -260,8 +317,15 @@ clean test, and both pre-registered replacements went against the hypothesis.
 
 ## 10. Limitations
 
+- **The detection task is close to a tautology (§6.1).** The label is readable from two observation features, a
+  zero-parameter signature scores 0.997 in-distribution and 0.995 on a held-out attacker, and gradient boosting
+  beats the RL detector everywhere. No claim that this system "detects spoofing" in a meaningful sense is
+  supported, and reinforcement learning is not justified for the detector.
+- **The environment grants surveillance perfect attribution** of orders and trades to one monitored
+  participant. Establishing that attribution is the hard part of real spoofing surveillance and is assumed away.
 - Profitable manipulation is established only under the replay impact model (§8).
-- The detector misses sparse manipulation — the central negative result, confirmed twice under pre-registration.
+- The detector misses sparse manipulation — confirmed twice under pre-registration, but see §6.1 for why this
+  is a statement about the learner rather than about detectability.
 - LOBSTER carries no participant identities, so the Watchdog cannot be evaluated on real order flow; only the
   rule can, and only as a flag *rate* with no labels.
 - One trading day, five stocks, single-day calibration.
@@ -272,12 +336,15 @@ clean test, and both pre-registered replacements went against the hypothesis.
 
 ## 11. Future work
 
-1. Resolve whether the replay impact model is too generous or the synthetic market too inert — this decides the
+1. **Remove the label from the observation.** Withhold per-participant attribution and require the detector to
+   infer manipulation from aggregate order flow. This is the change that turns the detector half of the project
+   into a real problem, and §6.1 shows why nothing else on the detector side matters until it is made.
+2. Resolve whether the replay impact model is too generous or the synthetic market too inert — this decides the
    scope of claim 1.
-2. Train the Watchdog against a population spanning sparse and dense manipulation styles, and re-run both
+3. Train the Watchdog against a population spanning sparse and dense manipulation styles, and re-run both
    pre-registered tests.
-3. Extend the action space to multiple resting orders per side so layering can be learned rather than scripted.
-4. Co-evolution (currently the Spoofer pool is frozen before Watchdog training) as a route to an adaptive
+4. Extend the action space to multiple resting orders per side so layering can be learned rather than scripted.
+5. Co-evolution (currently the Spoofer pool is frozen before Watchdog training) as a route to an adaptive
    adversary.
 
 ## 12. Reproducibility

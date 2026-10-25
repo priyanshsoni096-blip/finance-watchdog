@@ -61,6 +61,16 @@
   data exists, so <strong>no claim of real-world detection capability is made</strong>. Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 </div>
 
+<div class="disclaimer">
+  <strong>Audit finding — read before any detector number.</strong> The manipulation label is readable from two of the
+  detector’s own input features, so a <strong>zero-parameter signature scores order-level F1 0.997 in-distribution
+  and 0.995 on a held-out attacker at a false-positive rate of 0.000</strong>, and gradient boosting fitted on the
+  train split beats the RL Watchdog on every bucket. The detection task as posed is close to a tautology, so the detector
+  figures below are a documented negative result rather than a working surveillance method. The environment also grants
+  surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real
+  spoofing surveillance, and it is assumed away. Full write-up in <code>AUDIT.md</code> §2.
+</div>
+
 <h2>The three claims</h2>
 <div class="cards">
   <div class="card">
@@ -272,15 +282,21 @@ accumulation, alternating-side swings, early termination, thin opening book. Eac
 
 <h2>Honest limitations</h2>
 <ul>
+  <li><strong>The detection task is close to a tautology</strong>: the label is readable from two observation features, a
+  zero-parameter signature scores 0.997, and gradient boosting beats the RL detector everywhere. Reinforcement
+  learning is not justified for the detector.</li>
+  <li><strong>Perfect attribution is assumed</strong>: surveillance is told which orders and trades belong to the monitored
+  participant. Establishing that is the hard part of real spoofing surveillance.</li>
   <li>Profitable manipulation is demonstrated only under the replay impact model; it does not survive the synthetic market.</li>
-  <li>The Watchdog misses sparse spoofing — the headline failure, confirmed by two pre-registered tests.</li>
+  <li>The Watchdog misses sparse spoofing, confirmed by two pre-registered tests — but see above for why that is a
+  statement about the learner rather than about detectability.</li>
   <li>LOBSTER carries no participant identities, so the Watchdog cannot be run on real order flow; only the rule can.</li>
   <li>One trading day, five stocks. Spoofing is unprofitable on the wide-spread stocks under calibrated impact.</li>
   <li>The manipulation label is a proxy for intent (trading the opposite side while an order rests), not a legal determination.</li>
 </ul>
 
 <footer>
-  Generated 2026-10-25 19:38 from the committed results at <code>08d1272</code> · every number is read from <code>results/*.json</code> ·
+  Generated 2026-10-25 19:54 from the committed results at <code>a03946f</code> · every number is read from <code>results/*.json</code> ·
   rebuild with <code>python scripts/build_dashboard.py</code>
 </footer>
 </div></body></html>

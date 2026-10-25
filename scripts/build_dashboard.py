@@ -61,6 +61,19 @@ def bar_chart(title: str, rows: list[tuple[str, float, float]], note: str = "", 
     </div>"""
 
 
+
+def _label_signature() -> tuple[str, str]:
+    """Order-level F1 of the zero-parameter signature, in-distribution and on the held-out scripted attacker."""
+    lob = load("label_observability.json")
+    sig = lob.get("signatures", {}).get("opposite-side signature", {})
+
+    def f1(group):
+        v = sig.get(group, {}).get("orders", {}).get("f1")
+        return "n/a" if v is None or v != v else f"{v:.3f}"
+
+    return f1("in-distribution (test split)"), f1("held-out scripted attacker")
+
+
 def main() -> int:
     ms, we, lb, lay = load("multiseed.json"), load("watchdog_eval.json"), load("lateburst_test.json"), load("layering_test.json")
     ps, fa, se, sd = load("pnl_suppression.json"), load("feature_ablation.json"), load("synthetic_eval.json"), load("spoofer_seeds.json")
@@ -136,6 +149,8 @@ def main() -> int:
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     built = datetime.now().strftime("%Y-%m-%d %H:%M")
 
+    label_sig_f1, label_sig_heldout = _label_signature()
+
     html = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RL Finance Watchdog — results</title>
@@ -197,6 +212,16 @@ def main() -> int:
 <div class="disclaimer">
   This page reports simulation results, including those that went against the hypothesis. No labelled real-world spoofing
   data exists, so <strong>no claim of real-world detection capability is made</strong>. Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
+</div>
+
+<div class="disclaimer">
+  <strong>Audit finding — read before any detector number.</strong> The manipulation label is readable from two of the
+  detector’s own input features, so a <strong>zero-parameter signature scores order-level F1 {label_sig_f1} in-distribution
+  and {label_sig_heldout} on a held-out attacker at a false-positive rate of 0.000</strong>, and gradient boosting fitted on the
+  train split beats the RL Watchdog on every bucket. The detection task as posed is close to a tautology, so the detector
+  figures below are a documented negative result rather than a working surveillance method. The environment also grants
+  surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real
+  spoofing surveillance, and it is assumed away. Full write-up in <code>AUDIT.md</code> §2.
 </div>
 
 <h2>The three claims</h2>
@@ -318,8 +343,14 @@ accumulation, alternating-side swings, early termination, thin opening book. Eac
 
 <h2>Honest limitations</h2>
 <ul>
+  <li><strong>The detection task is close to a tautology</strong>: the label is readable from two observation features, a
+  zero-parameter signature scores {label_sig_f1}, and gradient boosting beats the RL detector everywhere. Reinforcement
+  learning is not justified for the detector.</li>
+  <li><strong>Perfect attribution is assumed</strong>: surveillance is told which orders and trades belong to the monitored
+  participant. Establishing that is the hard part of real spoofing surveillance.</li>
   <li>Profitable manipulation is demonstrated only under the replay impact model; it does not survive the synthetic market.</li>
-  <li>The Watchdog misses sparse spoofing — the headline failure, confirmed by two pre-registered tests.</li>
+  <li>The Watchdog misses sparse spoofing, confirmed by two pre-registered tests — but see above for why that is a
+  statement about the learner rather than about detectability.</li>
   <li>LOBSTER carries no participant identities, so the Watchdog cannot be run on real order flow; only the rule can.</li>
   <li>One trading day, five stocks. Spoofing is unprofitable on the wide-spread stocks under calibrated impact.</li>
   <li>The manipulation label is a proxy for intent (trading the opposite side while an order rests), not a legal determination.</li>

@@ -109,7 +109,8 @@ def load(name: str, folder: str = "results") -> dict:
 
 R = {n: load(f"{n}.json") for n in (
     "basic_eval", "watchdog_eval", "multiseed", "lateburst_test", "layering_test", "pnl_suppression",
-    "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes")}
+    "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes",
+    "label_observability", "supervised_baseline")}
 CAL, SYNCAL = load("calibration.json", "configs"), load("synthetic_calibration.json", "configs")
 MS, RU = R["multiseed"].get("summary", {}), R["multiseed"].get("rule", {})
 
@@ -177,6 +178,19 @@ if view == "Overview":
         f'Exchanges mostly police it with static rules. <b style="color:{TEXT}">The question:</b> can a learning '
         f'agent do better — catching manipulation it was never shown, without accusing honest traders?</div>',
         unsafe_allow_html=True)
+
+    lo = dig(R["label_observability"], "signatures", "opposite-side signature",
+             "in-distribution (test split)", "orders", default={})
+    if lo:
+        st.markdown(
+            '<div class="warnbar"><b>Audit finding — read before any detector number.</b> The manipulation '
+            'label is readable from two of the detector&rsquo;s own input features, so a zero-parameter '
+            f'signature scores order-level F1 {num(lo.get("f1"), 3)} in-distribution and 0.995 on a held-out '
+            'attacker at a false-positive rate of 0.000. The detection task as posed is close to a tautology: '
+            'the figures below are a documented negative result, not a working surveillance method. See '
+            '<span class="mono">Evidence &amp; limitations &rarr; Is the task hard?</span></div>',
+            unsafe_allow_html=True)
+        st.write("")
 
     c = st.columns(4, gap="small")
     with c[0]:
@@ -412,7 +426,60 @@ elif view == "Demonstration":
 
 # ─────────────────────────────── VIEW C ───────────────────────────────
 else:
-    t1, t2, t3, t4 = st.tabs(["Headline evidence", "Held-out tests", "Robustness", "Technical detail"])
+    t0, t1, t2, t3, t4 = st.tabs(["Is the task hard?", "Headline evidence", "Held-out tests", "Robustness",
+                                  "Technical detail"])
+
+    with t0:
+        lob, sup = R["label_observability"], R["supervised_baseline"]
+        st.markdown('<div class="cap">The manipulation label is &ldquo;the order&rsquo;s owner traded the '
+                    'opposite side while it rested&rdquo;. Observation feature 44 is that participant&rsquo;s '
+                    'trade direction and feature 45 is the side its resting orders sit on, so comparing their '
+                    'signs reproduces the label&rsquo;s definition. Scored below as a detector with <b>no '
+                    'parameters and no fitting at all</b> '
+                    '(<span class="mono">label_observability.md</span>).</div>', unsafe_allow_html=True)
+        st.write("")
+        sig = dig(lob, "signatures", "opposite-side signature", default={})
+        rows = [{"Group": g, "Manipulative / orders": f"{b['orders']['positives']:,} / {b['orders']['n']:,}",
+                 "Precision": num(b["orders"]["precision"], 3), "Recall": num(b["orders"]["recall"], 3),
+                 "Order F1": num(b["orders"]["f1"], 3), "False positives": num(b["orders"]["fpr"], 3)}
+                for g, b in sig.items()]
+        if rows:
+            st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+            st.markdown('<div class="cap">For contrast, &ldquo;a resting order is present&rdquo; alone scores '
+                        'order F1 0.362 at a false-positive rate of 1.000 — it is specifically the '
+                        'two-feature comparison that carries the label, not the presence of a large '
+                        'order.</div>', unsafe_allow_html=True)
+        else:
+            st.info(NA)
+
+        st.write("")
+        st.markdown("#### Is reinforcement learning necessary? No.")
+        wd_f1 = sup.get("watchdog_f1", {})
+        srows = []
+        for bucket in sup.get("buckets", []):
+            first = dig(sup, "models", "logistic regression", bucket, default={})
+            row = {"Bucket": bucket, "Rule": num(dig(first, "rule_orders", "f1"), 2)}
+            for m in sup.get("models", {}):
+                row[m[0].upper() + m[1:]] = num(dig(sup, "models", m, bucket, "orders", "f1"), 2)
+            row["RL Watchdog"] = num(wd_f1.get(bucket), 2)
+            srows.append(row)
+        if srows:
+            st.dataframe(pd.DataFrame(srows), hide_index=True, use_container_width=True)
+            st.markdown('<div class="cap">Order-level F1. Both supervised models are fitted on the train split '
+                        'only, with their decision threshold chosen on train orders only, and scored on the '
+                        'same orders in the same buckets as the Watchdog '
+                        '(<span class="mono">supervised_baseline.md</span>).</div>', unsafe_allow_html=True)
+        else:
+            st.info(NA)
+
+        st.markdown('<div class="warnbar"><b>What this means.</b> The learned detector is not discovering '
+                    'manipulation — it recovers, worse than a trivial rule, a definition handed to it in '
+                    'its own input. Its failure on held-out attackers is therefore a property of the learner, '
+                    'not evidence that unseen manipulation is hard to spot here: the zero-parameter signature '
+                    'transfers unchanged. The real simplification is <b>perfect attribution</b> — the '
+                    'environment says which orders and trades belong to the monitored participant. '
+                    'Establishing that is the hard part of real surveillance, and it is assumed away.</div>',
+                    unsafe_allow_html=True)
 
     with t1:
         c1, c2 = st.columns([3, 2], gap="medium")
@@ -578,16 +645,22 @@ else:
 
     st.write("")
     st.markdown("#### Limitations")
-    lim = st.columns(5, gap="small")
-    for col, (t, d) in zip(lim, [
+    for group in ([
+        ("Task is near-tautological", "The label is readable from two input features; a zero-parameter "
+                                      "signature scores 0.997. RL is not justified for the detector."),
+        ("Perfect attribution assumed", "Surveillance is told which orders and trades belong to the monitored "
+                                        "participant. Establishing that is the real hard part."),
         ("Generalisation unproven", "Both pre-registered held-out attacks favour the static rule."),
-        ("Profit is model-dependent", "Spoofing pays under the replay impact model, not in the synthetic market."),
+    ], [
+        ("Profit is model-dependent", "Spoofing pays under the replay impact model, not in the synthetic "
+                                      "market."),
         ("No real-world validation", "LOBSTER has no participant identities; no labelled spoofing exists."),
-        ("Label is a proxy", "Trading the opposite side while an order rests — not a legal finding of intent."),
         ("Narrow data", "One trading day, five stocks; spoofing only pays on the two 1-tick stocks."),
     ]):
-        col.markdown(f'<div class="stage"><div class="s-t">{t}</div><div class="s-d">{d}</div></div>',
-                     unsafe_allow_html=True)
+        for col, (t, d) in zip(st.columns(3, gap="small"), group):
+            col.markdown(f'<div class="stage"><div class="s-t">{t}</div><div class="s-d">{d}</div></div>',
+                         unsafe_allow_html=True)
+        st.write("")
 
 st.markdown(
     f'<div class="cap" style="margin-top:18px;border-top:1px solid {LINE};padding-top:8px">'

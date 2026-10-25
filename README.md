@@ -18,6 +18,8 @@ Legal reference: CEA §4c(a)(5)(C) (Dodd-Frank §747).
 
 Every number below comes from a committed file in `results/`, except the no-impact counterfactual row, which is printed by the committed script named there (`python scripts/pnl_decompose.py SPOOFER-04 main 10 --stochastic`). The sections further down give the detail and caveats.
 
+> **Read this before any detector number.** An audit found the detection task as posed is close to a tautology: the manipulation label is readable from two of the detector's own input features, so a **zero-parameter signature scores order-level F1 0.997 in-distribution and 0.995 on a held-out attacker at FPR 0.000** (`label_observability.md`), and gradient boosting fitted on the train split beats the RL Watchdog on every bucket (`supervised_baseline.md`). The detector results below are a documented negative result, not a working surveillance method. The environment also grants surveillance perfect attribution of orders and trades to one participant — establishing that is the hard part of real spoofing surveillance, and it is assumed away here. Full write-up: [AUDIT.md](AUDIT.md) §2.
+
 **Claim 1: RL learns meaningful manipulation. Partly shown.**
 
 | Evidence | Value | Source |
@@ -34,7 +36,7 @@ Every number below comes from a committed file in `results/`, except the no-impa
 - The profit comes from the spoof, but only under the replay impact model; it does not survive a market where the price reacts through order matching.
 - Spoofing is unprofitable on the wide-spread stocks (AAPL, GOOG, AMZN).
 
-**Claim 2: the Watchdog generalises to unseen attacks. Not shown.** Two pre-registered tests, each run once, both went against the Watchdog.
+**Claim 2: the Watchdog generalises to unseen attacks. Not shown — and the test was not a fair one.** Two pre-registered tests, each run once, both went against the Watchdog. The zero-parameter signature above generalises to the held-out scripted attacker at order F1 0.995, so the failure is the learner's rather than evidence that unseen manipulation is hard to spot in this setup.
 
 | Pre-registered test | Watchdog recall | Rule recall | Source |
 |---|---|---|---|
@@ -161,6 +163,16 @@ python watchdog/dataset.py --episodes 150
 
 ```bash
 python watchdog/evaluate_watchdog.py
+```
+
+How hard is the detection task really? This one takes seconds and bounds every detector result above:
+
+```bash
+python scripts/label_observability.py
+```
+
+```bash
+python scripts/supervised_baseline.py
 ```
 
 ```bash
@@ -345,6 +357,8 @@ synthetic/layering_test.py        pre-registered layering test (Watchdog vs rule
 scripts/calibrate.py              per-stock statistics -> configs/calibration.json
 scripts/pnl_decompose.py          where a Spoofer's PnL comes from (spoof gain vs costs, no-impact counterfactual)
 scripts/feature_signal_check.py   diagnostic: can a simple supervised model separate positives from the features
+scripts/label_observability.py    the headline audit finding: a zero-parameter signature recovers the label
+scripts/supervised_baseline.py    logistic regression and gradient boosting in the Watchdog's own buckets
 scripts/real_case_stats.py        measured attacker order structure for the real-case comparison
 scripts/spoofer_seeds.py          Spoofer results across training seeds (profit, no-impact counterfactual)
 scripts/build_dashboard.py        builds dashboard.html from results/*.json

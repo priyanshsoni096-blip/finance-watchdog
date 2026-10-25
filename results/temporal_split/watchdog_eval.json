@@ -1,0 +1,372 @@
+{
+  "watchdog": "checkpoints\\WATCHDOG\\v2_temporal\\model.zip",
+  "rule": {
+    "n_mult": 2,
+    "m_events": 1000
+  },
+  "buckets": {
+    "In-distribution (test split)": {
+      "watchdog_orders": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1118,
+        "fp": 257,
+        "fn": 415,
+        "tn": 5444,
+        "precision": 0.8130909090909091,
+        "recall": 0.7292889758643183,
+        "f1": 0.7689133425034388,
+        "fpr": 0.04507981055955096
+      },
+      "rule_orders": {
+        "n": 7234,
+        "positives": 1533,
+        "tp": 1438,
+        "fp": 5304,
+        "fn": 95,
+        "tn": 397,
+        "precision": 0.2132898249777514,
+        "recall": 0.9380300065231572,
+        "f1": 0.3475528700906344,
+        "fpr": 0.9303630941940011
+      },
+      "watchdog_steps": {
+        "n": 120000,
+        "positives": 15953,
+        "tp": 13121,
+        "fp": 744,
+        "fn": 2832,
+        "tn": 103303,
+        "precision": 0.9463397042913811,
+        "recall": 0.8224785306838839,
+        "f1": 0.8800724394660943,
+        "fpr": 0.007150614626082443
+      },
+      "watchdog_median_delay": 0.0,
+      "rule_median_delay": 8.0
+    },
+    "Held-out RL: SPOOFER-05 + AMZN controls": {
+      "watchdog_orders": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 6,
+        "fn": 0,
+        "tn": 2615,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.002289202594429607
+      },
+      "rule_orders": {
+        "n": 2621,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2508,
+        "fn": 0,
+        "tn": 113,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.9568866844715758
+      },
+      "watchdog_steps": {
+        "n": 30000,
+        "positives": 0,
+        "tp": 0,
+        "fp": 28,
+        "fn": 0,
+        "tn": 29972,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.0009333333333333333
+      },
+      "watchdog_median_delay": NaN,
+      "rule_median_delay": NaN
+    },
+    "Scripted attacker, train stocks + FLICKER": {
+      "watchdog_orders": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 559,
+        "fp": 100,
+        "fn": 1290,
+        "tn": 2175,
+        "precision": 0.8482549317147192,
+        "recall": 0.3023255813953488,
+        "f1": 0.4457735247208932,
+        "fpr": 0.04395604395604396
+      },
+      "rule_orders": {
+        "n": 4124,
+        "positives": 1849,
+        "tp": 1721,
+        "fp": 1775,
+        "fn": 128,
+        "tn": 500,
+        "precision": 0.49227688787185353,
+        "recall": 0.9307733910221742,
+        "f1": 0.6439663236669785,
+        "fpr": 0.7802197802197802
+      },
+      "watchdog_steps": {
+        "n": 80000,
+        "positives": 20575,
+        "tp": 2253,
+        "fp": 597,
+        "fn": 18322,
+        "tn": 58828,
+        "precision": 0.7905263157894736,
+        "recall": 0.109501822600243,
+        "f1": 0.19235859124866597,
+        "fpr": 0.010046276819520404
+      },
+      "watchdog_median_delay": 6.0,
+      "rule_median_delay": 11.0
+    },
+    "Scripted attacker, AMZN + AMZN controls": {
+      "watchdog_orders": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 6,
+        "fp": 6,
+        "fn": 471,
+        "tn": 559,
+        "precision": 0.5,
+        "recall": 0.012578616352201259,
+        "f1": 0.024539877300613498,
+        "fpr": 0.010619469026548672
+      },
+      "rule_orders": {
+        "n": 1042,
+        "positives": 477,
+        "tp": 442,
+        "fp": 443,
+        "fn": 35,
+        "tn": 122,
+        "precision": 0.4994350282485876,
+        "recall": 0.9266247379454927,
+        "f1": 0.6490455212922174,
+        "fpr": 0.784070796460177
+      },
+      "watchdog_steps": {
+        "n": 30000,
+        "positives": 5313,
+        "tp": 15,
+        "fp": 31,
+        "fn": 5298,
+        "tn": 24656,
+        "precision": 0.32608695652173914,
+        "recall": 0.00282326369282891,
+        "f1": 0.005598059339428997,
+        "fpr": 0.0012557216348685542
+      },
+      "watchdog_median_delay": 3.5,
+      "rule_median_delay": 11.0
+    },
+    "Legitimate only (HONEST + FLICKER)": {
+      "watchdog_orders": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 93,
+        "fn": 0,
+        "tn": 2574,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.03487064116985377
+      },
+      "rule_orders": {
+        "n": 2667,
+        "positives": 0,
+        "tp": 0,
+        "fp": 2218,
+        "fn": 0,
+        "tn": 449,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.8316460442444694
+      },
+      "watchdog_steps": {
+        "n": 100000,
+        "positives": 0,
+        "tp": 0,
+        "fp": 603,
+        "fn": 0,
+        "tn": 99397,
+        "precision": 0.0,
+        "recall": NaN,
+        "f1": 0.0,
+        "fpr": 0.00603
+      },
+      "watchdog_median_delay": NaN,
+      "rule_median_delay": NaN
+    }
+  },
+  "sources": {
+    "test/FLICKER_AAPL": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0001,
+      "episodes_with_any_flag": 0.02,
+      "orders": 570,
+      "manipulative_orders": 0
+    },
+    "test/FLICKER_GOOG": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 539,
+      "manipulative_orders": 0
+    },
+    "test/FLICKER_INTC": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0256,
+      "episodes_with_any_flag": 0.44,
+      "orders": 507,
+      "manipulative_orders": 0
+    },
+    "test/FLICKER_MSFT": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0319,
+      "episodes_with_any_flag": 0.48,
+      "orders": 508,
+      "manipulative_orders": 0
+    },
+    "test/HONEST_AAPL": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 0,
+      "manipulative_orders": 0
+    },
+    "test/HONEST_GOOG": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 0,
+      "manipulative_orders": 0
+    },
+    "test/HONEST_INTC": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 0,
+      "manipulative_orders": 0
+    },
+    "test/HONEST_MSFT": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 0,
+      "manipulative_orders": 0
+    },
+    "test/SPOOFER-01_AAPL": {
+      "steps": 10000,
+      "positive_rate": 0.0024,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 2583,
+      "manipulative_orders": 4
+    },
+    "test/SPOOFER-02_MSFT": {
+      "steps": 10000,
+      "positive_rate": 0.4465,
+      "watchdog_flag_rate": 0.3971,
+      "episodes_with_any_flag": 1.0,
+      "orders": 705,
+      "manipulative_orders": 494
+    },
+    "test/SPOOFER-03_GOOG": {
+      "steps": 10000,
+      "positive_rate": 0.2178,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 1150,
+      "manipulative_orders": 388
+    },
+    "test/SPOOFER-04_INTC": {
+      "steps": 10000,
+      "positive_rate": 0.9286,
+      "watchdog_flag_rate": 0.9318,
+      "episodes_with_any_flag": 1.0,
+      "orders": 672,
+      "manipulative_orders": 647
+    },
+    "heldout/FLICKER_AMZN": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0027,
+      "episodes_with_any_flag": 0.1,
+      "orders": 543,
+      "manipulative_orders": 0
+    },
+    "heldout/HONEST_AMZN": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 0,
+      "manipulative_orders": 0
+    },
+    "heldout/SCRIPTED-ATK_AAPL": {
+      "steps": 10000,
+      "positive_rate": 0.4669,
+      "watchdog_flag_rate": 0.0121,
+      "episodes_with_any_flag": 0.14,
+      "orders": 472,
+      "manipulative_orders": 423
+    },
+    "heldout/SCRIPTED-ATK_AMZN": {
+      "steps": 10000,
+      "positive_rate": 0.5313,
+      "watchdog_flag_rate": 0.0019,
+      "episodes_with_any_flag": 0.12,
+      "orders": 499,
+      "manipulative_orders": 477
+    },
+    "heldout/SCRIPTED-ATK_GOOG": {
+      "steps": 10000,
+      "positive_rate": 0.4732,
+      "watchdog_flag_rate": 0.0,
+      "episodes_with_any_flag": 0.0,
+      "orders": 477,
+      "manipulative_orders": 425
+    },
+    "heldout/SCRIPTED-ATK_INTC": {
+      "steps": 10000,
+      "positive_rate": 0.5542,
+      "watchdog_flag_rate": 0.1087,
+      "episodes_with_any_flag": 1.0,
+      "orders": 521,
+      "manipulative_orders": 497
+    },
+    "heldout/SCRIPTED-ATK_MSFT": {
+      "steps": 10000,
+      "positive_rate": 0.5632,
+      "watchdog_flag_rate": 0.1066,
+      "episodes_with_any_flag": 1.0,
+      "orders": 530,
+      "manipulative_orders": 504
+    },
+    "heldout/SPOOFER-05_AMZN": {
+      "steps": 10000,
+      "positive_rate": 0.0,
+      "watchdog_flag_rate": 0.0001,
+      "episodes_with_any_flag": 0.02,
+      "orders": 2078,
+      "manipulative_orders": 0
+    }
+  },
+  "runtime_s": 252.3
+}
