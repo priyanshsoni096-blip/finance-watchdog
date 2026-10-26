@@ -363,6 +363,29 @@ crashed with an `IndexError`. All five are fixed and guarded by `tests/test_cli_
 **Not run:** linting and static type checking (no linter config in the repo, and adding one now would
 produce churn rather than evidence); dependency CVE scanning (no scanner available in this environment).
 
+## I3. Project close-out
+
+Run at close. Every row is a command that was executed, not a claim.
+
+| Check | Result |
+|---|---|
+| Branch / remote | `main`, 0 ahead 0 behind `origin/main`, working tree clean |
+| Merge completeness | `archive/arnav-branch` is an ancestor of `HEAD` — all 19 of Arnav's commits are in `main` |
+| Branch tips preserved | tags `archive/arnav-branch`, `archive/pre-merge-main` pushed |
+| Full suite | **214 passing**, 25 files, ~140 s |
+| Module imports | every `.py` in env, evaluation, watchdog, training, synthetic, scripts imports |
+| Entrypoint safety | every script with a `main()` in **all seven directories** prints help and runs nothing; 0 files changed |
+| Documented commands | all 28 `python ...` commands in the README resolve to a file that accepts its flags |
+| Documentation drift | 14 automated checks tie each headline number to its source file |
+| Secrets | none (three grep hits are `sk-` inside "task-", "risk-", "ask-") |
+| Oversized files | none above 5 MB; `.git` 29 MB, 284 tracked files |
+| Untracked clutter | none |
+| Dashboard | all three views render, four evidence tabs render, missing files degrade to "Not available" |
+
+**Two defects were found by these checks rather than by reading the code:** `--help` executed four
+single-run pre-registered tests, and later `synthetic/calibrate.py` (missed because the first sweep covered
+only three of seven directories). Both are fixed and both are now covered by a repo-wide test.
+
 ## J. Final research verdict
 
 **What the project now establishes.**
