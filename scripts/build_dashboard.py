@@ -354,8 +354,9 @@ accumulation, alternating-side swings, early termination, thin opening book. Eac
   <li><strong>Perfect attribution is assumed</strong>: surveillance is told which orders and trades belong to the monitored
   participant. Establishing that is the hard part of real spoofing surveillance.</li>
   <li>Profitable manipulation is demonstrated only under the replay impact model; it does not survive the synthetic market.</li>
-  <li>The Watchdog misses sparse spoofing, confirmed by two pre-registered tests — but see above for why that is a
-  statement about the learner rather than about detectability.</li>
+  <li>The original Watchdog missed sparse spoofing on both pre-registered tests. The CP-7 detector passes both
+  (held-out recall 0.22 → 0.98) — but see above for why that is a statement about the label rather than about
+  detectability.</li>
   <li>LOBSTER carries no participant identities, so the Watchdog cannot be run on real order flow; only the rule can.</li>
   <li>One trading day, five stocks. Spoofing is unprofitable on the wide-spread stocks under calibrated impact.</li>
   <li>The manipulation label is a proxy for intent (trading the opposite side while an order rests), not a legal determination.</li>
