@@ -383,6 +383,11 @@ p("The cheater programs get one instruction: make money. They have six possible 
 p("Cheating appeared on Microsoft and Intel only. On Apple, Google and Amazon the gap between buy and sell "
   "prices is too wide for it to pay, so those programs never bothered. That is a finding in itself.")
 
+figure(ROOT / "results" / "figures" / "fig1_spoofer_training.png",
+       "A cheating program learning, over 600,000 practice steps. Profit (left) climbs as it discovers the "
+       "trick; the right-hand chart shows it placing more and more large fake orders as it learns they pay.",
+       width=152 * mm)
+
 h3("Four times the simulation was cheated instead")
 p("Four times we saw big profits and got excited, and four times it turned out the program had found a hole "
   "in our simulation rather than a real strategy. Each was only caught by asking <i>where exactly</i> the "
@@ -450,6 +455,11 @@ p("<b>Read the fourth column.</b> It is the proof. If we switch off the part of 
 p("Each result is from three separate training runs. Microsoft's result swings a lot between runs (+$3,628 "
   "to +$15,886). We report that rather than hiding it behind an average.", Small)
 
+figure(ROOT / "results" / "figures" / "fig5_seed_robustness.png",
+       "Each cheating program trained three separate times. Intel (left) lands in the same place every time. "
+       "Microsoft (right) swings a lot between runs - we show that rather than hiding it behind an average.",
+       width=152 * mm)
+
 h2("The detective - three versions")
 table([
     ["What we measured", "First try", "After the fix", "Final version", "Old simple rule"],
@@ -460,6 +470,10 @@ table([
     ["Catching new style 3 (reversal)", "14 in 100", "45 in 100", "<b>98 in 100</b>", "96 in 100"],
     ["Catching new style 4 (layering)", "30 in 100", "-", "<b>99 in 100</b>", "100 in 100"],
 ], [52 * mm, 24 * mm, 24 * mm, 28 * mm, 28 * mm], fs=8.0)
+
+figure(ROOT / "results" / "figures" / "fig3_detection_comparison.png",
+       "The detective against the old rule across every test. Tall green is good on the left-hand charts, "
+       "short is good on the right-hand one (false accusations).", width=152 * mm)
 
 h2("But here is the ceiling")
 p("Everything above has to be read next to this table. These are all scored on the same data.")
@@ -474,6 +488,11 @@ table([
 ], [68 * mm, 44 * mm, 52 * mm])
 p("Our clever method is <i>fourth</i>, behind something that requires no learning whatsoever. That is the "
   "honest headline.", Small)
+
+figure(ROOT / "results" / "figures" / "fig6_pnl_suppression.png",
+       "What happens to the cheater's profit when surveillance is switched on inside the simulation. The "
+       "detective removes more of it than the old rule does - and bothers innocent traders far less often.",
+       width=140 * mm)
 
 h2("The fair test: take away the answer sheet")
 p("So we removed numbers 40 to 45 entirely and tried to detect cheating using <b>only the public order "
@@ -601,53 +620,84 @@ p("<b>That last part is not optional.</b> This project contains a folder called 
   "flag they clash and the app will not start. If anything goes wrong on the day, open the file "
   "<font face='Courier'>dashboard.html</font> instead - same numbers, no app needed.", Small)
 
-h2("Screen 1 - Overview")
-figure(SHOTS / "ui_overview_kpi.jpg",
-       "The finding is stated first, then the evidence. Each card shows our number, the old rule's number "
-       "underneath for comparison, which direction is good, and the file the number came from - so anything "
-       "on screen can be checked in one step.")
-p("<b>What order to read it in:</b> what the project is (two lines), then what it found (the green bar), "
-  "then three cards about the detective, then three about the cheaters, then the honest warning, then two "
-  "charts.")
-p("<b>Why the cards are in two separate groups.</b> The cheaters' profits must never be mistaken for the "
-  "detective's performance. They are different claims, so they get different labelled rows.")
+h2("Screen 1 - Overview: the whole page")
+figure(SHOTS / "01_overview_full.jpg",
+       "The entire first screen. Read it top to bottom: what the project is, what it found (green bar), three "
+       "cards about the detective, three about the cheaters, the honest warning in orange, then two charts "
+       "and the main finding.", width=160 * mm)
 
-h2("Screen 2 - Demonstration")
-figure(SHOTS / "ui_demo_ladder.jpg",
-       "The order book at one moment. Red rows are people selling, green are people buying. The wide orange "
-       "bar is the watched trader's own big order - you can see it is many times larger than everything "
-       "around it. That is what spoofing looks like on screen.")
-p("<b>How to drive it.</b> Choose a recording from the dropdown, then use the three buttons: <b>Start</b>, "
+p("<b>Why the cards are in two labelled groups.</b> The cheaters' profit must never be mistaken for the "
+  "detective's performance. They are different claims, so they sit in separate rows with their own headings.")
+p("<b>Every card has four parts:</b> the big number, the old rule's number underneath for comparison, a line "
+  "telling you which direction is good, and the name of the file the number came from. That last part means "
+  "anything on screen can be checked in one step.")
+
+figure(SHOTS / "ui_overview_kpi.jpg",
+       "A single card close up. 0.984 is ours, 0.352 is the old rule, 'higher is better' tells you how to "
+       "read it, and posthoc_rescore.md is where it came from.", width=130 * mm)
+
+story.append(PageBreak())
+h2("Screen 2 - Demonstration: watching one cheat happen")
+figure(SHOTS / "02_demonstration_full.jpg",
+       "The whole demonstration screen. Along the top are the five stages of the project. Below that: pick a "
+       "recording, jump to a moment, and step through it. The three panels show the order book, what is "
+       "happening right now, and a running log.", width=160 * mm)
+
+p("<b>How to drive it.</b> Choose a recording from the dropdown, then use the three buttons - <b>Start</b>, "
   "<b>Manipulation</b> (jumps to the first cheating moment) and <b>First flag</b> (jumps to when the "
   "detective reacts). The slider moves one step at a time.")
-p("<b>There are three recordings:</b> a program that taught itself to cheat, a cheating style the detective "
-  "had <i>never seen</i>, and an <b>honest trader</b> who places big orders and cancels them without "
-  "cheating - that last one is how you show it does not accuse innocent people.")
+p("<b>There are three recordings, and you should show at least two:</b> a program that taught itself to "
+  "cheat, a cheating style the detective had <i>never seen before</i>, and an <b>honest trader</b> who "
+  "places big orders and cancels them without cheating. That last one is how you prove it does not accuse "
+  "innocent people.")
+
+figure(SHOTS / "ui_demo_ladder.jpg",
+       "The order book close up. Red rows are people selling, green are people buying, and the number is the "
+       "price. The wide orange bar is the watched trader's own fake order - many times bigger than anything "
+       "around it. That is what spoofing looks like.", width=130 * mm)
+
 callout("Say this sentence out loud when you demo",
         "\"This is a <b>recording</b> being replayed, not a live market.\" The screen says so too. Claiming "
         "it is live would be the quickest way to lose marks.", WARN)
 
 story.append(PageBreak())
-h2("Screen 3 - Evidence and limitations")
+h2("Screen 3 - Evidence: how hard is the task?")
+figure(SHOTS / "03_evidence_how_hard.jpg",
+       "The most important screen in the project, and all four of its tables. Top: the no-learning-required "
+       "method scored as if it were a detector. Then: is the fancy method needed (no). Then: every method "
+       "against the ceiling. Bottom: what happens when the giveaway numbers are taken away.", width=160 * mm)
+
+p("<b>Why this tab comes first.</b> You cannot judge our scores until you know what the bar is. Putting our "
+  "own results first and this afterwards would be misleading, so we do it the other way round.")
+
 figure(SHOTS / "ui_evidence_table.jpg",
-       "The first tab is called 'How hard is the task?'. It deliberately opens with the no-learning-required "
-       "method, before any of our own results - because you cannot judge our scores until you know what the "
-       "bar is.")
-table([
-    ["Tab", "What it shows"],
-    ["How hard is the task?", "The ceiling: the no-learning method, every other method next to it, and the "
-     "fair test with the answer sheet removed"],
-    ["Detector generations", "The three versions of the detective side by side, so you can see what the "
-     "labelling fix changed"],
-    ["Held-out attacks", "Each new cheating style we tested against, and the result we committed to in "
-     "advance"],
-    ["Evidence and robustness", "How much results vary between training runs, the second market, and the "
-     "technical detail tucked behind drop-downs"],
-], [42 * mm, 122 * mm])
+       "The first table close up. 'train (fitted by nothing)' is not a typo - that row really is a method "
+       "with nothing to train.", width=130 * mm)
+
+story.append(PageBreak())
+h2("Screen 3, second tab - the three versions of the detective")
+figure(SHOTS / "04_evidence_generations.jpg",
+       "The three detectives side by side, so you can see exactly what the labelling fix changed. Below the "
+       "table is the explanation, and at the bottom are the six honest limitations.", width=160 * mm)
+
+p("<b>Read the LATEBURST row.</b> 0.217, then 0.484, then 0.984. That single row is the story of the project: "
+  "a failure, a diagnosis, and a fix.")
+
+story.append(PageBreak())
+h2("Screen 3, third tab - the tests we committed to in advance")
+figure(SHOTS / "05_evidence_heldout.jpg",
+       "The two tests we wrote down before creating their data. Note the orange badges: HYPOTHESIS NOT "
+       "SUPPORTED. These are the results that went against us, and they are shown exactly as they came out.",
+       width=160 * mm)
+
+p("<b>This is the screen to be proud of.</b> We predicted the detective would beat the old rule on cheating "
+  "it had never seen. It did not - it got 0.24 against the rule's 0.89. We published that unchanged. Later "
+  "versions of the detective do much better, but those numbers appear on the previous tab, clearly labelled "
+  "as coming after the fact.")
 
 figure(SHOTS / "ui_main_finding.jpg",
        "The page ends with the main finding written out in full, and a red warning. Red is used for exactly "
-       "one thing in this app - the reminder that all of it is simulated.")
+       "one thing in this whole app - the reminder that all of it is simulated.", width=130 * mm)
 
 h2("If a file is missing")
 p("The app does not crash. The affected card simply reads <b>\"Not available\"</b> and everything else still "
