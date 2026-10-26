@@ -181,7 +181,8 @@ table([
     ["6", "The important code", "Which lines matter, and what does each one do?"],
     ["7", "The screens", "What am I looking at, and how do I drive it?"],
     ["8", "Running it", "Which commands, in what order?"],
-    ["9", "Questions", "What will I be asked, and what do I say?"],
+    ["9", "Who built what", "Who did which half, and how they were merged"],
+    ["10", "Questions", "What will I be asked, and what do I say?"],
 ], [11 * mm, 48 * mm, 105 * mm])
 
 h2("Words you will need")
@@ -195,6 +196,9 @@ table([
      "Training by reward instead of by examples. You never show it the right answer - you only say "
      "'that went well' or 'that went badly', and it works the rest out."],
     ["Episode", "One run of the simulation. Here: 200 decisions covering 2,000 market events."],
+    ["Training run (or 'seed')",
+     "Training the same program again from a different random starting point. We do it three times and "
+     "report the spread, because a result that only happens once is luck, not a finding."],
     ["Recall", "Of all the real cheating, what share did we catch? 1.0 means we caught everything."],
     ["Precision", "Of everything we accused, what share was actually cheating? 1.0 means no false alarms."],
     ["F1 score", "Precision and recall combined into one number between 0 and 1. Higher is better."],
@@ -319,6 +323,16 @@ table([
      "order book was 12 times thinner than usual."],
     ["One 'episode'", "200 decisions by the agent, covering 2,000 market events"],
 ], [42 * mm, 122 * mm])
+
+h2("How much of it was used")
+table([
+    ["Where", "How many episodes", "What it is for"],
+    ["Training", "150 per source, about 16 sources", "Teaching the programs"],
+    ["Testing", "50 per source", "Choosing settings and checking progress"],
+    ["Held out", "50 per source", "Never used for any decision - the real exam"],
+    ["Each new attack test", "50 per company, all five companies", "Run once, result committed in advance"],
+    ["Profit measurements", "50 episodes, 3 training runs", "Checking the money is real"],
+], [34 * mm, 54 * mm, 76 * mm])
 
 h2("What the detective sees: 46 numbers, every moment")
 p("This is the most important part of the whole project, so it is worth going slowly.")
@@ -748,6 +762,18 @@ intend to replace them, or move them aside first.""")
 p("Some tests are meant to be run <b>once only</b>, because we committed to the result in advance. The "
   "project now physically stops you from overwriting them by accident.", Small)
 
+h2("What you need to run it")
+table([
+    ["Thing", "What is needed"],
+    ["Machine", "An ordinary laptop. No graphics card is required - everything here runs on the processor."],
+    ["To just look at the results", "Seconds. Open the app or the HTML file; nothing is computed."],
+    ["To re-check all the results", "A few minutes per script. Nothing needs training."],
+    ["To run the test suite", "About 2 to 3 minutes for all 214 checks."],
+    ["To train a cheater from scratch", "Roughly 20 to 40 minutes for 600,000 practice steps."],
+    ["To train a detector from scratch", "Roughly 1 to 2 hours. You should not need to - they are saved."],
+    ["Disk space", "About 600 MB for the market data, plus 15 MB of saved programs."],
+], [52 * mm, 112 * mm])
+
 h2("Where to find things")
 table([
     ["File", "What it is"],
@@ -764,7 +790,38 @@ table([
 
 # ───────────────────────────── 9. Q&A ─────────────────────────────
 story.append(PageBreak())
-h1("9. Questions you will be asked")
+h1("9. Who built what")
+
+p("This was a two-person project, and the two halves were built separately before being merged into one "
+  "repository. Both people independently found the same central flaw, from opposite directions - which is "
+  "the strongest evidence that the flaw is real.", Lead)
+
+table([
+    ["Work", "Who"],
+    ["The simulated market, the cheating programs, the first detector, the first two pre-registered tests, "
+     "the price-impact measurement, the synthetic second market", "Shared foundation"],
+    ["<b>The detector fix</b> - the causal label, the myopic objective, the varied-timing training, and "
+     "the CP-7 detectors", "Arnav"],
+    ["Two further pre-registered tests (DRIP and REVERSAL), the supervised comparisons, the "
+     "label-definition rule, and the real-market rule check", "Arnav"],
+    ["The audit - the train/test overlap bug, the zero-parameter signature finding, the test-without-"
+     "attribution experiment, the per-instrument investigation", "The other half"],
+    ["The interface, the documentation set, and the automated checks that keep the documents honest",
+     "The other half"],
+], [122 * mm, 42 * mm])
+
+callout("The part worth mentioning out loud",
+        "Arnav built <b>LABEL-RULE</b> - the definition of cheating written out as a rule - and recorded it "
+        "as <i>\"the ceiling, perfect by construction, not a competitor\"</i>. Separately, the other half "
+        "built the two-feature signature and measured 0.997. Same finding, two people, two routes. Neither "
+        "was checking the other's work.")
+
+p("The two lines of work had drifted apart in version control and were reconciled into one. Every commit "
+  "from both is preserved in the project history, and the point where they split is tagged so it can "
+  "always be recovered.", Small)
+
+story.append(PageBreak())
+h1("10. Questions you will be asked")
 
 QA = [
  ("Can this catch real market cheating?",
@@ -823,6 +880,16 @@ QA = [
   "The project checks itself. Fourteen automatic tests compare each headline number in the documents against "
   "the file that produced it - including the number of tests we claim to have. If a document goes out of "
   "date, the tests fail."),
+ ("Who actually did which part?",
+  "It was two people. The simulated market, the cheating programs and the first detector were the shared "
+  "foundation. <b>Arnav</b> built the fix that made the detector work - the corrected labelling, the "
+  "myopic objective and the varied-timing training - plus two of the four pre-registered tests and the "
+  "supervised comparisons. The audit, the attribution-free experiment, the interface and the documentation "
+  "came from the other half. Section 9 has the full split."),
+ ("What do you need to run it?",
+  "An ordinary laptop. No graphics card. Looking at the results takes seconds because every trained program "
+  "is already saved in the project. Only if you insisted on training from scratch would you need an hour or "
+  "two."),
  ("Has anyone else reproduced this?",
   "Yes. The results were produced on a Mac and re-run on a Windows machine. The detective's scores matched "
   "to three decimal places, and two complete test datasets were rebuilt from scratch and gave identical "
