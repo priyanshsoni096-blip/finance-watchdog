@@ -28,8 +28,7 @@ from stable_baselines3 import PPO  # noqa: E402
 from stable_baselines3.common.callbacks import BaseCallback  # noqa: E402
 from stable_baselines3.common.vec_env import DummyVecEnv  # noqa: E402
 
-from env.lob_env import (BUY, CANCEL, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig,  # noqa: E402
-                         LimitOrderBookEnv)
+from env.lob_env import BUY, SELL, EnvConfig, LimitOrderBookEnv  # noqa: E402
 from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
 

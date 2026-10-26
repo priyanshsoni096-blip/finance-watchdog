@@ -7,7 +7,7 @@ equal cash plus inventory marked at the unimpacted mid.
 import numpy as np
 import pytest
 
-from env.lob_env import BUY, CANCEL, NOOP, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig, LimitOrderBookEnv
+from env.lob_env import BUY, CANCEL, SELL, SPOOF_BUY, SPOOF_SELL, EnvConfig, LimitOrderBookEnv
 from env.normalization import reference_stats
 
 TICKERS = ["AAPL", "INTC"]

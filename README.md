@@ -407,7 +407,8 @@ dashboard.html                    static one-page results summary (generated)
 tests/                            139 unit and real-data tests (data, normalization, impact, env, detector, rollout,
                                   Watchdog env/eval/ablation/multi-seed, roster granularity, synthetic market,
                                   time-split, metric consistency, simulator accounting invariants)
-checkpoints/                      trained models + logs (git-ignored)
+checkpoints/                      trained models + logs — COMMITTED (79 files, ~15 MB), so a clone
+                                  reproduces every evaluation without retraining
 results/                          basic_eval, watchdog_eval, lateburst_test, multiseed, pnl_suppression,
                                   feature_ablation, real_case_stats, synthetic_spoof_impact,
                                   synthetic_eval, spoofer_seeds, layering_test (.md and .json each);

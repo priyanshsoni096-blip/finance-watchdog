@@ -1,4 +1,3 @@
-import numpy as np
 
 from env.lob_env import EnvConfig
 from evaluation.rollout import record_episode

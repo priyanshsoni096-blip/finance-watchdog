@@ -30,7 +30,7 @@ from env.lobster_data import load_day  # noqa: E402
 from env.normalization import reference_stats  # noqa: E402
 from evaluation.agents import Flicker, LateBurstSpoof, ModelPolicy  # noqa: E402
 from evaluation.baseline_detector import tune  # noqa: E402
-from evaluation.rollout import BOOK_DIM, StepTracker  # noqa: E402
+from evaluation.rollout import StepTracker  # noqa: E402
 from watchdog.dataset import load_split, orders_from_array  # noqa: E402
 from watchdog.watchdog_env import OnlineWatchdog, load_obs_norm  # noqa: E402
 

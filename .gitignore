@@ -1,6 +1,9 @@
 data/raw/
 data/cache/
 data/watchdog/
+# checkpoints/ : the trained models ARE committed (79 files, ~15 MB) so a clone can reproduce every
+# result without retraining. This rule only stops NEW experiment tags being added by accident;
+# the committed ones stay tracked. Add a new one deliberately with `git add -f`.
 checkpoints/
 __pycache__/
 *.pyc

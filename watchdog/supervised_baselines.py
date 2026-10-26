@@ -40,7 +40,7 @@ sys.path.insert(0, str(ROOT))
 from evaluation.baseline_detector import tune  # noqa: E402
 from evaluation.rollout import OBS_DIM  # noqa: E402
 from watchdog.dataset import EXT_DATA_DIR, causal_labels, load_split, orders_from_array  # noqa: E402
-from watchdog.evaluate_watchdog import combine, counts, order_flags, score_source  # noqa: E402
+from watchdog.evaluate_watchdog import combine, order_flags, score_source  # noqa: E402
 from watchdog.multiseed_summary import mean_ci95  # noqa: E402
 from watchdog.watchdog_env import OBS_BOUND, load_obs_norm  # noqa: E402
 

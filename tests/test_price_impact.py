@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from env.normalization import reference_stats

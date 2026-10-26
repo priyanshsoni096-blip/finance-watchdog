@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from evaluation.baseline_detector import tune  # noqa: E402
-from watchdog.dataset import DATA_DIR, load_split, orders_from_array  # noqa: E402
+from watchdog.dataset import load_split, orders_from_array  # noqa: E402
 from watchdog.evaluate_watchdog import BUCKETS, combine, score_source  # noqa: E402
 from watchdog.watchdog_env import load_obs_norm  # noqa: E402
 

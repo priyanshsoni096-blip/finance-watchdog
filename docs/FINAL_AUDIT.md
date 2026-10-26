@@ -334,8 +334,16 @@ so a fresh clone following the README hit a bare `ImportError`. scikit-learn is 
 exits with an actionable message if it is absent. It is the only module in the repo that needs it, which is why
 the lock file (predating that script) does not list it.
 
-**Artifacts not in git** (`checkpoints/`, `data/` are gitignored): model checkpoints and recorded datasets must
-be rebuilt or copied. All CP-7 checkpoints are present on this machine and were used for §D1.
+**What a clone gets.** Every trained model **is committed** — 79 files, ~15 MB, covering all nine Watchdog
+tags (`main`, `causal_g0_1m`, `cov` and their seeds), all five Spoofers and the supervised baselines. A clone
+can therefore reproduce every evaluation in this report **without retraining anything**. (`checkpoints/` does
+appear in `.gitignore`; the committed files predate it and remain tracked, so the rule only prevents new
+experiment tags being added by accident.)
+
+**What a clone does not get:** the LOBSTER data (`data/raw`, ~600 MB, fetched by `python data/download.py`)
+and the recorded surveillance datasets under `data/`, which are rebuilt by `watchdog/dataset.py` and the
+pre-registered test scripts. That rebuild was exercised here: DRIP and REVERSAL were regenerated from scratch
+and reproduced their committed results exactly (§D0).
 
 ---
 
