@@ -3,6 +3,20 @@
 A rehearsable run sheet. Everything below is read from committed files — nothing trains, simulates or fetches
 anything live.
 
+## Rehearsal check (run once the night before)
+
+```bash
+python -m pytest tests -q                              # expect 214 passed
+streamlit run app.py --server.fileWatcherType none     # then click all three views
+```
+
+Verified on the final build: all three views render, all four Evidence tabs render, the episode selector
+offers **RL spoofer (SPOOFER-04)**, **Held-out attacker (LATEBURST-ATK)** and **Legitimate trader (FLICKER)**,
+and the jump buttons move the replay. If a results file is missing, the affected card reads "Not available"
+and the rest of the page still works.
+
+Every trained model is committed, so none of this needs retraining or the 600 MB LOBSTER download.
+
 ## Before you start
 
 ```bash
