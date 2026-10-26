@@ -1,5 +1,7 @@
 # Updates
 
+> **Working log — historical record, not current results.** Entries below were written as the work happened and are deliberately left unedited, including claims later superseded. For the project's current position see [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) and [README.md](README.md); in particular, claim 2 (generalisation) was recorded here as *not shown* and is now shown in simulation for the CP-7 detector, bounded by the label-ceiling caveat.
+
 A running log of everything done on the project, kept so it can be turned into a research paper. Newest entries go at the bottom of the log.
 
 **Rules (the same ones `HANDOFF.md` §9 uses):**

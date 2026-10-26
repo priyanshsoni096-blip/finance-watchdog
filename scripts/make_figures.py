@@ -20,6 +20,9 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from evaluation.cli import guard  # noqa: E402
 FIG = ROOT / "results" / "figures"
 RESULTS = ROOT / "results"
 WD, RULE = "#2a6fb5", "#d08b1e"
@@ -216,6 +219,7 @@ def fig_suppression() -> str | None:
 
 
 def main() -> int:
+    guard(__doc__)
     FIG.mkdir(parents=True, exist_ok=True)
     made = []
     for fn in (fig_spoofer_training, fig_watchdog_training, fig_detection, fig_impact, fig_seeds, fig_suppression):

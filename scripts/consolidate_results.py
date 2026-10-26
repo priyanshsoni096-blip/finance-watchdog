@@ -29,6 +29,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from evaluation.cli import guard  # noqa: E402
+
 from evaluation.baseline_detector import classification_metrics, tune  # noqa: E402
 from watchdog.dataset import load_split, orders_from_array  # noqa: E402
 from watchdog.evaluate_watchdog import BUCKETS  # noqa: E402
@@ -74,6 +76,7 @@ def oracle_rule_rows() -> list[dict]:
 
 
 def main() -> int:
+    guard(__doc__)
     ms, pnl, basic = _load("multiseed"), _load("pnl_suppression"), _load("basic_eval")
     payload = {
         "rule": _load("watchdog_eval")["rule"],

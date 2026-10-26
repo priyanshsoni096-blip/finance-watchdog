@@ -18,6 +18,10 @@ from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from evaluation.cli import guard  # noqa: E402
+
 RESULTS = ROOT / "results"
 OUT = ROOT / "dashboard.html"
 
@@ -75,6 +79,7 @@ def _label_signature() -> tuple[str, str]:
 
 
 def main() -> int:
+    guard(__doc__)
     ms, we, lb, lay = load("multiseed.json"), load("watchdog_eval.json"), load("lateburst_test.json"), load("layering_test.json")
     ps, fa, se, sd = load("pnl_suppression.json"), load("feature_ablation.json"), load("synthetic_eval.json"), load("spoofer_seeds.json")
     be = load("basic_eval.json")

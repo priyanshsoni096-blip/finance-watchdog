@@ -1,5 +1,7 @@
 # Errors and fallbacks
 
+> **Working log — historical record, not current results.** Entries below were written as the work happened and are deliberately left unedited, including claims later superseded. For the project's current position see [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) and [README.md](README.md); in particular, claim 2 (generalisation) was recorded here as *not shown* and is now shown in simulation for the CP-7 detector, bounded by the label-ceiling caveat.
+
 For every feature or addition: how it can fail, how the failure shows up, and what to do instead. Add an entry **before** building a new feature, not after it fails. When a fallback is actually used, log it in [UPDATES.md](UPDATES.md) and reference the feature id.
 
 Entries F-01 to F-09 cover features that already exist; their failure modes were observed during the project (`README.md`, `HANDOFF.md` §6). Entries for planned work are added once the execution plan arrives.

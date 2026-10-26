@@ -67,3 +67,28 @@ def test_single_run_scripts_are_wired_to_the_guard(script):
     assert "from evaluation.cli import guard" in src, f"{script} does not import the guard"
     assert "guard(__doc__" in src, f"{script} does not call the guard"
     assert "protected=" in src, f"{script} calls the guard without declaring its outputs"
+
+
+@pytest.mark.parametrize("script", ["scripts/build_dashboard.py", "scripts/consolidate_results.py",
+                                    "scripts/make_figures.py", "watchdog/posthoc_summary.py"])
+def test_regenerable_scripts_refuse_unknown_arguments(script):
+    """These rebuild derived artefacts, so re-running is fine and they take no `protected=`.
+
+    They must still print usage for --help instead of executing: `--help` on posthoc_summary.py used to
+    regenerate the summary it is meant to describe.
+    """
+    from pathlib import Path as _P
+    src = (_P(__file__).resolve().parent.parent / script).read_text(encoding="utf-8")
+    assert "from evaluation.cli import guard" in src, f"{script} does not import the guard"
+    assert "guard(__doc__" in src, f"{script} does not call the guard"
+
+
+@pytest.mark.parametrize("script", ["scripts/build_dashboard.py", "scripts/make_figures.py",
+                                    "watchdog/posthoc_summary.py", "watchdog/drip_test.py"])
+def test_guard_is_callable_before_any_heavy_import(script):
+    """The guard must be reachable without the project's optional dependencies being importable."""
+    from pathlib import Path as _P
+    src = (_P(__file__).resolve().parent.parent / script).read_text(encoding="utf-8")
+    gi = src.index("from evaluation.cli import guard")
+    mi = src.index("def main()")
+    assert gi < mi, f"{script} imports the guard after main() is defined"

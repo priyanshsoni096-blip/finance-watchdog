@@ -1,5 +1,7 @@
 # Checkpoints
 
+> **Working log — historical record, not current results.** Entries below were written as the work happened and are deliberately left unedited, including claims later superseded. For the project's current position see [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) and [README.md](README.md); in particular, claim 2 (generalisation) was recorded here as *not shown* and is now shown in simulation for the CP-7 detector, bounded by the label-ceiling caveat.
+
 Major milestones for the project, derived from [execution-plan-10.md](execution-plan-10.md) (dated 2026-09-01). Each checkpoint has a goal, an exit criterion that can be checked (a command, a file, a number), and a status. Detail of the work itself goes in [UPDATES.md](UPDATES.md); what to do when a checkpoint's work fails goes in [ERRORS_AND_FALLBACKS.md](ERRORS_AND_FALLBACKS.md).
 
 Status values: `not started` · `in progress` · `done` · `blocked` · `dropped` (with the reason) · `needs decision`.

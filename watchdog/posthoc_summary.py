@@ -23,6 +23,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from evaluation.cli import guard  # noqa: E402
+
 from watchdog.multiseed_summary import mean_ci95  # noqa: E402
 
 GROUPS = {"main": ["main", "main_s2", "main_s3"], "cov": ["cov", "cov_s2", "cov_s3"]}
@@ -83,6 +85,7 @@ def rule_row() -> dict:
 
 
 def main() -> int:
+    guard(__doc__)
     seeds = {t: per_seed(t) for ts in GROUPS.values() for t in ts}
     rule = rule_row()
     metrics = list(rule)

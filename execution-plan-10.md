@@ -1,5 +1,7 @@
 # RL Finance Watchdog — 10/10 Execution Plan
 
+> **Working log — historical record, not current results.** Entries below were written as the work happened and are deliberately left unedited, including claims later superseded. For the project's current position see [docs/FINAL_AUDIT.md](docs/FINAL_AUDIT.md) and [README.md](README.md); in particular, claim 2 (generalisation) was recorded here as *not shown* and is now shown in simulation for the CP-7 detector, bounded by the label-ceiling caveat.
+
 *Companion to `project-design-consolidated.md`. That doc explains what the system is and why. This one is the actionable roadmap to build it and close every gap identified in the rating discussion.*
 
 ---
