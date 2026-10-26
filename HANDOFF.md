@@ -129,7 +129,7 @@ python data/download.py
 ```bash
 python -m pytest tests -q
 ```
-191 tests, about 70 seconds. Tests needing data skip themselves if it is absent.
+213 tests, about 140 seconds. Tests needing data skip themselves if it is absent.
 
 ```bash
 python scripts/calibrate.py
@@ -165,7 +165,7 @@ watchdog/       dataset recorder, Watchdog env/training, evaluation vs baseline,
 synthetic/      agent-based market: order book, background traders, calibration, spoof impact,
                 env adapter, robustness evaluation, layering attacker + pre-registered test
 scripts/        calibration, PnL decomposition, feature-signal diagnostic, real-case statistics
-tests/          191 tests
+tests/          213 tests
 results/        every reported number (.md to read, .json for exact values)
 app.py          SPOOFWATCH CONSOLE: three views — overview, recorded demonstration, evidence
                 (run: streamlit run app.py --server.fileWatcherType none — the flag is

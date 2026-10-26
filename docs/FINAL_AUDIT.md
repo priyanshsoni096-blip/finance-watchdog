@@ -6,7 +6,7 @@ reconciled in commit `5a32de9`. Everything recorded here was executed. Work that
 such in §G and §J rather than assumed to pass.
 
 - **Merge base:** `d9e242b` · **main before merge:** `4c7201c` (tag `pre-merge-main`) · **merged:** `5a32de9`
-- **Test suite:** **191 passing**, 24 test files
+- **Test suite:** **213 passing**, 25 test files
 - **Headline finding:** the detection task is close to a tautology (§C). CP-7 reached the label's ceiling; it did
   not make the problem hard.
 - **Independent verification:** Arnav's CP-7 `cov` result reproduced exactly on a second machine (§D)
@@ -251,7 +251,7 @@ historical prices never react to the agent. One large order per side is permitte
 
 ## G. Test report
 
-**191 passing, 24 test files, ~69 s.** No tests were disabled, weakened or skipped to obtain a pass.
+**213 passing, 25 test files, ~140 s.** No tests were disabled, weakened or skipped to obtain a pass.
 
 | Area | File | Tests |
 |---|---|---|
@@ -316,7 +316,7 @@ pip install -r requirements.txt
 pip install -r requirements-dashboard.txt
 python data/download.py                                      # ~600 MB LOBSTER data
 python scripts/calibrate.py
-python -m pytest tests -q                                    # 191 tests, ~69 s
+python -m pytest tests -q                                    # 213 tests, ~140 s
 python watchdog/dataset.py --episodes 150                    # record surveillance data
 python watchdog/dataset.py --extended                        # CP-7 round-2 training sources
 python watchdog/evaluate_watchdog.py --tag cov               # the CP-7 detector
@@ -343,7 +343,7 @@ be rebuilt or copied. All CP-7 checkpoints are present on this machine and were 
 
 | Check | Command | Result |
 |---|---|---|
-| Full test suite | `python -m pytest tests -q` | **191 passed**, 69 s |
+| Full test suite | `python -m pytest tests -q` | **213 passed**, 140 s |
 | Module imports | 13 core modules imported individually | all OK |
 | Entrypoint smoke | `--help` on every script with a `main()` | 5 failures found and fixed (see below) |
 | Hardcoded local paths | grep for `C:/Users`, `/home/`, `/Users/` in sources | none |

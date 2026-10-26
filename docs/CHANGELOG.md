@@ -84,8 +84,8 @@ held-out attack families; and the ceiling it reached is occupied by a rule with 
 
 | | Before | After |
 |---|---|---|
-| Passing | 115 | **191** |
-| Files | 15 | 24 |
+| Passing | 115 | **213** |
+| Files | 15 | 25 |
 
 Added: time-split integrity (4), metric consistency (10), simulator accounting invariants (10), label
 observability (6), causal labels (7), attribution-leakage guards (7), CLI overwrite protection (12). No test was disabled, weakened or
