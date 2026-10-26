@@ -127,7 +127,16 @@ R = {n: load(f"{n}.json") for n in (
     "feature_ablation", "synthetic_eval", "spoofer_seeds", "demo_episodes",
     "label_observability", "supervised_baseline", "posthoc_rescore", "baselines_final",
     "anonymised_experiment")}
-R["pnl_suppression_cov"] = load("posthoc/cov/pnl_suppression.json")
+R["posthoc_summary"] = load("posthoc_summary.json")
+PS = R["posthoc_summary"].get("summary", {})
+PSRULE = R["posthoc_summary"].get("rule", {})
+
+
+def ps(tag: str, metric: str, key: str = "mean"):
+    """Post-hoc summary value across seeds (synthetic market, layering, PnL suppression)."""
+    v = PS.get(tag, {}).get(metric, {})
+    return v.get(key) if isinstance(v, dict) else None
+
 PH = R["posthoc_rescore"].get("summary", {})
 PHRULE = R["posthoc_rescore"].get("rule", {})
 
@@ -243,14 +252,15 @@ if view == "Overview":
             f"Simulated · {intc.get('seeds', 3)} seeds · replay impact model",
             "spoofer_seeds.md", RULE)
     with a[1]:
-        cov_rows = R["pnl_suppression_cov"].get("rows", [])
-        src = "posthoc/cov/pnl_suppression.md · CP-7 · 50 episodes"
-        if not cov_rows:                                   # fall back to the original measurement
-            cov_rows, src = R["pnl_suppression"].get("rows", []), "pnl_suppression.md · 50 episodes"
-        s4 = next((r for r in cov_rows if r["source"] == "SPOOFER-04"), {})
-        kpi("Profit removed by surveillance", pct(dig(s4, "watchdog", "suppression_pct", default=0) / 100, 0),
-            pct(dig(s4, "rule", "suppression_pct", default=0) / 100, 0),
-            "Higher is better · +$12.6k/episode driven to a loss", src, GOOD)
+        supp = ps("cov", "PnL suppression: SPOOFER-04 INTC (%)")
+        rule_supp = PSRULE.get("PnL suppression: SPOOFER-04 INTC (%)")
+        if supp is None:                                   # fall back to the original measurement
+            s4 = next((r for r in R["pnl_suppression"].get("rows", []) if r["source"] == "SPOOFER-04"), {})
+            supp = dig(s4, "watchdog", "suppression_pct", default=0)
+            rule_supp = dig(s4, "rule", "suppression_pct", default=0)
+        kpi("Profit removed by surveillance", pct((supp or 0) / 100, 0), pct((rule_supp or 0) / 100, 0),
+            "Higher is better · +$12.6k/episode driven to a loss",
+            "posthoc_summary.md · CP-7 · 3 seeds · 50 episodes", GOOD)
     with a[2]:
         anon = dig(R["anonymised_experiment"], "headline", default={})
         kpi("Without participant attribution", num(anon.get("best_step_f1"), 3),

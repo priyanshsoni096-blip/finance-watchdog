@@ -64,7 +64,7 @@ Read both of these alongside the task-difficulty caveat above: the label-definit
 | Measure | Original Watchdog | CP-7 `cov` | Rule | Source |
 |---|---|---|---|---|
 | In-distribution order F1 (3 seeds) | 0.753 ± 0.058 | **0.984 ± 0.001** | 0.352 | `multiseed.md`, `posthoc_rescore.md` |
-| Profit cut when acting inside episodes (SPOOFER-04, INTC) | 83% | not re-measured | 55% | `pnl_suppression.md` |
+| Profit cut when acting inside episodes (SPOOFER-04, INTC) | 87.5 ± 19.1% | **101.4 ± 0.9%** | 55% | `posthoc_summary.md` |
 
 ---
 
@@ -966,7 +966,9 @@ reachable by another column.
 
    *Diagnosis.* The hindsight label marked **every** step an order rested, including steps before any opposite trade, so training rewarded predicting **who would spoof** over detecting **the act**: the original Watchdog flagged 99% of SPOOFER-04's orders before any opposite trade, but only 13.7% of SPOOFER-03's opposite-trade steps (`scripts/flag_timing_diagnostic.py`).
 
-   *CP-7 (`cov`).* With a causal label (positives begin at the first opposite trade), a myopic γ = 0 objective and training coverage of varied act timing — all chosen on test splits, never on held-out data — the Watchdog reaches order-level recall **0.98–0.99 with a legitimate false-positive rate of 0.001–0.012 on four held-out attack families**, including the pre-registered REVERSAL-ATK it was the verdict model for (`results/posthoc_rescore.md`, `results/reversal_test.md`).
+   *CP-7 (`cov`).* With a causal label (positives begin at the first opposite trade), a myopic γ = 0 objective and training coverage of varied act timing — all chosen on test splits, never on held-out data — the Watchdog reaches order-level recall **0.98–0.99 with a legitimate false-positive rate of 0.001–0.012 on four held-out attack families** in the replay market, including the pre-registered REVERSAL-ATK it was the verdict model for (`results/posthoc_rescore.md`, `results/reversal_test.md`).
+
+   **Both originally-failed pre-registered tests are now passed.** LATEBURST-ATK recall went 0.22 → 0.984 ± 0.001, and LAYER-ATK — layering in the *synthetic* market, a different price-formation mechanism — went recall 0.30 → **0.990 ± 0.025** and pooled F1 0.44 → **0.984 ± 0.035**, now ahead of the rule's 0.733. Detection also transfers to that market overall: manipulator F1 0.62 → **0.980 ± 0.011** at a legitimate FPR of 0.030 against the rule's 0.917 (`results/posthoc_summary.md`, 3 seeds).
 
    *The caveat that matters.* The label-definition rule (LABEL-RULE) scores 0.98–0.99 on exactly the same data **by construction**, and a supervised LSTM matches it in minutes. CP-7 reached a ceiling that a zero-parameter rule already occupied, so this is evidence that the task is recoverable, not that reinforcement learning solved a hard problem. See "Baselines: is RL needed?".
 3. **The Watchdog doesn't flag legitimate activity — shown, in simulation, and robust to a change of market mechanism.** It wrongly flags 1–7% of legitimate large orders on replay data, against the rule's 77–97%. In the synthetic agent-based market it wrongly flags 11%, against the rule's 92%. Only the rule has been run on real, unlabeled order flow (AAPL, MSFT, GOOG, INTC, AMZN). The Watchdog cannot be, because LOBSTER messages carry no participant identities, so its participant features cannot be built from real data.
@@ -983,8 +985,8 @@ label-definition rule — the ceiling, perfect by construction, not a competitor
 | Recall, pre-registered LATEBURST-ATK | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | 0.983 |
 | Recall, pre-registered DRIP-ATK | 0.067 ± 0.115 | **0.989 ± 0.002** | 0.744 | 0.989 |
 | Recall, pre-registered REVERSAL-ATK | 0.139 ± 0.129 | **0.983 ± 0.005** | 0.964 | 0.984 |
-| PnL suppression of SPOOFER-04 INTC (original Watchdog, 50 episodes) | 83% (+$12,625 → +$2,165) | not re-measured | 55% (→ +$5,655) | — |
-| Interventions per episode on legitimate FLICKER orders (original Watchdog) | 0.3–0.4 | not re-measured | 4.7 | — |
+| PnL suppression of SPOOFER-04 INTC (50 episodes, 3 seeds) | 87.5 ± 19.1% (→ +$1,576) | **101.4 ± 0.9%** (→ −$178) | 55% (→ +$5,655) | — |
+| Interventions per episode on legitimate FLICKER orders (3 seeds) | 0.49–0.55 | **0.007–0.013** | 4.7 | — |
 
 Only the LATEBURST row was a pre-registered verdict for the original Watchdog, and only REVERSAL-ATK was one for
 `cov`; the other attack rows are post-hoc descriptions of models on data that has since been inspected, and decide

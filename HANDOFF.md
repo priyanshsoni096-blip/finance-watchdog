@@ -33,7 +33,7 @@ Everything below is measured and committed under `results/`. Nothing is estimate
 | Claim | Verdict | Key evidence |
 |---|---|---|
 | 1. RL learns meaningful manipulation | **Partly shown** | SPOOFER-04 (INTC) +$13,208 ± 1,654 per episode, SPOOFER-02 (MSFT) +$2,437 ± 1,068. With price impact switched off the same trading loses money, so the profit is the spoof. Across 3 training seeds each, all 3 seeds learned to spoof on both stocks (INTC +$14,368 ± 1,135; MSFT +$11,431 ± 16,844). But in the synthetic market both lose money, so profitability holds only under the replay impact model. |
-| 2. The Watchdog generalises to unseen attacks | **Not shown for the original Watchdog; shown in simulation for CP-7 — but against a ceiling a zero-parameter rule already occupies** | Original Watchdog: LATEBURST recall 0.24 vs rule 0.89; layering 0.30 vs 1.00. Diagnosed as a labelling artefact (§2c), fixed with a causal label, γ = 0 and varied-timing training coverage. CP-7 `cov`: recall **0.98–0.99** at legitimate FPR 0.001–0.012 across four held-out attack families. But the label-definition rule scores the same by construction and a supervised LSTM matches it — see §2b. |
+| 2. The Watchdog generalises to unseen attacks | **Not shown for the original Watchdog; shown in simulation for CP-7 — but against a ceiling a zero-parameter rule already occupies** | Original Watchdog: LATEBURST recall 0.24 vs rule 0.89; layering 0.30 vs 1.00. Diagnosed as a labelling artefact (§2c), fixed with a causal label, γ = 0 and varied-timing training coverage. CP-7 `cov`: recall **0.98–0.99** at legitimate FPR 0.001–0.012 across four held-out attack families, **and both originally-failed pre-registered tests now pass** — LATEBURST 0.22→0.984, LAYER 0.30→0.990 ± 0.025 in the synthetic market. But the label-definition rule scores the same by construction and a supervised LSTM matches it — see §2b. |
 | 3. It does not flag legitimate activity | **Shown in simulation** | False-positive rate on legitimate orders 0.031 ± 0.067 across 3 seeds vs the rule's 0.823; 0.11 vs 0.92 in the synthetic market. Not testable on real data (see §10). |
 
 **The detector in one line:** the original Watchdog failed on unseen attacks, the cause was the label rather
@@ -105,7 +105,9 @@ Three changes, all chosen on test splits and never on held-out data:
    original splits and every result built on them are unchanged.
 
 Result across four held-out attack families: recall 0.22–0.30 → **0.98–0.99**, legitimate FPR 0.001–0.012
-(`results/posthoc_rescore.md`).
+(`results/posthoc_rescore.md`). It also transfers to the **synthetic market**, a different price-formation
+mechanism: layering recall 0.30 → 0.990 ± 0.025 and manipulator F1 0.62 → 0.980 ± 0.011, at a legitimate FPR
+of 0.030 against the rule's 0.917 (`results/posthoc_summary.md`, 3 seeds).
 
 **What this proves:** a labelling choice can silently redefine a task, and diagnosing that is worth more than any
 amount of hyperparameter search. **What it does not prove:** that RL was needed. A supervised LSTM with the same

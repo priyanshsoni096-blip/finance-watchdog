@@ -163,7 +163,7 @@ the write-up cannot silently go stale.
 
 - The attribution-free experiment uses **supervised models only**; no RL detector was retrained on it.
 - Ablations beyond features (recurrent vs feed-forward, reward variants) not run.
-- The layering test was **not** re-measured for CP-7; tables say so. (P&L suppression now has been — see
-  below.)
+- *(Corrected: the layering test **was** re-measured for CP-7, 3 seeds, in `results/posthoc_summary.md`.
+  An earlier entry here claimed it had not been. It had — by Arnav, before the merge.)*
 - Non-profitable Spoofers remain single-seed.
 - One trading day, five stocks.

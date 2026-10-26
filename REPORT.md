@@ -164,7 +164,7 @@ RL test (AMZN) with no manipulation to detect.
 | False positives, legitimate orders | 0.031 ± 0.067 | **0.002 ± 0.002** | 0.823 | `multiseed.md`, `posthoc_rescore.md` |
 | False positives, held-out stock | 0.004 ± 0.018 | **0.001 ± 0.002** | 0.972 | `multiseed.md`, `posthoc_rescore.md` |
 | Recall, pre-registered unseen attacker | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | `lateburst_test.md`, `posthoc_rescore.md` |
-| Recall, pre-registered layering attack | 0.30 | not re-measured | **1.00** | `layering_test.md` |
+| Recall, pre-registered layering attack | 0.30 | **0.990 ± 0.025** | 1.00 | `layering_test.md`, `posthoc_summary.md` |
 | Detection delay (median) | **0 steps** | 8 steps | `watchdog_eval.md` |
 
 Two findings stand out.
@@ -240,6 +240,7 @@ the first opposite trade), a **myopic γ = 0 objective**, and **training coverag
 | Attack family | Original Watchdog | CP-7 `cov` | Rule | Label ceiling |
 |---|---|---|---|---|
 | SCRIPTED-ATK (train stocks) | 0.257 ± 0.199 | **0.991 ± 0.001** | 0.938 | ~0.99 |
+| LAYER-ATK (synthetic market) | 0.300 | **0.990 ± 0.025** | 1.000 | — |
 | LATEBURST-ATK | 0.217 ± 0.156 | **0.984 ± 0.001** | 0.885 | 0.983 |
 | DRIP-ATK | 0.067 ± 0.115 | **0.989 ± 0.002** | 0.744 | 0.989 |
 | REVERSAL-ATK | 0.139 ± 0.129 | **0.983 ± 0.005** | 0.964 | 0.984 |

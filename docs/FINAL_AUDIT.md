@@ -211,7 +211,7 @@ against and the agent must discover a strategy from profit alone.
 | LATEBURST-ATK | sparse, late trading | 0.217 ± 0.156 | 0.984 ± 0.001 | 0.885 | 0.983 |
 | DRIP-ATK | slow drip of trades | 0.067 ± 0.115 | 0.989 ± 0.002 | 0.744 | 0.989 |
 | REVERSAL-ATK | cancel, then reverse | 0.139 ± 0.129 | 0.983 ± 0.005 | 0.964 | 0.984 |
-| LAYER-ATK (synthetic market) | layered orders | 0.30 | not re-measured | 1.00 | — |
+| LAYER-ATK (synthetic market) | layered orders | 0.30 | **0.990 ± 0.025** | 1.00 | — |
 | Held-out RL (SPOOFER-05, AMZN) | no manipulation present | n/a | n/a | n/a | n/a |
 
 **The common factor in every original-Watchdog failure was act timing**, which is exactly what the hindsight
