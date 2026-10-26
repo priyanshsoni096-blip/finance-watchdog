@@ -92,3 +92,31 @@ def test_guard_is_callable_before_any_heavy_import(script):
     gi = src.index("from evaluation.cli import guard")
     mi = src.index("def main()")
     assert gi < mi, f"{script} imports the guard after main() is defined"
+
+
+def test_every_no_option_script_in_the_repo_is_guarded():
+    """A sweep, so a new script in any directory cannot quietly reintroduce the hole.
+
+    synthetic/calibrate.py was missed by the first pass because that pass only looked in scripts/, watchdog/
+    and evaluation/. `--help` on it ran a full calibration.
+
+    A script passes if it uses argparse, uses the shared guard, or handles --help itself (pnl_decompose.py
+    takes positional arguments, so it parses them by hand and checks --help explicitly).
+    """
+    from pathlib import Path as _P
+    root = _P(__file__).resolve().parent.parent
+    offenders = []
+    for d in ("scripts", "watchdog", "evaluation", "synthetic", "training", "env", "data"):
+        for f in (root / d).glob("*.py"):
+            if f.name == "__init__.py":
+                continue
+            src = f.read_text(encoding="utf-8")
+            if "def main(" not in src:
+                continue
+            handles_help = '"--help" in' in src or "'--help' in" in src
+            if "argparse" in src or "from evaluation.cli import guard" in src or handles_help:
+                continue
+            offenders.append(str(f.relative_to(root)))
+    assert not offenders, (
+        "these scripts take no options and have no guard, so any argument is ignored and they just run: "
+        + ", ".join(offenders))

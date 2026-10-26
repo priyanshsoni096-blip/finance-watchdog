@@ -110,7 +110,7 @@ Measures per-stock spread, depth and the price-impact coefficient; writes `confi
 ```bash
 python -m pytest tests -q
 ```
-213 tests, about 140 seconds (140 s measured). Tests that need data skip themselves if it isn't downloaded.
+214 tests, about 140 seconds (140 s measured). Tests that need data skip themselves if it isn't downloaded.
 
 ### Interactive dashboard and report
 
@@ -322,7 +322,7 @@ Every Spoofer seed through the same evaluation, with an impact-free counterfactu
 Simulated order structure for the Coscia/Sarao comparison.
 
 ```bash
-python synthetic/calibrate.py
+python synthetic/calibrate.py --rerun
 ```
 Calibrates the synthetic market to real MSFT/INTC statistics; writes `configs/synthetic_calibration.json`.
 

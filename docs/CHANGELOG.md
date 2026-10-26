@@ -84,7 +84,7 @@ held-out attack families; and the ceiling it reached is occupied by a rule with 
 
 | | Before | After |
 |---|---|---|
-| Passing | 115 | **213** |
+| Passing | 115 | **214** |
 | Files | 15 | 25 |
 
 Added: time-split integrity (4), metric consistency (10), simulator accounting invariants (10), label

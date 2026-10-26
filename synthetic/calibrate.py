@@ -31,6 +31,7 @@ sys.path.insert(0, str(ROOT))
 from env.lobster_data import DELETE, EXEC_HIDDEN, EXEC_VISIBLE, NEW, PARTIAL_CANCEL, load_day  # noqa: E402
 from synthetic.market import BUY, SELL  # noqa: E402
 from synthetic.simulator import MarketParams, SyntheticMarket  # noqa: E402
+from evaluation.cli import guard  # noqa: E402
 
 TARGET_TICKERS = ("MSFT", "INTC")
 KEYS = ("spread_ticks", "mid_change_share", "range_2000_ticks", "touch_depth", "cancel_share", "exec_share")
@@ -108,6 +109,7 @@ def score(stats: dict, targets: dict) -> float:
 
 
 def main() -> int:
+    guard(__doc__, protected=(ROOT / "configs" / "synthetic_calibration.json",))
     t0 = time.time()
     targets = real_targets()
     print("targets (mean of MSFT, INTC): " + ", ".join(f"{k}={v:.4g}" for k, v in targets.items()), flush=True)
